@@ -10,7 +10,10 @@ function Header() {
         <img src="./favicon.svg" alt="" width={34} height={34} />
         <span>CLB Ready</span>
       </a>
-      <nav aria-label="Main">
+      <nav aria-label="Main" className="header-nav">
+        <a className="icon-link" href={href('/settings')} aria-label="AI models and privacy settings" title="AI models and privacy">
+          <span aria-hidden="true">⚙️</span>
+        </a>
         <a className="goal-chip" href={href('/goal')}>
           {goal ? `Goal: CLB ${goal}` : 'Set your goal'}
         </a>
@@ -31,6 +34,7 @@ function Footer() {
         Canada. CELPIP is a trademark of its owner. Scores are estimates for practice only.
       </p>
       <p className="footer-links">
+        <a href={href('/settings')}>AI models and privacy</a>
         <a href={href('/lab')}>Model lab</a>
         <span>Open source under MIT</span>
       </p>

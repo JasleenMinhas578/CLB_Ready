@@ -92,6 +92,7 @@ export function SpeakingTask({ task, prompt, moduleId }: { task: SpeakingTaskTyp
         recordedSeconds: recording.durationSeconds,
       });
       setLastAttempt({
+        skill: 'speaking',
         id: newAttemptId(),
         moduleId,
         taskTypeId: task.id,

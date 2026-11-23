@@ -1,4 +1,5 @@
 import type { SpeechStatus } from '@/services/ai/speechEngine';
+import { friendlyModelError } from '@/services/ai/errorText';
 
 /** Small status line so learners know the AI is getting ready. */
 export function SpeechModelBadge({ status }: { status: SpeechStatus }) {
@@ -7,7 +8,7 @@ export function SpeechModelBadge({ status }: { status: SpeechStatus }) {
   const text = {
     loading: `Getting the speech model ready${percent != null ? ` (${percent}%)` : ''}`,
     ready: `Speech model ready: Whisper ${status.model ?? ''}`,
-    error: 'The speech model didn’t load. Your answer will still be timed.',
+    error: `${friendlyModelError(status.error)} Your answer will still be timed.`,
   }[status.state];
 
   return (

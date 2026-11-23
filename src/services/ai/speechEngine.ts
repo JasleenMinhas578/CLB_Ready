@@ -12,8 +12,12 @@ export type SpeechStatus = ModelStatus;
  *   the next task's preload() brings it back from the browser cache.
  */
 export class SpeechEngineStore extends ModelStore<SpeechToText> {
-  constructor(getPlan: () => Promise<ModelPlan>, createEngine: (plan: ModelPlan) => SpeechToText) {
-    super(getPlan, createEngine, (plan) => plan.whisperModel.replace(/^.*whisper-/, ''));
+  constructor(
+    getPlan: () => Promise<ModelPlan>,
+    createEngine: (plan: ModelPlan) => SpeechToText,
+    fallBack?: () => Promise<boolean>,
+  ) {
+    super(getPlan, createEngine, (plan) => plan.whisperModel.replace(/^.*whisper-/, ''), fallBack);
   }
 
   async transcribe(audio: Float32Array): Promise<Transcript> {
@@ -30,11 +34,15 @@ let shared: SpeechEngineStore | null = null;
 /** The app-wide store, created on first use so the AI code loads lazily. */
 export async function getSpeechEngine(): Promise<SpeechEngineStore> {
   if (!shared) {
-    const [{ getModelPlan }, { WhisperSpeechToText }] = await Promise.all([
+    const [{ getModelPlan, fallBackOneTier }, { WhisperSpeechToText }] = await Promise.all([
       import('@/services/device/plan'),
       import('./whisperClient'),
     ]);
-    shared ??= new SpeechEngineStore(getModelPlan, (plan) => new WhisperSpeechToText(plan.whisperModel, plan.whisperDevice));
+    shared ??= new SpeechEngineStore(
+      getModelPlan,
+      (plan) => new WhisperSpeechToText(plan.whisperModel, plan.whisperDevice),
+      fallBackOneTier,
+    );
   }
   return shared;
 }

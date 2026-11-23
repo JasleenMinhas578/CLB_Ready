@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { SpeakingAttempt } from '@/domain/attempt';
+import type { Attempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
 import { GOAL_OPTIONS } from '@/domain/goals';
 import { getFeedbackEngine, type FeedbackRun } from '@/services/ai/feedbackEngine';
@@ -31,17 +31,24 @@ interface Job {
  */
 const jobs = new Map<string, Job>();
 
-function measuredFacts(attempt: SpeakingAttempt): string[] {
+/** Facts already measured in code, passed to the model so tips don't repeat them. */
+function measuredFacts(attempt: Attempt): string[] {
+  if (attempt.skill === 'speaking') {
+    const m = attempt.metrics;
+    return [
+      `pace ${m.wordsPerMinute} words per minute`,
+      `${m.longPauses.length} pauses over 2 seconds`,
+      `${m.fillerCount} filler words`,
+      `used ${Math.round(m.timeUsed * 100)}% of the time`,
+    ];
+  }
   const m = attempt.metrics;
-  return [
-    `pace ${m.wordsPerMinute} words per minute`,
-    `${m.longPauses.length} pauses over 2 seconds`,
-    `${m.fillerCount} filler words`,
-    `used ${Math.round(m.timeUsed * 100)}% of the time`,
-  ];
+  const facts = [`${m.wordCount} words`, `${m.paragraphs} paragraphs`, `${m.grammarIssues} spelling or grammar marks`];
+  if (m.email) facts.push(m.email.hasGreeting ? 'has a greeting' : 'no greeting', m.email.hasClosing ? 'has a closing' : 'no closing');
+  return facts;
 }
 
-function startJob(attempt: SpeakingAttempt): Job {
+function startJob(attempt: Attempt): Job {
   const job: Job = {
     progress: { phase: 'starting', modelProgress: null, written: 0 },
     listeners: new Set(),
@@ -69,11 +76,11 @@ function startJob(attempt: SpeakingAttempt): Job {
         taskTitle: attempt.taskTitle,
         promptText: attempt.promptText,
         checklist: attempt.checklist,
-        criteria: getCriteria('speaking'),
+        criteria: getCriteria(attempt.skill),
         goal: attempt.goal,
         goalLabel: GOAL_OPTIONS.find((option) => option.level === attempt.goal)?.label.toLowerCase(),
-        answer: attempt.transcript,
-        spoken: true,
+        answer: attempt.skill === 'speaking' ? attempt.transcript : attempt.text,
+        spoken: attempt.skill === 'speaking',
         measured: measuredFacts(attempt),
       });
       const run = await store.generate(system, user, (soFar) => update({ written: soFar.length }));
@@ -88,7 +95,7 @@ function startJob(attempt: SpeakingAttempt): Job {
   return job;
 }
 
-export function useFeedback(attempt: SpeakingAttempt | null) {
+export function useFeedback(attempt: Attempt | null) {
   const [outcome, setOutcome] = useState<FeedbackOutcome | null>(null);
   const [progress, setProgress] = useState<FeedbackProgress | null>(null);
 
