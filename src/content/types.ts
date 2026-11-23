@@ -1,5 +1,6 @@
 import type { Availability } from '@/domain/skills';
 import type { Tone } from '@/domain/measure/writingMetrics';
+import type { ListeningPart, ReadingPart } from './objective';
 
 export interface PromptImage {
   src: string;
@@ -43,11 +44,13 @@ export interface PracticePrompt {
   draft?: boolean;
 }
 
-/** A module = one full practice set (8 speaking + 2 writing prompts). */
+/** A module = one full practice set: 8 speaking and 2 writing prompts, 4 reading and 6 listening parts. */
 export interface PracticeModule {
   id: string;
   number: number;
   title: string;
   status: Availability;
   prompts: PracticePrompt[];
+  reading?: ReadingPart[];
+  listening?: ListeningPart[];
 }

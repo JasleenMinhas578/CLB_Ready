@@ -3,6 +3,8 @@ import { href } from '@/app/router';
 const PRACTICE_LINKS = [
   { label: 'Speaking practice', to: '/practice/speaking/module-1' },
   { label: 'Writing practice', to: '/practice/writing/module-1' },
+  { label: 'Reading practice', to: '/practice/reading/module-1' },
+  { label: 'Listening practice', to: '/practice/listening/module-1' },
   { label: 'Set your CLB goal', to: '/goal' },
 ];
 
@@ -21,7 +23,7 @@ export function Footer() {
             <img src="./favicon.svg" alt="" width={36} height={36} />
             <span>CLB Ready</span>
           </a>
-          <p className="footer-tagline">Free, private AI coaching for CELPIP-style speaking and writing practice.</p>
+          <p className="footer-tagline">Free, private AI coaching for CELPIP-style practice in all four skills.</p>
           <p className="footer-privacy">
             <span aria-hidden="true">🔒</span> Your answers never leave this device.
           </p>

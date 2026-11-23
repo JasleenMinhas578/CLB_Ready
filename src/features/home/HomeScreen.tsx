@@ -22,7 +22,7 @@ export function HomeScreen() {
         <div className="hero-copy">
           <h1>Get CELPIP-ready, one sweet answer at a time.</h1>
           <p className="hero-lede">
-            Practise speaking and writing with an AI coach that runs on your own device.
+            Practise speaking, writing, reading and listening, with an AI coach that runs on your own device.
             Free, timed like the real test, and private by design.
           </p>
           <div className="hero-actions">

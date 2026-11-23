@@ -38,11 +38,25 @@ export interface WritingTaskType extends BaseTaskType {
   wordRange: { min: number; max: number };
 }
 
-/**
- * Discriminated union on `skill`. Reading and listening task types
- * get their own interfaces here when those skills are built.
- */
-export type TaskType = SpeakingTaskType | WritingTaskType;
+export interface ReadingTaskType extends BaseTaskType {
+  skill: 'reading';
+  /** Suggested time for this part. The real test has one clock for the whole section. */
+  timing: { minutes: number };
+  questionCount: number;
+}
+
+export interface ListeningTaskType extends BaseTaskType {
+  skill: 'listening';
+  questionCount: number;
+  /** How many recordings the part has. Each plays once. */
+  clipCount: number;
+  /** Rough length of all recordings together, for the task list. */
+  audioMinutes: number;
+}
+
+/** Discriminated union on `skill`. */
+export type TaskType = SpeakingTaskType | WritingTaskType | ReadingTaskType | ListeningTaskType;
+export type ObjectiveTaskType = ReadingTaskType | ListeningTaskType;
 
 export function isSpeakingTask(task: TaskType): task is SpeakingTaskType {
   return task.skill === 'speaking';
@@ -50,4 +64,17 @@ export function isSpeakingTask(task: TaskType): task is SpeakingTaskType {
 
 export function isWritingTask(task: TaskType): task is WritingTaskType {
   return task.skill === 'writing';
+}
+
+export function isReadingTask(task: TaskType): task is ReadingTaskType {
+  return task.skill === 'reading';
+}
+
+export function isListeningTask(task: TaskType): task is ListeningTaskType {
+  return task.skill === 'listening';
+}
+
+/** Reading and listening: multiple-choice questions marked against an answer key. */
+export function isObjectiveTask(task: TaskType): task is ObjectiveTaskType {
+  return task.skill === 'reading' || task.skill === 'listening';
 }

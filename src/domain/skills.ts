@@ -41,16 +41,16 @@ export const SKILLS: readonly Skill[] = [
     name: 'Reading',
     emoji: '📖',
     flavour: 'blueberry',
-    status: 'coming-soon',
-    blurb: 'Read letters, diagrams and articles, then answer questions.',
+    status: 'available',
+    blurb: 'Read messages, charts and articles, then answer 38 questions in 4 parts.',
   },
   {
     id: 'listening',
     name: 'Listening',
     emoji: '🎧',
     flavour: 'grape',
-    status: 'coming-soon',
-    blurb: 'Listen to conversations and news, then answer questions.',
+    status: 'available',
+    blurb: 'Listen to conversations, news and talks, each played once, then answer 38 questions.',
   },
 ];
 

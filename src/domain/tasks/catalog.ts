@@ -2,7 +2,9 @@ import type { SkillId } from '../skills';
 import type { TaskType } from './types';
 
 /**
- * The 10 CELPIP-style task types.
+ * The CELPIP-style task types: 8 speaking, 2 writing, 4 reading parts and
+ * 6 listening parts. Reading and listening match CELPIP's published format
+ * (38 questions each).
  * TODO(before launch): confirm every timing against CELPIP's free official
  * sample test. Tasks 2 and 3 are confirmed by public prep sites.
  */
@@ -67,6 +69,66 @@ export const TASK_TYPES: readonly TaskType[] = [
     title: 'Responding to survey questions',
     summary: 'Pick one of two options and support your choice with reasons.',
     timing: { minutes: 26 }, wordRange: { min: 150, max: 200 },
+  },
+  {
+    id: 'reading-1', skill: 'reading', order: 1, needsImage: false,
+    title: 'Reading correspondence',
+    summary: 'Read a message and a reply, then answer questions about them.',
+    timing: { minutes: 11 }, questionCount: 11,
+  },
+  {
+    id: 'reading-2', skill: 'reading', order: 2, needsImage: false,
+    title: 'Reading to apply a diagram',
+    summary: 'Use information in a chart or schedule to complete an email.',
+    timing: { minutes: 9 }, questionCount: 8,
+  },
+  {
+    id: 'reading-3', skill: 'reading', order: 3, needsImage: false,
+    title: 'Reading for information',
+    summary: 'Match statements to the paragraphs of an article.',
+    timing: { minutes: 10 }, questionCount: 9,
+  },
+  {
+    id: 'reading-4', skill: 'reading', order: 4, needsImage: false,
+    title: 'Reading for viewpoints',
+    summary: 'Follow the opinions in an article and a reader’s comment.',
+    timing: { minutes: 13 }, questionCount: 10,
+  },
+  {
+    id: 'listening-1', skill: 'listening', order: 1, needsImage: false,
+    title: 'Listening to problem solving',
+    summary: 'Hear two people work through a problem, in three short parts.',
+    questionCount: 8, clipCount: 3, audioMinutes: 4,
+  },
+  {
+    id: 'listening-2', skill: 'listening', order: 2, needsImage: false,
+    title: 'Listening to a daily life conversation',
+    summary: 'Hear an everyday conversation and answer questions.',
+    questionCount: 5, clipCount: 1, audioMinutes: 2,
+  },
+  {
+    id: 'listening-3', skill: 'listening', order: 3, needsImage: false,
+    title: 'Listening for information',
+    summary: 'Hear someone explain a service or plan, then answer questions.',
+    questionCount: 6, clipCount: 1, audioMinutes: 2.5,
+  },
+  {
+    id: 'listening-4', skill: 'listening', order: 4, needsImage: false,
+    title: 'Listening to a news item',
+    summary: 'Hear a short news report and answer questions.',
+    questionCount: 5, clipCount: 1, audioMinutes: 1.5,
+  },
+  {
+    id: 'listening-5', skill: 'listening', order: 5, needsImage: false,
+    title: 'Listening to a discussion',
+    summary: 'Hear three people discuss a plan and answer questions.',
+    questionCount: 8, clipCount: 1, audioMinutes: 2,
+  },
+  {
+    id: 'listening-6', skill: 'listening', order: 6, needsImage: false,
+    title: 'Listening to viewpoints',
+    summary: 'Hear a talk that gives different views on a topic.',
+    questionCount: 6, clipCount: 1, audioMinutes: 3,
   },
 ];
 

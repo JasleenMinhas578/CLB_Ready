@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MODULES, moduleHasSkill } from '../src/content/modules';
+import { MODULES, moduleHasSkill, moduleTaskIds } from '../src/content/modules';
 import { TASK_TYPES, getTaskType, getTaskTypesForSkill } from '../src/domain/tasks/catalog';
 import { SKILLS } from '../src/domain/skills';
 
@@ -30,7 +30,7 @@ describe('content integrity', () => {
   });
 
   it('has a complete module 1 for practice', () => {
-    expect(MODULES[0].prompts.map((prompt) => prompt.taskTypeId).sort()).toEqual(TASK_TYPES.map((task) => task.id).sort());
+    expect(moduleTaskIds(MODULES[0]).sort()).toEqual(TASK_TYPES.map((task) => task.id).sort());
   });
 
   for (const practiceModule of MODULES) {
@@ -38,9 +38,8 @@ describe('content integrity', () => {
       it('has exactly one prompt per task type for each skill it has started', () => {
         for (const skill of SKILLS.filter((item) => moduleHasSkill(practiceModule, item.id))) {
           const expected = getTaskTypesForSkill(skill.id).map((task) => task.id).sort();
-          const covered = practiceModule.prompts
-            .filter((prompt) => getTaskType(prompt.taskTypeId)?.skill === skill.id)
-            .map((prompt) => prompt.taskTypeId)
+          const covered = moduleTaskIds(practiceModule)
+            .filter((id) => getTaskType(id)?.skill === skill.id)
             .sort();
           expect(covered, `${practiceModule.id} ${skill.id}`).toEqual(expected);
         }
