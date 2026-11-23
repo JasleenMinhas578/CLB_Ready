@@ -53,7 +53,7 @@ export const module1: PracticeModule = {
       checklist: ['Describes the object clearly', 'Explains what is unusual about it', 'Asks or suggests what the friend should do'],
     },
     {
-      id: 'm1-writing-1', taskTypeId: 'writing-1', draft: true,
+      id: 'm1-writing-1', taskTypeId: 'writing-1', draft: true, tone: 'formal',
       text: 'You recently bought a coffee machine online, but it arrived damaged. Write an email to the company. In your email: describe what you bought and when, explain the problem, and say what you would like the company to do.',
       checklist: ['Describes the purchase and date', 'Explains the damage', 'Makes a clear request', 'Uses a polite, formal tone'],
     },

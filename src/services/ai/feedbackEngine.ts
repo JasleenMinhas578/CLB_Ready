@@ -17,8 +17,12 @@ export interface FeedbackRun {
  * carries over between answers (privacy and memory).
  */
 export class FeedbackEngineStore extends ModelStore<FeedbackModel> {
-  constructor(getPlan: () => Promise<ModelPlan>, createEngine: (plan: ModelPlan) => FeedbackModel | null) {
-    super(getPlan, createEngine, (plan) => plan.feedbackModel?.replace(/-q4f(16|32)_1-MLC$/, '') ?? null);
+  constructor(
+    getPlan: () => Promise<ModelPlan>,
+    createEngine: (plan: ModelPlan) => FeedbackModel | null,
+    fallBack?: () => Promise<boolean>,
+  ) {
+    super(getPlan, createEngine, (plan) => plan.feedbackModel?.replace(/-q4f(16|32)_1-MLC$/, '') ?? null, fallBack);
   }
 
   async generate(system: string, user: string, onText?: (soFar: string) => void): Promise<FeedbackRun> {
@@ -43,12 +47,14 @@ let shared: FeedbackEngineStore | null = null;
 /** The app-wide store, created on first use so WebLLM loads lazily. */
 export async function getFeedbackEngine(): Promise<FeedbackEngineStore> {
   if (!shared) {
-    const [{ getModelPlan }, { WebLlmFeedbackModel }] = await Promise.all([
+    const [{ getModelPlan, fallBackOneTier }, { WebLlmFeedbackModel }] = await Promise.all([
       import('@/services/device/plan'),
       import('./webllmClient'),
     ]);
-    shared ??= new FeedbackEngineStore(getModelPlan, (plan) =>
-      plan.feedbackModel ? new WebLlmFeedbackModel(plan.feedbackModel) : null,
+    shared ??= new FeedbackEngineStore(
+      getModelPlan,
+      (plan) => (plan.feedbackModel ? new WebLlmFeedbackModel(plan.feedbackModel) : null),
+      fallBackOneTier,
     );
   }
   return shared;

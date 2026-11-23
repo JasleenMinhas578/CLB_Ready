@@ -52,8 +52,21 @@ function feedbackModelFor(tier: DeviceTier, shaderF16: boolean): string | null {
   }
 }
 
-export function planModels(signals: DeviceSignals): ModelPlan {
-  const tier = chooseTier(signals);
+/** From strongest to lightest. Falling back moves one step right. */
+export const TIER_ORDER: readonly DeviceTier[] = ['high', 'mid', 'low', 'no-webgpu'];
+
+export interface PlanOptions {
+  /** A tier the learner picked in Settings, instead of the detected one. */
+  tier?: DeviceTier;
+  /** How many tiers to step down after models failed to load. */
+  stepsDown?: number;
+}
+
+export function planModels(signals: DeviceSignals, options: PlanOptions = {}): ModelPlan {
+  // A chosen tier can't need a GPU the device doesn't have.
+  const start = signals.webgpu ? (options.tier ?? chooseTier(signals)) : 'no-webgpu';
+  const index = Math.min(TIER_ORDER.indexOf(start) + (options.stepsDown ?? 0), TIER_ORDER.length - 1);
+  const tier = TIER_ORDER[index];
   const whisper = { high: 'small.en', mid: 'base.en', low: 'tiny.en', 'no-webgpu': 'tiny.en' }[tier];
   const reasons: Record<DeviceTier, string> = {
     high: 'Strong GPU and plenty of memory: using the larger, smarter models.',
@@ -68,6 +81,6 @@ export function planModels(signals: DeviceSignals): ModelPlan {
     whisperDevice: signals.webgpu ? 'webgpu' : 'wasm',
     feedbackModel: feedbackModelFor(tier, signals.shaderF16),
     keepWhisperLoaded: tier === 'high' || tier === 'mid',
-    reason: reasons[tier],
+    reason: options.stepsDown ? `${reasons[tier]} (Switched down after a model didn’t load.)` : reasons[tier],
   };
 }

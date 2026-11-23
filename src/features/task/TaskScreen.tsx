@@ -9,6 +9,7 @@ import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
 import { SpeakingTask } from './SpeakingTask';
 import { WritingTask } from './WritingTask';
+import { ModelPlanBadge } from './ModelPlanBadge';
 
 function PromptImageArea({ task, prompt }: { task: TaskType; prompt: PracticePrompt }) {
   if (!task.needsImage) return null;
@@ -26,7 +27,7 @@ function PromptImageArea({ task, prompt }: { task: TaskType; prompt: PracticePro
 /** Picks the right flow for the task's skill. New skills add a branch here. */
 function TaskFlow({ task, prompt, moduleId }: { task: TaskType; prompt: PracticePrompt; moduleId: string }) {
   if (isSpeakingTask(task)) return <SpeakingTask key={task.id} task={task} prompt={prompt} moduleId={moduleId} />;
-  if (isWritingTask(task)) return <WritingTask key={task.id} task={task} />;
+  if (isWritingTask(task)) return <WritingTask key={task.id} task={task} prompt={prompt} moduleId={moduleId} />;
   return null;
 }
 
@@ -64,6 +65,7 @@ export function TaskScreen({ params }: { params: RouteParams }) {
 
         <TaskFlow task={task} prompt={prompt} moduleId={practiceModule.id} />
       </div>
+      <ModelPlanBadge needsSpeech={isSpeakingTask(task)} />
     </section>
   );
 }

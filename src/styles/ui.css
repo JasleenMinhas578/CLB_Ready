@@ -97,3 +97,10 @@ main:focus { outline: none; }
   background: #fff0f0; border: var(--line); border-color: var(--bubblegum-deep);
   border-radius: var(--radius-field); padding: var(--gap-2); font-weight: 700; max-width: none;
 }
+
+.header-nav { display: flex; align-items: center; gap: 0.6rem; }
+.icon-link {
+  display: grid; place-items: center; width: 40px; height: 40px; font-size: 1.2rem; text-decoration: none;
+  background: var(--white); border: var(--line); border-radius: 50%; box-shadow: var(--sticker-small);
+}
+.icon-link:hover { background: var(--lemon); }

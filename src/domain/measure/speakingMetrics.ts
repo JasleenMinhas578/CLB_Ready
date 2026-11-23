@@ -1,3 +1,16 @@
+import {
+  LINKING_PHRASES,
+  VAGUE_WORDS,
+  countPhrases,
+  normalizeWord,
+  repeatedContentWords,
+  tokens,
+  vocabularyVariety,
+} from './text';
+
+// Re-exported so existing imports keep working.
+export { LINKING_PHRASES, normalizeWord, vocabularyVariety };
+
 /**
  * Everything about a spoken answer that can be counted, measured in plain
  * code. Counting is more reliable in code than in a small AI model, so the
@@ -35,57 +48,10 @@ export interface SpeakingMetrics {
 }
 
 export const LONG_PAUSE_SECONDS = 2;
-const VARIETY_WINDOW = 40;
 
 /** Single-word fillers. Whisper often drops these, so counts are a minimum. */
 const FILLER_WORDS = new Set(['um', 'uh', 'er', 'erm', 'ah', 'hmm', 'mm', 'uhm']);
 const FILLER_PHRASES = ['you know', 'i mean'];
-
-/** General words that a higher-level answer would replace with precise ones. */
-const VAGUE_WORDS = new Set(['good', 'nice', 'bad', 'thing', 'things', 'stuff', 'okay', 'ok', 'very', 'really', 'great', 'lot']);
-
-/** Words and phrases that organize an answer. Matched as whole words. */
-export const LINKING_PHRASES = [
-  'first', 'firstly', 'second', 'secondly', 'finally', 'also', 'however', 'because', 'so', 'although',
-  'for example', 'for instance', 'in addition', 'moreover', 'besides', 'therefore', 'as a result',
-  'on the other hand', 'in my opinion', 'overall', 'in conclusion', 'another', 'then', 'after that',
-];
-
-/** Very common words, ignored when looking for over-repeated words. */
-const STOP_WORDS = new Set(
-  ('a an the and or but if so to of in on at for with by from up about into over after is are was were be been ' +
-    'am i you he she it we they me him her us them my your his its our their this that these those there here ' +
-    'do does did have has had can could will would should may might must not no yes as than then just also ' +
-    'what which who when where why how all any some more most other such only own same too very really')
-    .split(' '),
-);
-
-export function normalizeWord(word: string): string {
-  return word.toLowerCase().replace(/[^\p{L}\p{N}']/gu, '').replace(/^'+|'+$/g, '');
-}
-
-function tokens(text: string): string[] {
-  return text.split(/\s+/).map(normalizeWord).filter(Boolean);
-}
-
-/** Moving-average type-token ratio: fair across short and long answers. */
-export function vocabularyVariety(words: string[]): number {
-  if (words.length === 0) return 0;
-  if (words.length <= VARIETY_WINDOW) return new Set(words).size / words.length;
-  let total = 0;
-  const windows = words.length - VARIETY_WINDOW + 1;
-  for (let i = 0; i < windows; i += 1) total += new Set(words.slice(i, i + VARIETY_WINDOW)).size / VARIETY_WINDOW;
-  return total / windows;
-}
-
-function countPhrases(joined: string, phrases: string[]): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const phrase of phrases) {
-    const matches = joined.match(new RegExp(`(^| )${phrase}( |$)`, 'g'));
-    if (matches) counts.set(phrase, matches.length);
-  }
-  return counts;
-}
 
 export function measureSpeaking(input: {
   text: string;
@@ -112,17 +78,7 @@ export function measureSpeaking(input: {
   for (const [phrase, count] of countPhrases(joined, FILLER_PHRASES)) fillerCounts.set(phrase, count);
   const fillers = [...fillerCounts].map(([word, count]) => ({ word, count })).sort((a, b) => b.count - a.count);
 
-  const contentCounts = new Map<string, number>();
-  for (const word of words) {
-    if (!STOP_WORDS.has(word) && !FILLER_WORDS.has(word) && word.length > 2) {
-      contentCounts.set(word, (contentCounts.get(word) ?? 0) + 1);
-    }
-  }
-  const repeatedWords = [...contentCounts]
-    .filter(([, count]) => count >= 3)
-    .map(([word, count]) => ({ word, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+  const repeatedWords = repeatedContentWords(words, FILLER_WORDS);
 
   const spokenWords = words.filter((word) => !FILLER_WORDS.has(word));
 

@@ -29,6 +29,11 @@ describe('content integrity', () => {
         }
       });
 
+      it('sets a tone for the email task', () => {
+        const email = practiceModule.prompts.find((item) => item.taskTypeId === 'writing-1');
+        expect(email?.tone).toBeDefined();
+      });
+
       it('gives two options to the choice tasks', () => {
         for (const id of ['speaking-5', 'writing-2']) {
           const prompt = practiceModule.prompts.find((item) => item.taskTypeId === id);

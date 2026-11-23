@@ -5,6 +5,7 @@ import { GoalScreen } from '@/features/goal/GoalScreen';
 import { SkillScreen } from '@/features/skill/SkillScreen';
 import { TaskScreen } from '@/features/task/TaskScreen';
 import { ResultsScreen } from '@/features/results/ResultsScreen';
+import { SettingsScreen } from '@/features/settings/SettingsScreen';
 
 // The lab pulls in the AI libraries, so it loads only when opened.
 const LabScreen = lazy(() => import('@/features/lab/LabScreen'));
@@ -21,5 +22,6 @@ export const ROUTES: readonly RouteDef[] = [
   { pattern: '/practice/:skillId/:moduleId', component: SkillScreen },
   { pattern: '/task/:moduleId/:taskTypeId', component: TaskScreen },
   { pattern: '/results', component: ResultsScreen },
+  { pattern: '/settings', component: SettingsScreen },
   { pattern: '/lab', component: LabScreen },
 ];

@@ -1,8 +1,8 @@
 import type { SpeakingMetrics } from '@/domain/measure/speakingMetrics';
 
-type Tone = 'good' | 'ok' | 'work';
+export type Tone = 'good' | 'ok' | 'work';
 
-interface Tile {
+export interface Tile {
   label: string;
   value: string;
   note: string;
@@ -53,11 +53,11 @@ function tiles(m: SpeakingMetrics): Tile[] {
 
 const TONE_LABEL: Record<Tone, string> = { good: 'On track', ok: 'Close', work: 'Work on this' };
 
-/** What code measured, shown instantly while the AI is still writing. */
-export function MeasureTiles({ metrics }: { metrics: SpeakingMetrics }) {
+/** A grid of measurement tiles, coloured by how close each is to target. */
+export function TileList({ tiles: items }: { tiles: Tile[] }) {
   return (
     <ul className="measure-tiles">
-      {tiles(metrics).map((tile) => (
+      {items.map((tile) => (
         <li key={tile.label} className={`tone-${tile.tone}`}>
           <span className="tile-label">{tile.label}</span>
           <strong>{tile.value}</strong>
@@ -67,4 +67,9 @@ export function MeasureTiles({ metrics }: { metrics: SpeakingMetrics }) {
       ))}
     </ul>
   );
+}
+
+/** What code measured in a spoken answer, shown instantly while the AI is still writing. */
+export function MeasureTiles({ metrics }: { metrics: SpeakingMetrics }) {
+  return <TileList tiles={tiles(metrics)} />;
 }

@@ -314,3 +314,49 @@ a.skill-card::after {
   .measure-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .level-pair strong { font-size: var(--step-2); }
 }
+
+/* Week 4: writing results, settings, plan badge */
+.essay { white-space: pre-wrap; }
+.essay mark { padding: 0 0.15em; border-radius: 5px; color: var(--grape); }
+.essay sup { font-size: 0.65em; font-weight: 800; margin-left: 1px; }
+.mark-spelling { background: var(--blush); }
+.mark-grammar { background: #fff1a8; }
+.mark-punctuation { background: #d9dcff; }
+.issue-list { margin: var(--gap-1) 0 0; padding-left: 1.6rem; display: grid; gap: 0.3rem; font-size: 0.98rem; }
+.issue-kind {
+  display: inline-block; padding: 0 0.5em; font-size: 0.75rem; font-weight: 800; text-transform: capitalize;
+  border: 1.5px solid var(--grape); border-radius: var(--radius-pill);
+}
+.kind-spelling { background: var(--blush); }
+.kind-grammar { background: #fff1a8; }
+.kind-punctuation { background: #d9dcff; }
+
+.plan-badge {
+  max-width: none; margin: var(--gap-3) 0 0; font-size: var(--step--1); font-weight: 700; color: var(--grape-soft);
+}
+
+.model-rows { list-style: none; margin: 0 0 var(--gap-2); padding: 0; display: grid; gap: var(--gap-1); }
+.model-rows li {
+  display: grid; grid-template-columns: 9rem 1fr auto; gap: var(--gap-1); align-items: baseline;
+  padding: 0.6rem 0.9rem; background: var(--milk); border-radius: 14px;
+}
+.model-rows span { font-weight: 800; font-size: var(--step--1); }
+.model-rows strong { font-family: var(--font-display); font-weight: 600; overflow-wrap: anywhere; }
+.model-rows em { font-style: normal; font-size: var(--step--1); color: var(--grape-soft); font-weight: 700; }
+
+.tier-options { display: grid; gap: var(--gap-1); margin-bottom: var(--gap-2); }
+.tier-option {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; text-align: left;
+  padding: 0.8rem 1rem; background: var(--white); border: var(--line); border-radius: 18px; cursor: pointer;
+}
+.tier-option:hover:not(:disabled) { background: var(--milk-deep); }
+.tier-option.is-selected, .tier-option.is-selected:hover:not(:disabled) { background: var(--mint); box-shadow: var(--sticker-small); }
+.tier-option:disabled { opacity: 0.5; cursor: not-allowed; }
+.tier-option strong { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; }
+.tier-option span { font-size: 0.95rem; color: var(--grape-soft); }
+.tier-option.is-selected span { color: var(--grape); }
+.tier-option small { font-weight: 800; font-size: 0.8rem; }
+
+@media (max-width: 560px) {
+  .model-rows li { grid-template-columns: 1fr; gap: 0.1rem; }
+}

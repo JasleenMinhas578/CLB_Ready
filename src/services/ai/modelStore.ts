@@ -42,6 +42,8 @@ export abstract class ModelStore<E extends LoadableModel> {
     protected readonly getPlan: () => Promise<ModelPlan>,
     private readonly createEngine: (plan: ModelPlan) => E | null,
     private readonly displayName: (plan: ModelPlan) => string | null,
+    /** Called once if loading fails; return true to retry with a lighter plan. */
+    private readonly fallBack?: () => Promise<boolean>,
   ) {}
 
   subscribe = (listener: () => void) => {
@@ -72,7 +74,7 @@ export abstract class ModelStore<E extends LoadableModel> {
     return this.loading;
   }
 
-  private async load(): Promise<E> {
+  private async load(retried = false): Promise<E> {
     try {
       const plan = await this.getPlan();
       const engine = this.createEngine(plan);
@@ -81,14 +83,21 @@ export abstract class ModelStore<E extends LoadableModel> {
         throw new ModelUnavailableError();
       }
       this.setStatus({ state: 'loading', progress: 0, model: this.displayName(plan), error: null });
-      await engine.load((progress) => this.setStatus({ progress: progress.fraction }));
+      try {
+        await engine.load((progress) => this.setStatus({ progress: progress.fraction }));
+      } catch (error) {
+        // Free whatever was partly loaded before any retry.
+        await engine.unload().catch(() => undefined);
+        throw error;
+      }
       this.engine = engine;
       this.setStatus({ state: 'ready', progress: 1 });
       return engine;
     } catch (error) {
-      if (!(error instanceof ModelUnavailableError)) {
-        this.setStatus({ state: 'error', error: error instanceof Error ? error.message : String(error) });
-      }
+      if (error instanceof ModelUnavailableError) throw error;
+      // Often out of memory: try once more with the next lighter tier.
+      if (!retried && this.fallBack && (await this.fallBack())) return await this.load(true);
+      this.setStatus({ state: 'error', error: error instanceof Error ? error.message : String(error) });
       throw error;
     } finally {
       this.loading = null;

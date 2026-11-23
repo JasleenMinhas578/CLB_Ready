@@ -1,4 +1,5 @@
 import type { Availability } from '@/domain/skills';
+import type { Tone } from '@/domain/measure/writingMetrics';
 
 export interface PromptImage {
   src: string;
@@ -18,6 +19,8 @@ export interface PracticePrompt {
   text: string;
   /** Two options for speaking task 5 and writing task 2. */
   options?: [string, string];
+  /** Expected tone for email tasks (writing task 1). */
+  tone?: Tone;
   image?: PromptImage;
   /** Points a good answer covers. The feedback model ticks these off. */
   checklist: string[];

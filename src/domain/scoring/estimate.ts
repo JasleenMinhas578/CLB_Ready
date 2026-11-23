@@ -7,21 +7,31 @@ import type { SpeakingMetrics } from '../measure/speakingMetrics';
  */
 
 export type SpeakingCriterionId = 'content' | 'vocabulary' | 'listenability' | 'task';
-export type Scores = Record<SpeakingCriterionId, number>;
+export type WritingCriterionId = 'content' | 'vocabulary' | 'readability' | 'task';
+/** Scores keyed by criterion id. Defaults to speaking for existing callers. */
+export type Scores<K extends string = SpeakingCriterionId> = Record<K, number>;
 
 export const MIN_LEVEL = 4;
 export const MAX_LEVEL = 12;
-/** Code can spot problems, but can't tell a 10 from a 12. Only the model can lift past this. */
-const CODE_CEILING = 10;
 
 /** Share of each final score that comes from the AI model (the rest from code). */
-export type ScoringWeights = Record<SpeakingCriterionId, number>;
+export type ScoringWeights<K extends string = SpeakingCriterionId> = Record<K, number>;
 export const DEFAULT_SPEAKING_WEIGHTS: ScoringWeights = {
   content: 0.7,
   vocabulary: 0.5,
   listenability: 0.3,
   task: 0.6,
 };
+
+export const DEFAULT_WRITING_WEIGHTS: ScoringWeights<WritingCriterionId> = {
+  content: 0.7,
+  vocabulary: 0.5,
+  readability: 0.4,
+  task: 0.6,
+};
+
+/** Code can spot problems, but can't tell a 10 from a 12. */
+export const CODE_LEVEL_CEILING = 10;
 
 export function clampLevel(value: number, max = MAX_LEVEL): number {
   return Math.max(MIN_LEVEL, Math.min(max, Math.round(value)));
@@ -65,26 +75,33 @@ export function codeEstimates(metrics: SpeakingMetrics): Scores {
   const task = metrics.timeUsed >= 0.85 ? 9 : metrics.timeUsed >= 0.65 ? 8 : metrics.timeUsed >= 0.45 ? 7 : 5;
 
   return {
-    content: clampLevel(content, CODE_CEILING),
-    vocabulary: clampLevel(vocabulary, CODE_CEILING),
-    listenability: clampLevel(listenability, CODE_CEILING),
-    task: clampLevel(task, CODE_CEILING),
+    content: clampLevel(content, CODE_LEVEL_CEILING),
+    vocabulary: clampLevel(vocabulary, CODE_LEVEL_CEILING),
+    listenability: clampLevel(listenability, CODE_LEVEL_CEILING),
+    task: clampLevel(task, CODE_LEVEL_CEILING),
   };
 }
 
 /** Weighted blend. With no model scores (light mode), code scores stand alone. */
-export function blendScores(code: Scores, model: Partial<Scores> | null, weights = DEFAULT_SPEAKING_WEIGHTS): Scores {
+export function blendScores<K extends string = SpeakingCriterionId>(
+  code: Scores<K>,
+  model: Partial<Scores<K>> | null,
+  weights?: ScoringWeights<K>,
+): Scores<K> {
   if (!model) return code;
-  const blend = (id: SpeakingCriterionId) => {
+  const table = (weights ?? DEFAULT_SPEAKING_WEIGHTS) as Record<string, number>;
+  const result = { ...code };
+  for (const id of Object.keys(code) as K[]) {
     const fromModel = model[id];
-    if (typeof fromModel !== 'number' || Number.isNaN(fromModel)) return code[id];
-    return clampLevel(weights[id] * clampLevel(fromModel) + (1 - weights[id]) * code[id]);
-  };
-  return { content: blend('content'), vocabulary: blend('vocabulary'), listenability: blend('listenability'), task: blend('task') };
+    if (typeof fromModel !== 'number' || Number.isNaN(fromModel)) continue;
+    const weight = table[id] ?? 0.5;
+    result[id] = clampLevel(weight * clampLevel(fromModel) + (1 - weight) * code[id]);
+  }
+  return result;
 }
 
 /** Overall estimate: CELPIP reports one level per skill, so use the rounded mean. */
-export function overallLevel(scores: Scores): number {
-  const values = Object.values(scores);
+export function overallLevel<K extends string>(scores: Scores<K>): number {
+  const values = Object.values(scores) as number[];
   return clampLevel(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
