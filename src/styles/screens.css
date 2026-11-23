@@ -225,3 +225,44 @@ a.skill-card::after {
   .task-row { padding: var(--gap-2); }
   .task-go { display: none; }
 }
+
+/* Week 2: microphone, recording and transcript */
+.goal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 820px) { .goal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .goal-grid { grid-template-columns: 1fr; } }
+
+.level-meter { display: flex; align-items: flex-end; gap: 5px; height: 44px; }
+.level-meter span {
+  width: 12px; background: var(--white); border: 2px solid var(--grape); border-radius: 6px;
+  transition: background 0.08s linear;
+}
+.level-meter span.is-lit { background: var(--mint); }
+.level-meter span.is-lit:nth-child(n + 9) { background: var(--lemon); }
+.level-meter span.is-lit:nth-child(n + 12) { background: var(--bubblegum); }
+
+.mic-check { display: flex; flex-direction: column; align-items: center; gap: var(--gap-2); text-align: center; }
+.mic-check h2 { margin: 0; font-size: var(--step-1); }
+.mic-check p { margin: 0 auto; }
+.mic-verdict { font-weight: 800; color: var(--grape-soft); }
+.mic-verdict.is-good { color: var(--mint-deep); }
+
+.model-badge {
+  margin: 0; padding: 0.35rem 0.9rem; font-size: var(--step--1); font-weight: 800;
+  background: var(--white); border: 2px solid var(--grape); border-radius: var(--radius-pill);
+}
+.model-badge.is-ready { background: #e6fbf5; }
+.model-badge.is-error { background: #fff0f0; }
+.flow-done .model-badge { display: inline-block; }
+
+.transcript {
+  margin: var(--gap-2) 0; padding: var(--gap-2) var(--gap-3);
+  background: var(--white); border: var(--line); border-radius: var(--radius-field);
+  font-size: 1.05rem; line-height: 1.65;
+}
+.answer-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-1); margin-bottom: var(--gap-2); }
+.answer-stats div {
+  display: flex; flex-direction: column; align-items: center; padding: 0.6rem;
+  background: var(--white); border: 2px solid var(--grape); border-radius: 16px; text-align: center;
+}
+.answer-stats strong { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.1; }
+.answer-stats span { font-size: var(--step--1); color: var(--grape-soft); font-weight: 700; }
