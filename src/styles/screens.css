@@ -395,3 +395,7 @@ a.skill-card::after {
 .diff-summary .diff-key { padding: 0.1em 0.55em; border-radius: var(--radius-pill); }
 .diff-summary .key-added { background: #c9f3e6; color: #0f5a4a; }
 .diff-summary .key-removed { background: #ffe0ea; color: #9b2450; }
+
+/* Calibration notes */
+.checked-by { margin-left: auto; padding: 0 0.5em; font-size: 0.75rem; font-weight: 800; color: var(--mint-deep); border: 1.5px solid var(--mint-deep); border-radius: var(--radius-pill); white-space: nowrap; }
+.score-note { color: var(--grape); background: #fff8e0; padding: 0.4rem 0.7rem; border-radius: 10px; max-width: none; }

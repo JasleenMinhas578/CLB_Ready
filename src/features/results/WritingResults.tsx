@@ -5,8 +5,10 @@ import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstim
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
 import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { EssayView } from './EssayView';
+import { dropOutlierScores } from '@/domain/scoring/outliers';
+import { mergeChecklist } from '@/domain/scoring/autoChecks';
 import { TileList, type Tile } from './MeasureTiles';
 import { MIN_SCORABLE_WRITING_WORDS, MIN_SENTENCES_FOR_VARIETY, MIN_WORDS_FOR_VARIETY, isScorable, lengthCeiling, plural } from '@/domain/scoring/sufficiency';
 
@@ -93,11 +95,14 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
     );
   }
 
-  const modelScores: Partial<Scores<WritingCriterionId>> | null = ai
+  const codeScores = codeEstimatesWriting(attempt.metrics);
+  const rawModel: Partial<Scores<WritingCriterionId>> | null = ai
     ? { content: ai.scores.content, vocabulary: ai.scores.vocabulary, readability: ai.scores.delivery, task: ai.scores.task }
     : null;
+  const checked = rawModel ? dropOutlierScores(rawModel, codeScores) : null;
   const ceiling = lengthCeiling(attempt.metrics.wordCount, attempt.metrics.wordRange.min);
-  const scores = blendScores(codeEstimatesWriting(attempt.metrics), modelScores, DEFAULT_WRITING_WEIGHTS, ceiling);
+  const scores = blendScores(codeScores, checked?.scores ?? null, DEFAULT_WRITING_WEIGHTS, ceiling);
+  const checklist = mergeChecklist(attempt.checklist, ai?.checklist ?? null, attempt.text, attempt.metrics);
   const overall = overallLevel(scores);
   const final = outcome !== null;
 
@@ -115,10 +120,11 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
         overall={overall}
         final={final}
         status={<AiStatus outcome={outcome} progress={progress} />}
+        notes={outlierNotes(checked?.ignored ?? [], getCriteria('writing'))}
       />
       <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, writingTips(attempt.metrics, attempt.goal, attempt.options), !!ai)} />
       {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken={false} original={attempt.text} />}
-      <ChecklistCard items={attempt.checklist} results={ai?.checklist ?? null} final={final} />
+      <ChecklistCard items={attempt.checklist} results={checklist} final={final} />
       <div className="results-card">
         <h2>What we measured</h2>
         <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />

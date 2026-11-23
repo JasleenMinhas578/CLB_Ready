@@ -1,4 +1,4 @@
-import { LINKING_PHRASES, VAGUE_WORDS, countPhrases, repeatedContentWords, tokens, vocabularyVariety } from './text';
+import { LINKING_PHRASES, VAGUE_WORDS, countPhrases, longWordShare, repeatedContentWords, tokens, vocabularyVariety } from './text';
 
 /** Everything countable about a written answer, measured in plain code. */
 export interface WritingMetrics {
@@ -10,6 +10,8 @@ export interface WritingMetrics {
   /** Spread of sentence lengths in words; higher means more varied sentences. */
   sentenceVariety: number;
   variety: number;
+  /** Share of words with 7+ letters. */
+  longWords: number;
   vagueWords: string[];
   repeatedWords: { word: string; count: number }[];
   linkingWords: string[];
@@ -41,6 +43,10 @@ const GREETING = /^\s*(dear|hello|hi|hey|good (morning|afternoon|evening)|to who
 const CLOSING = /\b(sincerely|regards|best wishes|best|yours truly|yours faithfully|yours|thank you|thanks|cheers|warm wishes|take care|respectfully|cordially)\b/i;
 const CONTRACTION = /\b\w+(?:'|’)(?:t|s|re|ve|ll|d|m)\b/gi;
 const INFORMAL = new Set(['gonna', 'wanna', 'gotta', 'kinda', 'sorta', 'yeah', 'yep', 'nope', 'hey', 'lol', 'btw', 'stuff', 'guys', 'cool', 'awesome', 'ok', 'okay']);
+/** Contractions typed without the apostrophe, common in quick, casual writing. */
+const BARE_CONTRACTIONS = new Set(['dont', 'cant', 'wont', 'im', 'ive', 'didnt', 'doesnt', 'isnt', 'wasnt', 'couldnt', 'wouldnt', 'shouldnt', 'thats', 'theres', 'youre', 'theyre', 'havent', 'arent']);
+/** A greeting that's fine for friends but too casual for a formal email. */
+const CASUAL_GREETING = /^\s*(hi|hey|hello|yo)\b/i;
 const CHOICE_PHRASES = /\b(i (would )?(prefer|choose|pick|support|vote for|recommend|favou?r|think .{0,30} better)|my (choice|preference|vote) (is|would be)|i am in favou?r of|the better option is)\b/i;
 
 function sentencesOf(text: string): string[] {
@@ -80,8 +86,11 @@ function checkSurvey(text: string, options: [string, string]): SurveyChecks {
 }
 
 function checkEmail(text: string, expectedTone: Tone, words: string[]): EmailChecks {
-  const contractions = [...new Set((text.match(CONTRACTION) ?? []).map((word) => word.toLowerCase()))];
+  const contractions = [
+    ...new Set([...(text.match(CONTRACTION) ?? []).map((word) => word.toLowerCase()), ...words.filter((word) => BARE_CONTRACTIONS.has(word))]),
+  ];
   const informalWords = [...new Set(words.filter((word) => INFORMAL.has(word)))];
+  if (expectedTone === 'formal' && CASUAL_GREETING.test(text)) informalWords.unshift(text.trim().split(/[\s,]/)[0].toLowerCase());
   const toneMismatch = expectedTone === 'formal' && (contractions.length >= 3 || informalWords.length >= 1);
   return {
     expectedTone,
@@ -114,6 +123,7 @@ export function measureWriting(input: {
     avgSentenceLength: sentenceLengths.length ? words.length / sentenceLengths.length : 0,
     sentenceVariety: stdDev(sentenceLengths),
     variety: vocabularyVariety(words),
+    longWords: longWordShare(words),
     vagueWords: [...new Set(words.filter((word) => VAGUE_WORDS.has(word)))],
     repeatedWords: repeatedContentWords(words),
     linkingWords: [...countPhrases(words.join(' '), LINKING_PHRASES).keys()],

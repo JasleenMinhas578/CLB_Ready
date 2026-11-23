@@ -4,9 +4,10 @@ import { blendScores, codeEstimates, overallLevel, type Scores } from '@/domain/
 import { codeTips } from '@/domain/scoring/codeTips';
 import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { MIN_SCORABLE_SPEAKING_WORDS, isScorable, lengthCeiling } from '@/domain/scoring/sufficiency';
 import { TranscriptView } from './TranscriptView';
+import { dropOutlierScores } from '@/domain/scoring/outliers';
 import { MeasureTiles } from './MeasureTiles';
 
 export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
@@ -42,11 +43,13 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
     );
   }
 
-  const modelScores: Partial<Scores> | null = ai
+  const codeScores = codeEstimates(attempt.metrics);
+  const rawModel: Partial<Scores> | null = ai
     ? { content: ai.scores.content, vocabulary: ai.scores.vocabulary, listenability: ai.scores.delivery, task: ai.scores.task }
     : null;
+  const checked = rawModel ? dropOutlierScores(rawModel, codeScores) : null;
   const ceiling = lengthCeiling(attempt.metrics.wordCount, attempt.metrics.answerSeconds * 2);
-  const scores = blendScores(codeEstimates(attempt.metrics), modelScores, undefined, ceiling);
+  const scores = blendScores(codeScores, checked?.scores ?? null, undefined, ceiling);
   const overall = overallLevel(scores);
   const final = outcome !== null;
 
@@ -64,10 +67,11 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
         overall={overall}
         final={final}
         status={<AiStatus outcome={outcome} progress={progress} />}
+        notes={outlierNotes(checked?.ignored ?? [], getCriteria('speaking'))}
       />
       <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
       {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken original={attempt.transcript} />}
-      <ChecklistCard items={attempt.checklist} results={ai?.checklist ?? null} final={final} />
+      <ChecklistCard items={attempt.checklist} results={ai ? ai.checklist.map((row) => ({ met: row.met })) : null} final={final} />
       <div className="results-card">
         <h2>What we measured</h2>
         <MeasureTiles metrics={attempt.metrics} />

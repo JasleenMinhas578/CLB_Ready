@@ -29,6 +29,8 @@ export const LINKING_PHRASES = [
   'for example', 'for instance', 'in addition', 'moreover', 'besides', 'therefore', 'as a result',
   'on the other hand', 'in my opinion', 'overall', 'in conclusion', 'another', 'then', 'after that',
   'furthermore', 'consequently', 'in fact', 'while', 'whereas', 'since',
+  'unfortunately', 'instead', 'rather than', 'alternatively', 'otherwise', 'in that case', 'meanwhile',
+  'for this reason', 'as well as', 'not only', 'even though', 'as long as', 'on top of that', 'to sum up',
 ];
 
 /** Very common words, ignored when looking for over-repeated words. */
@@ -61,4 +63,10 @@ export function repeatedContentWords(words: string[], ignore: Set<string> = new 
     .map(([word, count]) => ({ word, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
+}
+
+/** Share of words with 7 or more letters: a simple sign of precise, less basic vocabulary. */
+export function longWordShare(words: string[]): number {
+  if (words.length === 0) return 0;
+  return words.filter((word) => word.replace(/[^\p{L}]/gu, '').length >= 7).length / words.length;
 }

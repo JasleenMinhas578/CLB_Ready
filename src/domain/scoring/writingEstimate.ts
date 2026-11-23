@@ -18,20 +18,24 @@ export function codeEstimatesWriting(m: WritingMetrics): Scores<WritingCriterion
   }
   if (m.survey && m.survey.chosen === null) task -= 2;
 
-  // Readability: paragraphs, grammar, sentence variety.
+  // Readability: paragraphs, grammar, sentence variety and length.
   let readability = m.paragraphs >= 3 ? 9 : m.paragraphs === 2 ? 8 : 6;
   const issuesPer100 = m.wordCount ? (m.grammarIssues / m.wordCount) * 100 : 0;
   if (issuesPer100 > 4) readability -= 2;
   else if (issuesPer100 > 2) readability -= 1;
   if (m.sentences >= MIN_SENTENCES_FOR_VARIETY && m.sentenceVariety < 3) readability -= 1;
+  // Very short sentences read as choppy and basic; very long ones as run-on.
   if (m.avgSentenceLength > 30) readability -= 1;
-  if (issuesPer100 === 0 && m.paragraphs >= 3 && m.sentenceVariety >= 5) readability += 1;
+  else if (m.sentences >= MIN_SENTENCES_FOR_VARIETY && m.avgSentenceLength < 12) readability -= 1;
+  const polished = issuesPer100 === 0 && m.paragraphs >= 3 && m.sentenceVariety >= 5 && m.avgSentenceLength >= 14;
+  if (polished) readability += 1;
 
-  // Vocabulary: variety, minus general words and repetition.
+  // Vocabulary: variety and precise (longer) words, minus general words and repetition.
   // Variety means little in a handful of words, so short answers get a neutral 6.
   let vocabulary =
-    m.wordCount < MIN_WORDS_FOR_VARIETY ? 6 : m.variety >= 0.78 ? 10 : m.variety >= 0.7 ? 9 : m.variety >= 0.62 ? 8 : m.variety >= 0.54 ? 7 : 6;
-  if (m.vagueWords.length >= 4) vocabulary -= 1;
+    m.wordCount < MIN_WORDS_FOR_VARIETY ? 6 : m.variety >= 0.82 ? 10 : m.variety >= 0.76 ? 9 : m.variety >= 0.7 ? 8 : m.variety >= 0.62 ? 7 : 6;
+  if (m.longWords < 0.12) vocabulary -= 1;
+  if (m.vagueWords.length >= 2) vocabulary -= 1;
   if (m.repeatedWords.some((word) => word.count >= 5)) vocabulary -= 1;
 
   // Content and coherence: connectors and enough development.

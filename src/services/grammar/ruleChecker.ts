@@ -71,6 +71,13 @@ const RULES: Rule[] = [
       return null;
     }),
 
+  // "can not" → "cannot" (but "can not only" is fine).
+  (text) =>
+    eachMatch(text, /\b(can) not\b(?! only)/i, (m) => ({
+      start: m.index, end: m.index + m[0].length, kind: 'spelling',
+      message: 'Write "cannot" as one word.', suggestion: m[1] === 'Can' ? 'Cannot' : 'cannot',
+    })),
+
   // "could of" → "could have".
   (text) =>
     eachMatch(text, /\b(could|would|should|must|might)\s+of\b/i, (m) => ({
