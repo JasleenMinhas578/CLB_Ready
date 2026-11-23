@@ -4,7 +4,7 @@ import { useSession } from '@/app/session';
 import { getSkill } from '@/domain/skills';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isSpeakingTask, type TaskType } from '@/domain/tasks/types';
-import { MODULES, getModule } from '@/content/modules';
+import { MODULES, getModule, moduleHasSkill } from '@/content/modules';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
@@ -36,7 +36,9 @@ export function SkillScreen({ params }: { params: RouteParams }) {
     );
   }
 
-  const tasks = getTaskTypesForSkill(skill.id);
+  const tasks = getTaskTypesForSkill(skill.id).filter((task) =>
+    practiceModule.prompts.some((prompt) => prompt.taskTypeId === task.id),
+  );
 
   return (
     <section>
@@ -53,7 +55,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
 
       <nav className="module-tabs" aria-label="Practice modules">
         {MODULES.map((item) =>
-          item.status === 'available' ? (
+          moduleHasSkill(item, skill.id) ? (
             <a
               key={item.id}
               href={href(`/practice/${skill.id}/${item.id}`)}

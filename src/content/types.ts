@@ -17,6 +17,8 @@ export interface PracticePrompt {
   taskTypeId: string;
   /** The instructions shown to the learner. */
   text: string;
+  /** Bullet points under the instructions, e.g. what an email must cover. */
+  points?: string[];
   /** Two options for speaking task 5 and writing task 2. */
   options?: [string, string];
   /** Expected tone for email tasks (writing task 1). */

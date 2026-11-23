@@ -54,12 +54,14 @@ export const module1: PracticeModule = {
     },
     {
       id: 'm1-writing-1', taskTypeId: 'writing-1', draft: true, tone: 'formal',
-      text: 'You recently bought a coffee machine online, but it arrived damaged. Write an email to the company. In your email: describe what you bought and when, explain the problem, and say what you would like the company to do.',
+      text: 'You recently bought a coffee machine online, but it arrived damaged. Write an email to the company. In your email, do the following:',
+      points: ['Describe what you bought and when', 'Explain the problem', 'Say what you would like the company to do'],
       checklist: ['Describes the purchase and date', 'Explains the damage', 'Makes a clear request', 'Uses a polite, formal tone'],
     },
     {
       id: 'm1-writing-2', taskTypeId: 'writing-2', draft: true,
-      text: 'Your city has money for one new project. Which do you prefer? Choose one option and explain why.',
+      text: 'Your city has money for one new project and is asking residents which they prefer. Choose the option you prefer, then explain the reasons for your choice.',
+      points: ['Choose Option A or Option B', 'Explain the reasons for your choice', 'Write 150 to 200 words'],
       options: ['A new public swimming pool', 'More bike lanes across the city'],
       checklist: ['Clearly picks one option', 'Gives at least two reasons', 'Supports reasons with details'],
     },
