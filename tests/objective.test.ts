@@ -61,6 +61,16 @@ describe('reading and listening content', () => {
           }
         });
 
+        it('does not give the answer away by making it much longer than the others', () => {
+          const parts = skill === 'reading' ? practiceModule.reading ?? [] : practiceModule.listening ?? [];
+          const tells = parts.flatMap(partQuestions).filter((question) => {
+            const correct = question.options[question.answer].length;
+            const longestWrong = Math.max(...question.options.filter((_, index) => index !== question.answer).map((option) => option.length));
+            return question.options.length === 4 && correct > longestWrong * 1.3;
+          });
+          expect(tells.map((question) => question.id), 'answers much longer than every wrong option').toEqual([]);
+        });
+
         it('does not put most answers in the same position', () => {
           const parts = skill === 'reading' ? practiceModule.reading ?? [] : practiceModule.listening ?? [];
           const fourWay = parts.flatMap(partQuestions).filter((question) => question.options.length === 4);

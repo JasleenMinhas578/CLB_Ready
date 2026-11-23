@@ -73,6 +73,14 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
         <div className="exam-panel listening-panel">
           <p className="exam-instructions-inline">{part.instructions}</p>
           <p className="listening-intro">{clip.intro}</p>
+          {player.state === 'preparing' && (
+            <p className="ai-voice-status" aria-live="polite">
+              <span className="spinner" aria-hidden="true" />
+              {player.voiceLoading !== null
+                ? `Downloading the AI voice${player.voiceLoading ? ` (${Math.round(player.voiceLoading * 100)}%)` : ''}. This happens once, then it’s saved in your browser.`
+                : 'Getting the voices ready…'}
+            </p>
+          )}
           {player.state === 'ready' && (
             <div className="exam-message">
               <p>The recording plays once. You can’t pause or replay it, so take notes if that helps.</p>
@@ -87,9 +95,13 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
               </div>
             </div>
           )}
-          {player.source === 'browser' && (
+          {player.source && player.state !== 'preparing' && (
             <p className="exam-note">
-              Using your browser’s voice for now. Recorded voices will replace it once the audio files are added.
+              {player.source === 'ai'
+                ? 'Voices made by Kokoro, an AI voice model running in your browser. Nothing is sent anywhere.'
+                : player.source === 'recorded'
+                  ? 'Recorded with Kokoro AI voices.'
+                  : 'The AI voice couldn’t run on this device, so your browser’s own voice is reading the recording.'}
             </p>
           )}
         </div>

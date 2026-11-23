@@ -27,7 +27,7 @@ export const module1Listening: ListeningPart[] = [
           },
           {
             id: 'm1l1c1-2', text: 'Why can’t they take the smaller car?',
-            options: ['It doesn’t have room for three people and the gift', 'It costs too much', 'It won’t be ready until Monday', 'It was in an accident'],
+            options: ['It doesn’t have room for three people and the gift', 'It costs much more than the car they booked', 'It won’t be ready until Monday afternoon', 'It was damaged in the same accident'],
             answer: 0,
             why: 'The only car left is a two-seater, and they have Raj’s mother and a huge gift.',
           },
@@ -127,25 +127,25 @@ export const module1Listening: ListeningPart[] = [
         questions: [
           {
             id: 'm1l2c1-1', text: 'Why is Sofia calling Mr. Grant?',
-            options: ['Her dishwasher is broken', 'Water is leaking through her kitchen ceiling', 'She locked herself out', 'Her kitchen light won’t turn on'],
+            options: ['Her new dishwasher is leaking onto the floor', 'Water is leaking through her kitchen ceiling', 'She has locked herself out of her apartment', 'Her kitchen light won’t turn on this morning'],
             answer: 1,
             why: 'Sofia: “There’s water coming through my kitchen ceiling.”',
           },
           {
             id: 'm1l2c1-2', text: 'What does Mr. Grant think caused the problem?',
-            options: ['A new appliance in the apartment upstairs', 'Heavy rain on the roof', 'An old pipe in Sofia’s kitchen', 'Sofia’s bucket overflowing'],
+            options: ['A new appliance in the apartment upstairs', 'Heavy rain coming in through the roof', 'An old water pipe inside Sofia’s kitchen', 'Sofia’s bucket overflowing during the night'],
             answer: 0,
             why: 'The tenant in 404 “had a new dishwasher put in last week.”',
           },
           {
             id: 'm1l2c1-3', text: 'What does Mr. Grant ask Sofia to do?',
-            options: ['Call a plumber herself', 'Stay home until ten', 'Fix the light', 'Turn off the power to her kitchen'],
+            options: ['Call a plumber herself this morning', 'Stay home from work until ten', 'Fix the light before she leaves', 'Turn off the power to her kitchen'],
             answer: 3,
             why: '“Can you switch off the kitchen breaker?”',
           },
           {
             id: 'm1l2c1-4', text: 'How will the plumber get into the apartment?',
-            options: ['Sofia will leave the door open', 'A neighbour will open the door', 'Mr. Grant will let him in with a master key', 'Sofia will come home at ten'],
+            options: ['Sofia will leave her door unlocked for them', 'A neighbour from 404 will open the door', 'Mr. Grant will let him in with a master key', 'Sofia will come home from work at ten'],
             answer: 2,
             why: '“I’ll use my master key and let us in.”',
           },
@@ -190,25 +190,25 @@ export const module1Listening: ListeningPart[] = [
           },
           {
             id: 'm1l3c1-2', text: 'What do you need to borrow an item?',
-            options: ['A special tools card', 'A deposit of two dollars', 'A letter from a neighbour', 'A library card that is at least three months old'],
+            options: ['A special tools card from the front desk', 'A cash deposit of two dollars for each item', 'A letter from a neighbour or employer', 'A library card that is at least three months old'],
             answer: 3,
             why: '“Your account has to be at least three months old.”',
           },
           {
             id: 'm1l3c1-3', text: 'Why can tents be kept for fourteen days?',
-            options: ['They are hard to clean', 'Nobody else wants them', 'People usually need them for trips or weekend projects', 'They take a long time to set up'],
+            options: ['They are hard to clean and dry after each use', 'Nobody else at the library usually wants them', 'People usually need them for trips or weekend projects', 'They take people a long time to set up properly'],
             answer: 2,
             why: '“People usually need them for a trip or a weekend project.”',
           },
           {
             id: 'm1l3c1-4', text: 'Why does the library charge a late fee for items?',
-            options: ['Items are expensive to repair', 'Other people are often waiting for them', 'Books have late fees too', 'The fees pay for new tools'],
+            options: ['Items are very expensive to repair or replace', 'Other people are often waiting for them', 'Books have always had late fees as well', 'The fees help pay for buying new tools'],
             answer: 1,
             why: '“We charge for those because other people are often waiting for them.”',
           },
           {
             id: 'm1l3c1-5', text: 'What does Hannah suggest about the telescope?',
-            options: ['Signing up soon because the wait is long', 'Borrowing it for fourteen days', 'Buying one instead', 'Coming back next week to check'],
+            options: ['Signing up soon because the wait is long', 'Borrowing it for fourteen days instead of seven', 'Buying one from a store instead of waiting', 'Coming back next week to see if it’s free'],
             answer: 0,
             why: '“The wait for the telescope is about three weeks, so… I’d sign up today.”',
           },
@@ -239,7 +239,7 @@ export const module1Listening: ListeningPart[] = [
         questions: [
           {
             id: 'm1l4c1-1', text: 'Where did the moose stop inside the mall?',
-            options: ['In the parking lot', 'At a flower shop', 'Near the food court fountain', 'In the loading dock'],
+            options: ['Outside in the parking lot', 'Inside a flower shop', 'Near the food court fountain', 'Behind the loading dock'],
             answer: 2,
             why: 'It settled “near the food court fountain.”',
           },
@@ -263,7 +263,7 @@ export const module1Listening: ListeningPart[] = [
           },
           {
             id: 'm1l4c1-5', text: 'Why are moose coming closer to town?',
-            options: ['People are feeding them', 'There is less snow this year', 'Highway construction is disturbing their habitat', 'The forest was cut down for a mall'],
+            options: ['People in town have been feeding them', 'There has been much less snow this year', 'Highway construction is disturbing their habitat', 'Part of the forest was cut down for a mall'],
             answer: 2,
             why: 'Construction of a new highway “has pushed wildlife closer to homes.”',
           },
@@ -302,7 +302,7 @@ export const module1Listening: ListeningPart[] = [
           },
           {
             id: 'm1l5c1-2', text: 'Why does Leo want to improve the meeting room?',
-            options: ['Video calls freeze in front of clients', 'It is too small', 'It is too noisy', 'It has no chairs'],
+            options: ['Video calls freeze in front of clients', 'It is too small for the whole team', 'It is next to the noisy open area', 'It doesn’t have enough chairs for clients'],
             answer: 0,
             why: '“Half our video calls freeze, and clients notice.”',
           },
@@ -326,7 +326,7 @@ export const module1Listening: ListeningPart[] = [
           },
           {
             id: 'm1l5c1-6', text: 'When will they buy headphones instead of panels?',
-            options: ['If the panels cost more than $800', 'If Mei agrees', 'If the printer is moved', 'If head office says yes'],
+            options: ['If the panels cost more than $800', 'If Mei agrees to pay part of it', 'If the printer is moved somewhere else', 'If head office gives them more money'],
             answer: 0,
             why: 'Karen: “If they cost more than eight hundred, we’ll go with Mei’s headphones.”',
           },
@@ -376,19 +376,19 @@ export const module1Listening: ListeningPart[] = [
           },
           {
             id: 'm1l6c1-3', text: 'What hiring benefit does the host mention?',
-            options: ['Hiring fewer managers', 'Hiring workers from other countries', 'Paying lower salaries to new staff', 'Attracting skilled workers without raising pay'],
+            options: ['Hiring fewer managers for each team', 'Hiring skilled workers from other countries', 'Paying lower salaries to new staff members', 'Attracting skilled workers without raising pay'],
             answer: 3,
             why: 'Companies “may find it easier to attract skilled people without raising salaries.”',
           },
           {
             id: 'm1l6c1-4', text: 'What problem do hospitals and stores face?',
-            options: ['They lose customers on Fridays', 'Their workers refuse to try it', 'They need more staff or longer shifts to cover the extra day', 'The government does not allow it'],
+            options: ['They lose many customers on Fridays and weekends', 'Their workers refuse to try a shorter week at all', 'They need more staff or longer shifts to cover the extra day', 'The government does not allow them to change hours'],
             answer: 2,
             why: 'It “usually means hiring more staff or asking people to work longer days.”',
           },
           {
             id: 'm1l6c1-5', text: 'What does Paul Mensah recommend?',
-            options: ['A four-day week for every company', 'Letting teams choose schedules and focusing on results', 'Keeping the five-day week', 'Shorter days only for office workers'],
+            options: ['A four-day week for every company in the country', 'Letting teams choose schedules and focusing on results', 'Keeping the five-day week but with longer breaks', 'Shorter workdays, but only for office workers'],
             answer: 1,
             why: 'He argues for focusing “on results rather than hours” and letting teams choose.',
           },
