@@ -1,3 +1,4 @@
+import { clearProgress, useProgress } from '@/services/progress/progress';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
@@ -46,7 +47,7 @@ function formatBytes(bytes: number | null): string {
 
 /**
  * Shows which models run and why, lets the learner switch, and deletes
- * downloaded models. Nothing here is saved; it resets when the tab closes.
+ * downloaded models, and lets the learner clear their saved progress ticks.
  */
 export function SettingsScreen() {
   const [report, setReport] = useState<DeviceReport | null>(null);
@@ -166,6 +167,8 @@ export function SettingsScreen() {
         <p className="fine-print">These details stay in your browser. They are never sent anywhere.</p>
       </div>
 
+      <ProgressCard />
+
       <div className="results-card">
         <h2>Downloaded models</h2>
         <p>
@@ -182,5 +185,30 @@ export function SettingsScreen() {
         )}
       </div>
     </section>
+  );
+}
+
+/** How many tasks are ticked, with a button to clear them. */
+function ProgressCard() {
+  const progress = useProgress();
+  const [confirm, setConfirm] = useState(false);
+  const done = Object.keys(progress).length;
+  return (
+    <div className="results-card">
+      <h2>Your progress</h2>
+      <p>
+        {done ? `You’ve finished ${done} ${done === 1 ? 'task' : 'tasks'}.` : 'No finished tasks yet.'} Ticks are saved in this
+        browser only. Only which tasks you finished is kept, never your answers or recordings.
+      </p>
+      {done > 0 &&
+        (confirm ? (
+          <div className="row-actions">
+            <Button onClick={() => { clearProgress(); setConfirm(false); }}>Yes, clear my ticks</Button>
+            <Button variant="secondary" onClick={() => setConfirm(false)}>Keep them</Button>
+          </div>
+        ) : (
+          <Button variant="secondary" onClick={() => setConfirm(true)}>Clear progress</Button>
+        ))}
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { VOICES, clipAudioPath, type ListeningClip } from '@/content/objective';
 import { getVoiceEngine } from '@/services/tts/voiceEngine';
 import type { SpokenLine } from '@/services/tts/types';
+import { playBuffer, sleep } from '@/services/tts/playback';
 
 /** `preparing` = getting voices ready; Play is enabled once the first line exists. */
 export type PlayerState = 'preparing' | 'ready' | 'playing' | 'done';
@@ -179,22 +180,6 @@ export function useClipPlayer(moduleId: string, clip: ListeningClip) {
   }, [state, source, playRecorded, playAi, readWithBrowser]);
 
   return { state, progress, source, voiceLoading, play };
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-function playBuffer(context: AudioContext, line: SpokenLine): Promise<void> {
-  return new Promise((resolve) => {
-    const buffer = context.createBuffer(1, line.audio.length, line.sampleRate);
-    buffer.getChannelData(0).set(line.audio);
-    const node = context.createBufferSource();
-    node.buffer = buffer;
-    node.connect(context.destination);
-    node.onended = () => resolve();
-    node.start();
-  });
 }
 
 /** True when a recorded MP3 exists. Dev servers answer missing files with the app page, so check the type. */

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MODULES, moduleHasSkill, moduleTaskIds } from '../src/content/modules';
 import { TASK_TYPES, getTaskType, getTaskTypesForSkill } from '../src/domain/tasks/catalog';
 import { SKILLS } from '../src/domain/skills';
+import { checkGrammar } from '../src/services/grammar/ruleChecker';
 
 // Guards for content added later: every module must be valid, and any
 // skill a module has started must be complete for that skill.
@@ -55,6 +56,18 @@ describe('content integrity', () => {
       it('gives every picture task a picture or a scene brief', () => {
         for (const prompt of practiceModule.prompts) {
           if (getTaskType(prompt.taskTypeId)?.needsImage) expect(!!(prompt.image || prompt.scene), prompt.id).toBe(true);
+        }
+      });
+
+      it('has a sample answer for every speaking prompt, sized to the speaking time', () => {
+        for (const prompt of practiceModule.prompts) {
+          const task = getTaskType(prompt.taskTypeId);
+          if (!task || task.skill !== 'speaking') continue;
+          expect(!!prompt.modelAnswer, prompt.id).toBe(true);
+          const words = (prompt.modelAnswer ?? '').split(/\s+/).filter(Boolean).length;
+          const target = (task.timing.answerSeconds * 140) / 60;
+          expect(words >= target * 0.75 && words <= target * 1.25, `${prompt.id}: ${words} words`).toBe(true);
+          expect(checkGrammar(prompt.modelAnswer ?? ''), `${prompt.id} grammar`).toEqual([]);
         }
       });
 

@@ -472,3 +472,25 @@ a.skill-card::after {
 .clip-transcript dt { font-weight: 800; }
 .clip-transcript dd { margin: 0; }
 @media (max-width: 600px) { .clip-transcript dl div { grid-template-columns: 1fr; gap: 0; } }
+
+/* Finished tasks, saved in this browser */
+.task-row.is-done { background: #f0fff8; }
+.task-row.is-done .task-number { background: var(--mint); }
+.task-done {
+  flex: none; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.7rem;
+  font-weight: 800; font-size: var(--step--1); color: var(--grape);
+  background: var(--mint); border: 2px solid var(--grape); border-radius: var(--radius-pill);
+}
+.module-count {
+  margin-left: 0.45rem; padding: 0 0.45rem; font-size: 0.75rem; font-weight: 800;
+  background: var(--lemon); color: var(--grape); border-radius: var(--radius-pill);
+}
+.module-count.is-complete { background: var(--mint); }
+
+/* Sample answers */
+.sample-card { background: #fffbea; }
+.sample-card .transcript { background: var(--white); }
+.sample-text { white-space: pre-line; }
+.sample-notes-title { margin: var(--gap-2) 0 var(--gap-1); font-family: var(--font-body); font-size: 1rem; font-weight: 800; }
+.sample-notes { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; }
+.btn-small { min-height: 40px; padding: 0.35rem 1rem; font-size: 0.95rem; }
