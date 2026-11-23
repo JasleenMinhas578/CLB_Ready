@@ -1,4 +1,6 @@
 import type { PracticeModule, SceneBrief } from '../types';
+import { module1Reading } from './module1Reading';
+import { module1Listening } from './module1Listening';
 
 /** Tasks 3 and 4 share one picture. */
 const MARKET: SceneBrief = {
@@ -17,6 +19,8 @@ export const module1: PracticeModule = {
   number: 1,
   title: 'Module 1',
   status: 'available',
+  reading: module1Reading,
+  listening: module1Listening,
   prompts: [
     {
       id: 'm1-speaking-1', taskTypeId: 'speaking-1', draft: true,

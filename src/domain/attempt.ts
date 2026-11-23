@@ -36,8 +36,25 @@ export interface WritingAttempt extends BaseAttempt {
   metrics: WritingMetrics;
 }
 
-/** Discriminated on `skill`. Reading and listening attempts join here later. */
+/** Speaking and writing: answers the AI coach gives feedback on. */
 export type Attempt = SpeakingAttempt | WritingAttempt;
+
+/** Reading and listening: multiple-choice answers marked against the key. */
+export interface ObjectiveAttempt {
+  id: string;
+  skill: 'reading' | 'listening';
+  moduleId: string;
+  taskTypeId: string;
+  taskTitle: string;
+  /** Content part id, to look the questions up again on the results screen. */
+  partId: string;
+  /** Chosen option per question id; null when left blank. */
+  answers: Record<string, number | null>;
+  goal: ClbGoal;
+  goalChosen: boolean;
+}
+
+export type AnyAttempt = Attempt | ObjectiveAttempt;
 
 export const DEFAULT_GOAL: ClbGoal = 9;
 

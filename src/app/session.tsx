@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ClbGoal } from '@/domain/goals';
-import type { Attempt } from '@/domain/attempt';
+import type { AnyAttempt } from '@/domain/attempt';
 
 /**
  * Session state lives in memory only. Per the privacy spec, nothing about
@@ -13,8 +13,8 @@ interface SessionValue {
   /** The learner passed the mic check this session. */
   micReady: boolean;
   setMicReady: (ready: boolean) => void;
-  lastAttempt: Attempt | null;
-  setLastAttempt: (attempt: Attempt) => void;
+  lastAttempt: AnyAttempt | null;
+  setLastAttempt: (attempt: AnyAttempt) => void;
 }
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -22,7 +22,7 @@ const SessionContext = createContext<SessionValue | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [goal, setGoal] = useState<ClbGoal | null>(null);
   const [micReady, setMicReady] = useState(false);
-  const [lastAttempt, setLastAttempt] = useState<Attempt | null>(null);
+  const [lastAttempt, setLastAttempt] = useState<AnyAttempt | null>(null);
   const value = useMemo(
     () => ({ goal, setGoal, micReady, setMicReady, lastAttempt, setLastAttempt }),
     [goal, micReady, lastAttempt],

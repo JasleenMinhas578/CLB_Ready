@@ -453,3 +453,22 @@ a.skill-card::after {
 .streaming-text::after { content: '▍'; margin-left: 1px; color: var(--bubblegum-deep); animation: caret-blink 1s steps(2, start) infinite; }
 @keyframes caret-blink { to { visibility: hidden; } }
 @media (prefers-reduced-motion: reduce) { .streaming-text::after { animation: none; } }
+
+/* Reading and listening results */
+.goal-line { margin: var(--gap-2) 0 var(--gap-1); font-weight: 800; }
+.goal-line.is-reached { color: var(--mint-deep); }
+.answer-review { margin: 0; padding-left: 1.6rem; display: grid; gap: var(--gap-2); }
+.answer-row { padding: 0.75rem 1rem; border-radius: var(--radius-field); background: var(--milk); }
+.answer-row.is-right { background: #f0fff8; }
+.answer-row.is-wrong { background: #fff3f6; }
+.answer-row p { margin: 0 0 0.3rem; max-width: none; }
+.answer-question { font-weight: 800; }
+.answer-yours span { text-decoration: line-through; text-decoration-color: var(--bubblegum-deep); }
+.answer-why { font-size: var(--step--1); color: var(--grape-soft); }
+.clip-transcript { margin-top: var(--gap-2); border: 2px solid var(--milk-deep); border-radius: var(--radius-field); padding: 0.6rem 1rem; }
+.clip-transcript summary { font-weight: 800; cursor: pointer; }
+.clip-transcript dl { margin: var(--gap-1) 0 0; display: grid; gap: 0.5rem; }
+.clip-transcript dl div { display: grid; grid-template-columns: 7.5rem 1fr; gap: 0.75rem; }
+.clip-transcript dt { font-weight: 800; }
+.clip-transcript dd { margin: 0; }
+@media (max-width: 600px) { .clip-transcript dl div { grid-template-columns: 1fr; gap: 0; } }

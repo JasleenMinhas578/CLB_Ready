@@ -3,8 +3,8 @@ import { href } from '@/app/router';
 import { useSession } from '@/app/session';
 import { getSkill } from '@/domain/skills';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
-import { isSpeakingTask, type TaskType } from '@/domain/tasks/types';
-import { MODULES, getModule, moduleHasSkill } from '@/content/modules';
+import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
+import { MODULES, getModule, moduleHasSkill, moduleTaskIds } from '@/content/modules';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
@@ -15,6 +15,11 @@ function timingText(task: TaskType): string {
     const { selectSeconds, prepSeconds, answerSeconds } = task.timing;
     const prep = selectSeconds ? `${selectSeconds}s to choose, ${prepSeconds}s to prepare` : `${prepSeconds}s to prepare`;
     return `${prep}, ${formatSeconds(answerSeconds)} to speak`;
+  }
+  if (isReadingTask(task)) return `${task.questionCount} questions, about ${task.timing.minutes} minutes`;
+  if (isListeningTask(task)) {
+    const clips = task.clipCount > 1 ? `${task.clipCount} recordings` : '1 recording';
+    return `${clips}, about ${task.audioMinutes} min of audio, ${task.questionCount} questions`;
   }
   return `${task.timing.minutes} minutes, ${task.wordRange.min}–${task.wordRange.max} words`;
 }
@@ -36,9 +41,8 @@ export function SkillScreen({ params }: { params: RouteParams }) {
     );
   }
 
-  const tasks = getTaskTypesForSkill(skill.id).filter((task) =>
-    practiceModule.prompts.some((prompt) => prompt.taskTypeId === task.id),
-  );
+  const available = new Set(moduleTaskIds(practiceModule));
+  const tasks = getTaskTypesForSkill(skill.id).filter((task) => available.has(task.id));
 
   return (
     <section>

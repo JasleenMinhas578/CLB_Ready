@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import type { Criterion } from '@/domain/criteria';
 import { MAX_LEVEL } from '@/domain/scoring/estimate';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
-import type { Attempt } from '@/domain/attempt';
+import type { AnyAttempt, Attempt } from '@/domain/attempt';
 import { href } from '@/app/router';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
@@ -211,19 +211,20 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
   );
 }
 
-export function ResultsActions({ attempt }: { attempt: Attempt }) {
+export function ResultsActions({ attempt }: { attempt: Pick<AnyAttempt, 'skill' | 'moduleId' | 'taskTypeId'> }) {
   const tasks = getTaskTypesForSkill(attempt.skill);
   const next = tasks[tasks.findIndex((task) => task.id === attempt.taskTypeId) + 1];
-  const skillName = attempt.skill === 'speaking' ? 'speaking' : 'writing';
+  const skillName = attempt.skill;
+  const unit = attempt.skill === 'reading' || attempt.skill === 'listening' ? 'part' : 'task';
   return (
     <div className="row-actions center">
-      <LinkButton to={`/task/${attempt.moduleId}/${attempt.taskTypeId}`}>Try this task again</LinkButton>
+      <LinkButton to={`/task/${attempt.moduleId}/${attempt.taskTypeId}`}>Try this {unit} again</LinkButton>
       {next && (
         <LinkButton to={`/task/${attempt.moduleId}/${next.id}`} variant="secondary">
-          Next: {skillName} task {next.order}
+          Next: {skillName} {unit} {next.order}
         </LinkButton>
       )}
-      <LinkButton to={`/practice/${attempt.skill}/${attempt.moduleId}`} variant="quiet">All {skillName} tasks</LinkButton>
+      <LinkButton to={`/practice/${attempt.skill}/${attempt.moduleId}`} variant="quiet">All {skillName} {unit}s</LinkButton>
     </div>
   );
 }

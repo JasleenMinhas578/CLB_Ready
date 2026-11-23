@@ -21,7 +21,7 @@ export function SkillCard({ skill, moduleId }: SkillCardProps) {
       <span className="skill-emoji"><Emoji symbol={skill.emoji} size="lg" /></span>
       <h3>{skill.name}</h3>
       <p>{skill.blurb}</p>
-      <span className="skill-meta">{available ? `${taskCount} tasks` : 'Coming soon'}</span>
+      <span className="skill-meta">{available ? `${taskCount} ${skill.id === 'reading' || skill.id === 'listening' ? 'parts' : 'tasks'}` : 'Coming soon'}</span>
     </>
   );
 
