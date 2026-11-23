@@ -64,6 +64,9 @@ export function writingTips(m: WritingMetrics, goal: number, options?: [string, 
     tips.push(`Say clearly which option you choose, e.g. "I would choose ${options[0].toLowerCase()} because…", in your first sentence.`);
   }
   if (m.email) {
+    if (m.email.headerLines.length) {
+      tips.push('Leave out the subject line. CELPIP emails start with the greeting, and extra lines only use up your words.');
+    }
     if (!m.email.hasGreeting) tips.push(`Start with a greeting such as "${m.email.expectedTone === 'formal' ? 'Dear Sir or Madam,' : 'Hi Sam,'}".`);
     if (!m.email.hasClosing) tips.push(`End with a closing line and sign-off, such as "${m.email.expectedTone === 'formal' ? 'Sincerely,' : 'Best wishes,'}" and your name.`);
     if (m.email.toneMismatch) {

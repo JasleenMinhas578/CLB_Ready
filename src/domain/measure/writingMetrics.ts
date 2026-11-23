@@ -30,6 +30,8 @@ export interface EmailChecks {
   informalWords: string[];
   /** True when contractions or slang clash with a formal email. */
   toneMismatch: boolean;
+  /** "Subject:", "To:" or "From:" lines, which CELPIP emails don't use. */
+  headerLines: string[];
 }
 
 export interface SurveyChecks {
@@ -40,7 +42,9 @@ export interface SurveyChecks {
 
 const GREETING = /^\s*(dear|hello|hi|hey|good (morning|afternoon|evening)|to whom it may concern|greetings)\b/i;
 /** Checked against the last few lines only, where a sign-off belongs. */
-const CLOSING = /\b(sincerely|regards|best wishes|best|yours truly|yours faithfully|yours|thank you|thanks|cheers|warm wishes|take care|respectfully|cordially)\b/i;
+const CLOSING = /\b(sincerely|regards|best wishes|best|yours truly|yours faithfully|yours|thank you|thanks|cheers|warm wishes|take care|respectfully|cordially|talk soon|see you|love|all the best)\b/i;
+/** Email header lines. CELPIP Task 1 has no subject, To or From line. */
+const HEADER_LINE = /^\s*(subject|re|to|from|cc)\s*:.*$/gim;
 const CONTRACTION = /\b\w+(?:'|’)(?:t|s|re|ve|ll|d|m)\b/gi;
 const INFORMAL = new Set(['gonna', 'wanna', 'gotta', 'kinda', 'sorta', 'yeah', 'yep', 'nope', 'hey', 'lol', 'btw', 'stuff', 'guys', 'cool', 'awesome', 'ok', 'okay']);
 /** Contractions typed without the apostrophe, common in quick, casual writing. */
@@ -85,7 +89,10 @@ function checkSurvey(text: string, options: [string, string]): SurveyChecks {
   return { chosen, mentionsBoth };
 }
 
-function checkEmail(text: string, expectedTone: Tone, words: string[]): EmailChecks {
+function checkEmail(fullText: string, expectedTone: Tone, words: string[]): EmailChecks {
+  const headerLines = (fullText.match(HEADER_LINE) ?? []).map((line) => line.trim());
+  // Judge greeting and tone on the email body, after any header lines.
+  const text = fullText.replace(HEADER_LINE, '').trim();
   const contractions = [
     ...new Set([...(text.match(CONTRACTION) ?? []).map((word) => word.toLowerCase()), ...words.filter((word) => BARE_CONTRACTIONS.has(word))]),
   ];
@@ -99,6 +106,7 @@ function checkEmail(text: string, expectedTone: Tone, words: string[]): EmailChe
     contractions,
     informalWords,
     toneMismatch,
+    headerLines,
   };
 }
 

@@ -399,3 +399,35 @@ a.skill-card::after {
 /* Calibration notes */
 .checked-by { margin-left: auto; padding: 0 0.5em; font-size: 0.75rem; font-weight: 800; color: var(--mint-deep); border: 1.5px solid var(--mint-deep); border-radius: var(--radius-pill); white-space: nowrap; }
 .score-note { color: var(--grape); background: #fff8e0; padding: 0.4rem 0.7rem; border-radius: 10px; max-width: none; }
+
+/* Writing corrections, marked like a teacher would */
+.essay-head { display: flex; justify-content: space-between; align-items: center; gap: var(--gap-2); flex-wrap: wrap; margin-bottom: var(--gap-1); }
+.essay-count { margin: 0; font-weight: 800; }
+.essay { line-height: 1.95; }
+.correction { white-space: nowrap; }
+.fix-old {
+  color: #9b2450; background: #ffe0ea; text-decoration: line-through; text-decoration-thickness: 2px;
+  padding: 0.05em 0.2em; border-radius: 5px;
+}
+.fix-new {
+  color: #0f5a4a; background: #c9f3e6; text-decoration: none; font-weight: 700;
+  padding: 0.05em 0.25em; border-radius: 5px; margin-left: 2px;
+}
+.issue-under { text-decoration: underline wavy; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.under-spelling { text-decoration-color: #e2486f; }
+.under-grammar { text-decoration-color: #d79b00; }
+.under-capitals { text-decoration-color: #6f7cff; }
+.under-punctuation, .under-spacing { text-decoration-color: #8a7aa3; }
+
+.issue-groups { list-style: none; margin: var(--gap-2) 0 0; padding: 0; display: grid; gap: 0.5rem; }
+.issue-groups li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; padding: 0.55rem 0.8rem; background: var(--milk); border-radius: 14px; }
+.issue-groups .issue-kind { text-transform: none; font-size: 0.85rem; padding: 0.1em 0.6em; }
+.kind-capitals { background: #dfe2ff; }
+.kind-spacing { background: #ece6f3; }
+.issue-examples { display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; align-items: center; font-size: 0.95rem; }
+.issue-example { display: inline-flex; align-items: center; gap: 0.25rem; }
+.issue-example del { color: #9b2450; text-decoration-thickness: 2px; }
+.issue-example ins { color: #0f5a4a; text-decoration: none; font-weight: 800; }
+.issue-example ins::before { content: '→ '; color: var(--grape-soft); font-weight: 400; }
+.issue-example del + ins::before { content: ' → '; }
+.issue-example small, .issue-examples > small { color: var(--grape-soft); font-weight: 700; }
