@@ -1,4 +1,6 @@
 import type { GrammarChecker, GrammarIssue } from '@/domain/grammar';
+import { LEARNER_RULES } from './learnerRules';
+import { capitalize, eachMatch, matchCase, type Rule } from './ruleUtils';
 
 /**
  * A small, fast, rule-based checker for the mistakes learners make most.
@@ -49,28 +51,6 @@ const SPLIT_WORDS: Record<string, string> = {
 /** Words that start with a vowel letter but a consonant sound, and the reverse. */
 const A_EXCEPTIONS = /^(uni|use|usu|usa|euro|eu|one|once|ufo|uk|us\b)/;
 const AN_EXCEPTIONS = /^(hour|honest|honou?r|heir|herb)/;
-
-type Rule = (text: string) => GrammarIssue[];
-
-function eachMatch(text: string, pattern: RegExp, build: (match: RegExpExecArray) => GrammarIssue | null): GrammarIssue[] {
-  const issues: GrammarIssue[] = [];
-  const regex = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
-  for (let match = regex.exec(text); match; match = regex.exec(text)) {
-    const issue = build(match);
-    if (issue) issues.push(issue);
-    if (match[0].length === 0) regex.lastIndex += 1;
-  }
-  return issues;
-}
-
-/** Keeps the writer's capitalization: "Dont" → "Don't", "dont" → "don't". */
-function matchCase(original: string, fix: string): string {
-  return /^[A-Z]/.test(original) ? fix.charAt(0).toUpperCase() + fix.slice(1) : fix;
-}
-
-function capitalize(word: string): string {
-  return word.charAt(0).toUpperCase() + word.slice(1);
-}
 
 const RULES: Rule[] = [
   // Spelling: common misspellings, irregular past tenses, missing apostrophes.
@@ -177,8 +157,17 @@ const RULES: Rule[] = [
   },
 ];
 
+/** True when `index` is where a sentence or paragraph begins. */
+function startsSentence(text: string, index: number): boolean {
+  return /(^|[.!?]\s+|\n\s*)$/.test(text.slice(0, index));
+}
+
 export function checkGrammar(text: string): GrammarIssue[] {
-  const all = RULES.flatMap((rule) => rule(text)).sort((a, b) => a.start - b.start || b.end - a.end);
+  const all = [...RULES, ...LEARNER_RULES]
+    .flatMap((rule) => rule(text))
+    // A longer fix can hide the capital-letter fix, so it carries the capital itself.
+    .map((found) => (found.suggestion && found.start < found.end && startsSentence(text, found.start) ? { ...found, suggestion: capitalize(found.suggestion) } : found))
+    .sort((a, b) => a.start - b.start || b.end - a.end);
   // Drop overlaps so each piece of text has at most one mark.
   const kept: GrammarIssue[] = [];
   for (const issue of all) {
