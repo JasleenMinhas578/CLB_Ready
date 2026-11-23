@@ -24,7 +24,7 @@ export const module1Reading: ReadingPart[] = [
       },
       {
         id: 'm1r1-3', text: 'What worries Priya about the corner by the bike racks?',
-        options: ['It is too close to the bikes', 'It is too small for the table', 'It is too far from the building', 'It may not get enough sun later in the day'],
+        options: ['It is too close to where people lock their bikes', 'It is too small to fit the large picnic table', 'It is too far from the doors of the building', 'It may not get enough sun later in the day'],
         answer: 3,
         why: 'She is “worried that spot gets too much shade in the afternoon.”',
       },
@@ -36,7 +36,7 @@ export const module1Reading: ReadingPart[] = [
       },
       {
         id: 'm1r1-5', text: 'Why doesn’t Priya want a lock on the gate?',
-        options: ['It would cost too much money', 'It could make the garden hard to use for older residents', 'The city does not allow locks', 'Thieves would simply break it'],
+        options: ['It would cost the residents too much money', 'It could make the garden hard to use for older residents', 'The city does not allow locks on garden gates', 'Thieves would simply break it open at night'],
         answer: 1,
         why: 'A lock “would make things hard for the seniors on the ground floor.”',
       },
@@ -48,13 +48,13 @@ export const module1Reading: ReadingPart[] = [
       },
       {
         id: 'm1r1-7', text: '',
-        options: ['is the cheapest choice', 'should go on the bike racks', 'was Mrs. Lee’s idea', 'would cause problems for our neighbours on the ground floor'],
+        options: ['is the cheapest choice for the whole building', 'should go on the bike racks instead of the gate', 'was Mrs. Lee’s idea and she should pay for it', 'would cause problems for our neighbours on the ground floor'],
         answer: 3,
         why: 'Priya said a lock would make things hard for the seniors on the ground floor.',
       },
       {
         id: 'm1r1-8', text: '',
-        options: ['a taller fence', 'a lock on the gate', 'a sign and a motion-sensor light', 'moving the garden'],
+        options: ['a taller fence around the beds', 'a lock on the gate for night time', 'a sign and a motion-sensor light', 'moving the beds to the front lawn'],
         answer: 2,
         why: 'Priya suggested “a sign and a motion-sensor light” to start.',
       },
@@ -128,7 +128,7 @@ export const module1Reading: ReadingPart[] = [
       },
       {
         id: 'm1r2-6', text: 'Why does Marco ask Ana to take Mia to her class?',
-        options: ['He does not know how to swim', 'He cannot get there in time on Mondays', 'Mia prefers to go with Ana', 'He has to work on Saturdays'],
+        options: ['He does not know how to swim very well', 'He cannot get there in time on Mondays', 'Mia would rather go to class with Ana', 'He has to work late on Saturday mornings'],
         answer: 1,
         why: 'Marco does not finish work until 6:30 on Mondays, and the class starts at 6:00.',
       },
@@ -174,13 +174,13 @@ export const module1Reading: ReadingPart[] = [
     questions: [
       {
         id: 'm1r4-1', text: 'What will the school board decide in March?',
-        options: ['Which schools will close', 'Whether high school classes should start later', 'How to pay for new buses', 'Whether to end the sports program'],
+        options: ['Which of the two trial schools will close', 'Whether high school classes should start later', 'How to pay for new buses for elementary schools', 'Whether to end after-school sports programs'],
         answer: 1,
         why: 'The board is considering a later start and “will vote in March.”',
       },
       {
         id: 'm1r4-2', text: 'What does Dr. Haddad compare early classes for teenagers to?',
-        options: ['An adult taking a test very early in the morning', 'A child staying up past bedtime', 'Working a night shift', 'Studying without breakfast'],
+        options: ['An adult taking a test very early in the morning', 'A child staying up long past bedtime', 'A nurse working a night shift at a hospital', 'A student writing an exam without breakfast'],
         answer: 0,
         why: '“Like asking an adult to write a math test at five in the morning.”',
       },
@@ -192,7 +192,7 @@ export const module1Reading: ReadingPart[] = [
       },
       {
         id: 'm1r4-4', text: 'Why does Linda Brooks have concerns about the change?',
-        options: ['Bus drivers would lose their jobs', 'The buses are too old', 'Younger children would have to start school earlier', 'Parents could not drive their children'],
+        options: ['Bus drivers would lose their jobs and their pay', 'The buses are too old to run on longer routes', 'Younger children would have to start school earlier', 'Parents could no longer drive their children'],
         answer: 2,
         why: 'Elementary schools “would have to start earlier, at around 7:45.”',
       },
@@ -210,7 +210,7 @@ export const module1Reading: ReadingPart[] = [
       },
       {
         id: 'm1r4-7', text: '',
-        options: ['save the board money', 'shorten bus routes', 'help elementary schools', 'affect younger students’ sleep'],
+        options: ['save the board a lot of money', 'shorten the bus routes in winter', 'help elementary schools start later', 'affect younger students’ sleep'],
         answer: 3,
         why: 'Ms. Brooks said it would create a sleep problem for younger children.',
       },

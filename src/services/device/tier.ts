@@ -24,8 +24,21 @@ export interface ModelPlan {
   feedbackModel: string | null;
   /** Keep Whisper loaded between answers? Low tier unloads to save memory. */
   keepWhisperLoaded: boolean;
+  /** How Kokoro makes listening voices. Defaults to the light CPU version when missing. */
+  voice?: VoicePlan;
   reason: string;
 }
+
+/**
+ * Kokoro on WebGPU needs full precision (about 330 MB); the 8-bit CPU
+ * version is about 90 MB and runs anywhere, so most devices use that.
+ */
+export interface VoicePlan {
+  device: 'webgpu' | 'wasm';
+  dtype: 'fp32' | 'q8';
+}
+
+export const LIGHT_VOICE: VoicePlan = { device: 'wasm', dtype: 'q8' };
 
 const GB = 1024 ** 3;
 
@@ -81,6 +94,7 @@ export function planModels(signals: DeviceSignals, options: PlanOptions = {}): M
     whisperDevice: signals.webgpu ? 'webgpu' : 'wasm',
     feedbackModel: feedbackModelFor(tier, signals.shaderF16),
     keepWhisperLoaded: tier === 'high' || tier === 'mid',
+    voice: tier === 'high' ? { device: 'webgpu', dtype: 'fp32' } : LIGHT_VOICE,
     reason: options.stepsDown ? `${reasons[tier]} (Switched down after a model didn’t load.)` : reasons[tier],
   };
 }
