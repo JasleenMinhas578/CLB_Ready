@@ -1,4 +1,5 @@
 import type { SpeakingMetrics } from '../measure/speakingMetrics';
+import { MIN_WORDS_FOR_VARIETY, lengthCeiling } from './sufficiency';
 
 /**
  * Turns measurements into rough CLB-style levels, then blends them with the
@@ -60,8 +61,10 @@ export function codeEstimates(metrics: SpeakingMetrics): Scores {
   else if (fillersPerMinute > 3) listenability -= 1;
 
   // Vocabulary: variety, minus vague words and heavy repetition.
+  // Variety means little in a handful of words, so short answers get a neutral 6.
   let vocabulary =
-    metrics.variety >= 0.78 ? 10 : metrics.variety >= 0.7 ? 9 : metrics.variety >= 0.62 ? 8 : metrics.variety >= 0.54 ? 7 : 6;
+    metrics.wordCount < MIN_WORDS_FOR_VARIETY ? 6
+      : metrics.variety >= 0.78 ? 10 : metrics.variety >= 0.7 ? 9 : metrics.variety >= 0.62 ? 8 : metrics.variety >= 0.54 ? 7 : 6;
   if (metrics.vagueWords.length >= 4) vocabulary -= 1;
   if (metrics.repeatedWords.some((word) => word.count >= 5)) vocabulary -= 1;
 
@@ -74,11 +77,13 @@ export function codeEstimates(metrics: SpeakingMetrics): Scores {
   // Task fulfillment (code side): did they use the time?
   const task = metrics.timeUsed >= 0.85 ? 9 : metrics.timeUsed >= 0.65 ? 8 : metrics.timeUsed >= 0.45 ? 7 : 5;
 
+  // About 2 words a second is a full answer; much less can't score high.
+  const ceiling = Math.min(CODE_LEVEL_CEILING, lengthCeiling(metrics.wordCount, metrics.answerSeconds * 2));
   return {
-    content: clampLevel(content, CODE_LEVEL_CEILING),
-    vocabulary: clampLevel(vocabulary, CODE_LEVEL_CEILING),
-    listenability: clampLevel(listenability, CODE_LEVEL_CEILING),
-    task: clampLevel(task, CODE_LEVEL_CEILING),
+    content: clampLevel(content, ceiling),
+    vocabulary: clampLevel(vocabulary, ceiling),
+    listenability: clampLevel(listenability, ceiling),
+    task: clampLevel(task, ceiling),
   };
 }
 
@@ -87,6 +92,8 @@ export function blendScores<K extends string = SpeakingCriterionId>(
   code: Scores<K>,
   model: Partial<Scores<K>> | null,
   weights?: ScoringWeights<K>,
+  /** Highest level allowed, e.g. for a short answer. */
+  ceiling = MAX_LEVEL,
 ): Scores<K> {
   if (!model) return code;
   const table = (weights ?? DEFAULT_SPEAKING_WEIGHTS) as Record<string, number>;
@@ -95,7 +102,7 @@ export function blendScores<K extends string = SpeakingCriterionId>(
     const fromModel = model[id];
     if (typeof fromModel !== 'number' || Number.isNaN(fromModel)) continue;
     const weight = table[id] ?? 0.5;
-    result[id] = clampLevel(weight * clampLevel(fromModel) + (1 - weight) * code[id]);
+    result[id] = clampLevel(weight * clampLevel(fromModel) + (1 - weight) * code[id], ceiling);
   }
   return result;
 }

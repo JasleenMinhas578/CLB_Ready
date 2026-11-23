@@ -66,7 +66,9 @@ describe('vocabularyVariety', () => {
 });
 
 describe('scoring', () => {
-  const fluent = measureSpeaking({ text: FLUENT, words: timed(FLUENT), answerSeconds: 60, recordedSeconds: 58 });
+  // A realistic full answer: about 100 words in 60 seconds.
+  const FULL = `${FLUENT} Overall, ${FLUENT.charAt(0).toLowerCase()}${FLUENT.slice(1)}`;
+  const fluent = measureSpeaking({ text: FULL, words: timed(FULL), answerSeconds: 60, recordedSeconds: 58 });
   const halting = measureSpeaking({
     text: '',
     words: timed('um it is good um it is good uh it is nice', { 2: 3, 5: 3, 8: 3 }),

@@ -5,9 +5,10 @@ import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstim
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
 import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, mergeTips } from './cards';
+import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, mergeTips } from './cards';
 import { EssayView } from './EssayView';
 import { TileList, type Tile } from './MeasureTiles';
+import { MIN_SCORABLE_WRITING_WORDS, MIN_SENTENCES_FOR_VARIETY, MIN_WORDS_FOR_VARIETY, isScorable, lengthCeiling, plural } from '@/domain/scoring/sufficiency';
 
 function writingTiles(m: WritingMetrics, options?: [string, string]): Tile[] {
   const { min, max } = m.wordRange;
@@ -19,14 +20,17 @@ function writingTiles(m: WritingMetrics, options?: [string, string]): Tile[] {
     { label: 'Paragraphs', value: `${m.paragraphs}`, note: 'aim for 3 or more', tone: m.paragraphs >= 3 ? 'good' : m.paragraphs === 2 ? 'ok' : 'work' },
     {
       label: 'Marked mistakes', value: `${m.grammarIssues}`, note: 'spelling, grammar, punctuation',
-      tone: m.grammarIssues === 0 ? 'good' : m.grammarIssues <= 2 ? 'ok' : 'work',
+      tone: m.wordCount < MIN_WORDS_FOR_VARIETY ? 'neutral' : m.grammarIssues === 0 ? 'good' : m.grammarIssues <= 2 ? 'ok' : 'work',
     },
     {
       label: 'Sentence variety', value: m.sentenceVariety >= 5 ? 'Varied' : m.sentenceVariety >= 3 ? 'Some' : 'Similar',
-      note: `${m.sentences} sentences, about ${Math.round(m.avgSentenceLength)} words each`,
-      tone: m.sentenceVariety >= 5 ? 'good' : m.sentenceVariety >= 3 ? 'ok' : 'work',
+      note: `${plural(m.sentences, 'sentence')}, about ${plural(Math.round(m.avgSentenceLength), 'word')} each`,
+      tone: m.sentences < MIN_SENTENCES_FOR_VARIETY ? 'neutral' : m.sentenceVariety >= 5 ? 'good' : m.sentenceVariety >= 3 ? 'ok' : 'work',
     },
-    { label: 'Word variety', value: `${Math.round(m.variety * 100)}%`, note: 'different words used', tone: m.variety >= 0.7 ? 'good' : m.variety >= 0.6 ? 'ok' : 'work' },
+    {
+      label: 'Word variety', value: `${Math.round(m.variety * 100)}%`, note: 'different words used',
+      tone: m.wordCount < MIN_WORDS_FOR_VARIETY ? 'neutral' : m.variety >= 0.7 ? 'good' : m.variety >= 0.6 ? 'ok' : 'work',
+    },
     {
       label: 'Linking words', value: `${m.linkingWords.length}`, note: m.linkingWords.slice(0, 4).join(', ') || 'try "however", "in addition"',
       tone: m.linkingWords.length >= 4 ? 'good' : m.linkingWords.length >= 2 ? 'ok' : 'work',
@@ -39,8 +43,9 @@ function writingTiles(m: WritingMetrics, options?: [string, string]): Tile[] {
       tone: m.email.hasGreeting && m.email.hasClosing ? 'good' : 'work',
     });
     tiles.push({
-      label: 'Tone', value: m.email.toneMismatch ? 'Too casual' : 'Fits', note: `${m.email.expectedTone} email expected`,
-      tone: m.email.toneMismatch ? 'work' : 'good',
+      label: 'Tone', value: m.email.toneMismatch ? 'Too casual' : m.wordCount < MIN_WORDS_FOR_VARIETY ? 'Too short to tell' : 'Fits',
+      note: `${m.email.expectedTone} email expected`,
+      tone: m.email.toneMismatch ? 'work' : m.wordCount < MIN_WORDS_FOR_VARIETY ? 'neutral' : 'good',
     });
   }
   if (m.survey && options) {
@@ -54,12 +59,44 @@ function writingTiles(m: WritingMetrics, options?: [string, string]): Tile[] {
 }
 
 export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
+  const scorable = isScorable('writing', attempt.metrics.wordCount);
   const { outcome, progress } = useFeedback(attempt);
   const ai = outcome?.kind === 'ai' ? outcome.run.reply : null;
+  const sample = outcome?.kind === 'sample' ? outcome.answer : null;
+  const header = (
+    <div className="screen-head">
+      <h1>Your feedback</h1>
+      <p>{attempt.taskTitle}</p>
+    </div>
+  );
+
+  if (!scorable) {
+    return (
+      <section className="narrow results">
+        {header}
+        <TooShortCard
+          attempt={attempt}
+          need={`at least ${MIN_SCORABLE_WRITING_WORDS} words (the task asks for ${attempt.metrics.wordRange.min}–${attempt.metrics.wordRange.max})`}
+          unit="word"
+          outcome={outcome}
+          progress={progress}
+        />
+        {sample && <ImprovedCard goal={attempt.goal} text={sample} spoken={false} fromScratch />}
+        <TipsCard goal={attempt.goal} tips={writingTips(attempt.metrics, attempt.goal, attempt.options).slice(0, 3)} />
+        <div className="results-card">
+          <h2>What you wrote</h2>
+          <blockquote className="transcript essay">{attempt.text.trim() || '(Nothing written)'}</blockquote>
+        </div>
+        <ResultsActions attempt={attempt} />
+      </section>
+    );
+  }
+
   const modelScores: Partial<Scores<WritingCriterionId>> | null = ai
     ? { content: ai.scores.content, vocabulary: ai.scores.vocabulary, readability: ai.scores.delivery, task: ai.scores.task }
     : null;
-  const scores = blendScores(codeEstimatesWriting(attempt.metrics), modelScores, DEFAULT_WRITING_WEIGHTS);
+  const ceiling = lengthCeiling(attempt.metrics.wordCount, attempt.metrics.wordRange.min);
+  const scores = blendScores(codeEstimatesWriting(attempt.metrics), modelScores, DEFAULT_WRITING_WEIGHTS, ceiling);
   const overall = overallLevel(scores);
   const final = outcome !== null;
 

@@ -2,12 +2,18 @@ import { useEffect, useState } from 'react';
 import type { Attempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
 import { GOAL_OPTIONS } from '@/domain/goals';
-import { getFeedbackEngine, type FeedbackRun } from '@/services/ai/feedbackEngine';
-import { buildFeedbackPrompt } from '@/services/ai/feedbackPrompt';
+import { getTaskType } from '@/domain/tasks/catalog';
+import { isWritingTask } from '@/domain/tasks/types';
+import { isScorable } from '@/domain/scoring/sufficiency';
+import { getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
+import { buildFeedbackPrompt, buildModelAnswerPrompt } from '@/services/ai/feedbackPrompt';
 import { ModelUnavailableError } from '@/services/ai/modelStore';
 
 export type FeedbackOutcome =
+  /** Full feedback on the learner's answer. */
   | { kind: 'ai'; run: FeedbackRun }
+  /** Answer too short to score: a model answer written from scratch instead. */
+  | { kind: 'sample'; answer: string }
   | { kind: 'code'; reason: 'light-mode' | 'error'; message?: string };
 
 export interface FeedbackProgress {
@@ -48,6 +54,52 @@ function measuredFacts(attempt: Attempt): string[] {
   return facts;
 }
 
+function goalLabel(goal: number): string | undefined {
+  return GOAL_OPTIONS.find((option) => option.level === goal)?.label.toLowerCase();
+}
+
+function answerText(attempt: Attempt): string {
+  return attempt.skill === 'speaking' ? attempt.transcript : attempt.text;
+}
+
+function wordCount(attempt: Attempt): number {
+  return attempt.metrics.wordCount;
+}
+
+/** Full feedback for a scorable answer, or a fresh model answer for one that's too short. */
+async function runFor(attempt: Attempt, store: FeedbackEngineStore, onText: (soFar: string) => void): Promise<FeedbackOutcome> {
+  if (!isScorable(attempt.skill, wordCount(attempt))) {
+    const task = getTaskType(attempt.taskTypeId);
+    const length = task && isWritingTask(task)
+      ? `${task.wordRange.min} to ${task.wordRange.max} words`
+      : `about ${attempt.skill === 'speaking' ? Math.round(attempt.metrics.answerSeconds * 2) : 180} words, enough to fill the speaking time`;
+    const { system, user } = buildModelAnswerPrompt({
+      taskTitle: attempt.taskTitle,
+      promptText: attempt.promptText,
+      goal: attempt.goal,
+      goalLabel: goalLabel(attempt.goal),
+      spoken: attempt.skill === 'speaking',
+      length,
+    });
+    const run = await store.generateModelAnswer(system, user, onText);
+    return { kind: 'sample', answer: run.answer };
+  }
+
+  const { system, user } = buildFeedbackPrompt({
+    taskTitle: attempt.taskTitle,
+    promptText: attempt.promptText,
+    checklist: attempt.checklist,
+    criteria: getCriteria(attempt.skill),
+    goal: attempt.goal,
+    goalLabel: goalLabel(attempt.goal),
+    answer: answerText(attempt),
+    spoken: attempt.skill === 'speaking',
+    measured: measuredFacts(attempt),
+  });
+  const run = await store.generate(system, user, onText);
+  return { kind: 'ai', run };
+}
+
 function startJob(attempt: Attempt): Job {
   const job: Job = {
     progress: { phase: 'starting', modelProgress: null, written: 0 },
@@ -72,19 +124,7 @@ function startJob(attempt: Attempt): Job {
         unsubscribe();
       }
       update({ phase: 'writing' });
-      const { system, user } = buildFeedbackPrompt({
-        taskTitle: attempt.taskTitle,
-        promptText: attempt.promptText,
-        checklist: attempt.checklist,
-        criteria: getCriteria(attempt.skill),
-        goal: attempt.goal,
-        goalLabel: GOAL_OPTIONS.find((option) => option.level === attempt.goal)?.label.toLowerCase(),
-        answer: attempt.skill === 'speaking' ? attempt.transcript : attempt.text,
-        spoken: attempt.skill === 'speaking',
-        measured: measuredFacts(attempt),
-      });
-      const run = await store.generate(system, user, (soFar) => update({ written: soFar.length }));
-      return { kind: 'ai', run };
+      return await runFor(attempt, store, (soFar) => update({ written: soFar.length }));
     } catch (error) {
       if (error instanceof ModelUnavailableError) return { kind: 'code', reason: 'light-mode' };
       return { kind: 'code', reason: 'error', message: error instanceof Error ? error.message : String(error) };

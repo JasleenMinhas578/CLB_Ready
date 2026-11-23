@@ -4,17 +4,48 @@ import { blendScores, codeEstimates, overallLevel, type Scores } from '@/domain/
 import { codeTips } from '@/domain/scoring/codeTips';
 import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, mergeTips } from './cards';
+import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, mergeTips } from './cards';
+import { MIN_SCORABLE_SPEAKING_WORDS, isScorable, lengthCeiling } from '@/domain/scoring/sufficiency';
 import { TranscriptView } from './TranscriptView';
 import { MeasureTiles } from './MeasureTiles';
 
 export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
+  const scorable = isScorable('speaking', attempt.metrics.wordCount);
   const { outcome, progress } = useFeedback(attempt);
   const ai = outcome?.kind === 'ai' ? outcome.run.reply : null;
+  const sample = outcome?.kind === 'sample' ? outcome.answer : null;
+
+  if (!scorable) {
+    return (
+      <section className="narrow results">
+        <div className="screen-head">
+          <h1>Your feedback</h1>
+          <p>{attempt.taskTitle}</p>
+        </div>
+        <TooShortCard
+          attempt={attempt}
+          need={`at least ${MIN_SCORABLE_SPEAKING_WORDS} spoken words`}
+          unit="word"
+          outcome={outcome}
+          progress={progress}
+        />
+        {sample && <ImprovedCard goal={attempt.goal} text={sample} spoken fromScratch />}
+        <TipsCard goal={attempt.goal} tips={codeTips(attempt.metrics, attempt.goal).slice(0, 3)} />
+        <div className="results-card">
+          <h2>What we heard</h2>
+          <blockquote className="transcript">{attempt.transcript.trim() || '(No words detected)'}</blockquote>
+          <p className="fine-print">If you spoke more than this, check your microphone in the mic check and try again.</p>
+        </div>
+        <ResultsActions attempt={attempt} />
+      </section>
+    );
+  }
+
   const modelScores: Partial<Scores> | null = ai
     ? { content: ai.scores.content, vocabulary: ai.scores.vocabulary, listenability: ai.scores.delivery, task: ai.scores.task }
     : null;
-  const scores = blendScores(codeEstimates(attempt.metrics), modelScores);
+  const ceiling = lengthCeiling(attempt.metrics.wordCount, attempt.metrics.answerSeconds * 2);
+  const scores = blendScores(codeEstimates(attempt.metrics), modelScores, undefined, ceiling);
   const overall = overallLevel(scores);
   const final = outcome !== null;
 
