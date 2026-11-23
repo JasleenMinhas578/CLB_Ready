@@ -4,7 +4,7 @@ import { blendScores, codeEstimates, overallLevel, type Scores } from '@/domain/
 import { codeTips } from '@/domain/scoring/codeTips';
 import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { outlierNotes, AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { MIN_SCORABLE_SPEAKING_WORDS, isScorable, lengthCeiling } from '@/domain/scoring/sufficiency';
 import { TranscriptView } from './TranscriptView';
 import { dropOutlierScores } from '@/domain/scoring/outliers';
@@ -14,7 +14,6 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
   const scorable = isScorable('speaking', attempt.metrics.wordCount);
   const { outcome, progress } = useFeedback(attempt);
   const ai = outcome?.kind === 'ai' ? outcome.run.reply : null;
-  const sample = outcome?.kind === 'sample' ? outcome.answer : null;
 
   if (!scorable) {
     return (
@@ -33,10 +32,10 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
               progress={progress}
             />
             <TipsCard goal={attempt.goal} tips={codeTips(attempt.metrics, attempt.goal).slice(0, 3)} />
-            {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} transcribeMs={attempt.transcribeMs} />}
+            {progress?.perf && <PerfCard perf={progress.perf} transcribeMs={attempt.transcribeMs} />}
           </div>
           <div className="results-main">
-            {sample && <ImprovedCard goal={attempt.goal} text={sample} spoken fromScratch />}
+            <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken fromScratch />
             <div className="results-card">
               <h2>What we heard</h2>
               <blockquote className="transcript">{attempt.transcript.trim() || '(No words detected)'}</blockquote>
@@ -83,10 +82,10 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             <h2>What we measured</h2>
             <MeasureTiles metrics={attempt.metrics} />
           </div>
-          {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} transcribeMs={attempt.transcribeMs} />}
+          {progress?.perf && <PerfCard perf={progress.perf} transcribeMs={attempt.transcribeMs} />}
         </div>
         <div className="results-main">
-          {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken original={attempt.transcript} />}
+          <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken original={attempt.transcript} />
           <div className="results-card">
             <h2>What we heard</h2>
             <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />

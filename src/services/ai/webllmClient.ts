@@ -1,6 +1,5 @@
 import { CreateWebWorkerMLCEngine, prebuiltAppConfig, type WebWorkerMLCEngine } from '@mlc-ai/web-llm';
-import type { FeedbackModel, GenerationStats, LoadProgress } from './types';
-import { FEEDBACK_JSON_SCHEMA } from './feedbackPrompt';
+import type { CompleteOptions, FeedbackModel, GenerationStats, LoadProgress } from './types';
 
 /** Approximate GPU memory WebLLM lists for a model, in MB. */
 export function estimatedGpuMb(modelId: string): number | null {
@@ -22,7 +21,7 @@ export class WebLlmFeedbackModel implements FeedbackModel {
     return { elapsedMs: performance.now() - started };
   }
 
-  async generateJson(system: string, user: string, onText?: (soFar: string) => void, schema: object = FEEDBACK_JSON_SCHEMA) {
+  async complete(system: string, user: string, { schema, maxTokens, onText }: CompleteOptions) {
     if (!this.engine) throw new Error('Feedback model is not loaded yet.');
     const started = performance.now();
     let firstTokenAt: number | null = null;
@@ -39,10 +38,9 @@ export class WebLlmFeedbackModel implements FeedbackModel {
       stream: true,
       stream_options: { include_usage: true },
       temperature: 0.3,
-      // Room for a full rewritten email plus tips; too small a budget cuts the JSON off.
-      max_tokens: 1400,
-      // Forces valid JSON that matches our schema, so the UI never gets mush.
-      response_format: { type: 'json_object', schema: JSON.stringify(schema) },
+      max_tokens: maxTokens,
+      // With a schema, WebLLM forces valid JSON that matches it, so the UI never gets mush.
+      ...(schema ? { response_format: { type: 'json_object' as const, schema: JSON.stringify(schema) } } : {}),
     });
 
     for await (const chunk of stream) {
@@ -69,6 +67,10 @@ export class WebLlmFeedbackModel implements FeedbackModel {
       tokensPerSecond: decodeMs > 0 ? completionTokens / (decodeMs / 1000) : 0,
     };
     return { text, stats, truncated };
+  }
+
+  interrupt() {
+    void this.engine?.interruptGenerate();
   }
 
   async reset() {

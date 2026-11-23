@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FeedbackEngineStore } from '../src/services/ai/feedbackEngine';
-import { buildFeedbackPrompt, parseFeedback } from '../src/services/ai/feedbackPrompt';
+import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, answerTokenBudget, buildFeedbackPrompt, buildRewritePrompt, cleanTip, parseFeedback } from '../src/services/ai/feedbackPrompt';
 import type { ModelPlan } from '../src/services/device/tier';
 import type { FeedbackModel } from '../src/services/ai/types';
 
@@ -8,7 +8,6 @@ const GOOD_REPLY = JSON.stringify({
   checklist: [{ item: 'Gives advice', met: true }],
   scores: { content: 8, vocabulary: 7, delivery: 7, task: 9 },
   tips: ['One', 'Two', 'Three', 'Four'],
-  improved: 'A better answer.',
 });
 
 const plan = (feedbackModel: string | null): ModelPlan => ({
@@ -23,11 +22,12 @@ const plan = (feedbackModel: string | null): ModelPlan => ({
 function fakeModel(replies: string[], log: string[]): FeedbackModel {
   return {
     async load() { log.push('load'); return { elapsedMs: 1 }; },
-    async generateJson() {
+    async complete() {
       log.push('generate');
       const text = replies.shift() ?? '';
       return { text, stats: { promptTokens: 1, completionTokens: 1, firstTokenMs: 1, totalMs: 1, tokensPerSecond: 1 } };
     },
+    interrupt() { log.push('interrupt'); },
     async reset() { log.push('reset'); },
     async unload() { log.push('unload'); },
   };
@@ -35,12 +35,12 @@ function fakeModel(replies: string[], log: string[]): FeedbackModel {
 
 describe('parseFeedback', () => {
   it('accepts a complete reply and keeps at most 3 tips', () => {
-    expect(parseFeedback(GOOD_REPLY)?.tips).toEqual(['One', 'Two', 'Three']);
+    expect(parseFeedback(GOOD_REPLY)?.tips).toEqual(['One.', 'Two.', 'Three.']);
   });
 
   it('rejects broken JSON and replies missing scores', () => {
     expect(parseFeedback('{"checklist": [')).toBeNull();
-    expect(parseFeedback(JSON.stringify({ checklist: [], scores: { content: 8 }, tips: [], improved: '' }))).toBeNull();
+    expect(parseFeedback(JSON.stringify({ checklist: [], scores: { content: 8 }, tips: [] }))).toBeNull();
   });
 });
 
@@ -97,5 +97,91 @@ describe('FeedbackEngineStore', () => {
     }
     expect(name).toBe('ModelUnavailableError');
     expect(store.getStatus().state).toBe('unavailable');
+  });
+});
+
+describe('two-step feedback', () => {
+  it('scores with a short JSON reply that has no rewrite in it', () => {
+    expect(JSON.stringify(FEEDBACK_JSON_SCHEMA).includes('improved')).toBe(false);
+    expect(SCORING_MAX_TOKENS <= 500).toBe(true);
+  });
+
+  it('sizes the rewrite to the answer, within limits', () => {
+    expect(answerTokenBudget(180)).toBe(368);
+    expect(answerTokenBudget(10)).toBe(200);
+    expect(answerTokenBudget(2000)).toBe(1000);
+  });
+
+  it('asks for a plain-text rewrite that applies the tips', () => {
+    const { system, user } = buildRewritePrompt({
+      taskTitle: 'Email', promptText: 'Complain', goal: 9, goalLabel: 'effective', answer: 'hi i want refund', spoken: false, tips: ['Add the date.'],
+    });
+    expect(system.includes('Write only the rewritten answer')).toBe(true);
+    expect(system.includes('no subject')).toBe(true);
+    expect(user.includes('Fixes to apply: Add the date.')).toBe(true);
+    expect(user.includes('hi i want refund')).toBe(true);
+  });
+
+  it('runs requests one at a time', async () => {
+    let running = 0;
+    let overlapped = false;
+    const model: FeedbackModel = {
+      async load() { return { elapsedMs: 1 }; },
+      async complete() {
+        running += 1;
+        if (running > 1) overlapped = true;
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        running -= 1;
+        return { text: 'A full answer with enough words.', stats: { promptTokens: 1, completionTokens: 1, firstTokenMs: 1, totalMs: 1, tokensPerSecond: 1 } };
+      },
+      interrupt() {},
+      async reset() {},
+      async unload() {},
+    };
+    const store = new FeedbackEngineStore(async () => plan('m'), () => model);
+    await Promise.all([store.writeText('s', 'u', 300), store.writeText('s', 'u', 300)]);
+    expect(overlapped).toBe(false);
+  });
+
+  it('stops a reply when interrupted and does not retry it', async () => {
+    let calls = 0;
+    let release: () => void = () => {};
+    const model: FeedbackModel = {
+      async load() { return { elapsedMs: 1 }; },
+      async complete() {
+        calls += 1;
+        await new Promise<void>((resolve) => { release = resolve; });
+        return { text: 'Partial', stats: { promptTokens: 1, completionTokens: 1, firstTokenMs: 1, totalMs: 1, tokensPerSecond: 1 } };
+      },
+      interrupt() { release(); },
+      async reset() {},
+      async unload() {},
+    };
+    const store = new FeedbackEngineStore(async () => plan('m'), () => model);
+    const pending = store.writeText('s', 'u', 300);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    store.interrupt();
+    let name = '';
+    try {
+      await pending;
+    } catch (error) {
+      name = (error as Error).name;
+    }
+    expect(name).toBe('GenerationInterruptedError');
+    expect(calls).toBe(1);
+  });
+});
+
+describe('cleanTip', () => {
+  it('removes stray and wrapping quote marks', () => {
+    expect(cleanTip('"Add the date you ordered.')).toBe('Add the date you ordered.');
+    expect(cleanTip('"Say when it arrived."')).toBe('Say when it arrived.');
+    expect(cleanTip('Replace "hi" with "Dear Sir or Madam".')).toBe('Replace "hi" with "Dear Sir or Madam".');
+  });
+
+  it('cuts a long tip to its first sentence and adds a full stop', () => {
+    const long = 'Explain the damage in more detail so the reader understands. ' + 'Then add more words '.repeat(8);
+    expect(cleanTip(long)).toBe('Explain the damage in more detail so the reader understands.');
+    expect(cleanTip('Use linking words')).toBe('Use linking words.');
   });
 });

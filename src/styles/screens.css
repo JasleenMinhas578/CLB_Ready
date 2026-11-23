@@ -446,3 +446,10 @@ a.skill-card::after {
   .hero h1 { max-width: 18ch; }
 }
 .narrow { max-width: 960px; }
+
+/* The improved answer as it's written: a blinking caret marks where Pip is. */
+.improved-card.is-writing .ai-status { margin: 0 0 var(--gap-2); }
+.streaming-text { white-space: pre-wrap; }
+.streaming-text::after { content: '▍'; margin-left: 1px; color: var(--bubblegum-deep); animation: caret-blink 1s steps(2, start) infinite; }
+@keyframes caret-blink { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .streaming-text::after { animation: none; } }

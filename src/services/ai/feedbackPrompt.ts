@@ -1,7 +1,21 @@
 import type { Criterion } from '@/domain/criteria';
 
 /**
- * The fixed JSON shape every feedback reply must follow.
+ * Feedback comes in two steps so learners see results sooner:
+ * 1. A short JSON reply with the checklist, tips and scores (a few seconds).
+ * 2. The improved answer as plain text, streamed onto the screen while they read.
+ */
+
+/** Room for the checklist, three short tips and four scores. */
+export const SCORING_MAX_TOKENS = 450;
+
+/** Room for a rewrite of about `words` words, with some slack. A token is about 0.75 words. */
+export function answerTokenBudget(words: number): number {
+  return Math.min(1000, Math.max(200, Math.round(words * 1.6) + 80));
+}
+
+/**
+ * The fixed JSON shape of the scoring reply.
  * WebLLM enforces it, so parsing never depends on the model behaving.
  */
 export const FEEDBACK_JSON_SCHEMA = {
@@ -29,9 +43,8 @@ export const FEEDBACK_JSON_SCHEMA = {
       },
       required: ['content_and_coherence', 'vocabulary', 'listenability_or_readability', 'task_fulfillment'],
     },
-    improved: { type: 'string' },
   },
-  required: ['checklist', 'tips', 'scores', 'improved'],
+  required: ['checklist', 'tips', 'scores'],
 } as const;
 
 /** Fixed reference points so the model's numbers mean the same thing each time. */
@@ -49,7 +62,6 @@ export interface FeedbackReply {
   checklist: { item: string; met: boolean }[];
   scores: { content: number; vocabulary: number; delivery: number; task: number };
   tips: string[];
-  improved: string;
 }
 
 export interface FeedbackRequest {
@@ -67,7 +79,7 @@ export interface FeedbackRequest {
   measured?: string[];
 }
 
-/** Builds a short prompt: short prompts keep the KV cache, and memory, small. */
+/** Step 1 prompt. Short prompts keep the KV cache, and memory, small. */
 export function buildFeedbackPrompt(request: FeedbackRequest): { system: string; user: string } {
   const criteria = request.criteria.map((c) => `- ${c.name}: ${c.factors.join(', ')}`).join('\n');
   const goal = request.goalLabel ? `CLB ${request.goal} (${request.goalLabel})` : `CLB ${request.goal}`;
@@ -83,8 +95,7 @@ export function buildFeedbackPrompt(request: FeedbackRequest): { system: string;
       ? 'The answer is a speech transcript: ignore spelling and punctuation.'
       : 'CELPIP emails have no subject, To or From line. Never add one or suggest adding one.',
     'Mark each checklist item true only if the answer clearly covers it. Keep the items in the same order.',
-    `Give at most 3 short, specific tips that would move this answer toward ${goal}. Quote the learner's words when useful.`,
-    `"improved": rewrite the answer at ${goal} level in about the same length. Keep every idea, detail, reason and example the learner gave; improve wording, linking and structure instead of removing content.`,
+    `Give at most 3 tips that would move this answer toward ${goal}. Each tip is one sentence of under 20 words about what the learner wrote, not a repeat of the task. Quote their words when useful.`,
     'Reply with JSON only.',
   ]
     .filter(Boolean)
@@ -128,7 +139,7 @@ interface RawScores {
 /** Parses and sanity-checks a reply. Returns null if anything required is missing. */
 export function parseFeedback(text: string): FeedbackReply | null {
   try {
-    const value = extractJson(text) as { checklist?: unknown; scores?: RawScores; tips?: unknown; improved?: unknown };
+    const value = extractJson(text) as { checklist?: unknown; scores?: RawScores; tips?: unknown };
     const raw = value.scores ?? {};
     const scores = {
       content: raw.content_and_coherence ?? raw.content,
@@ -137,24 +148,73 @@ export function parseFeedback(text: string): FeedbackReply | null {
       task: raw.task_fulfillment ?? raw.task,
     };
     const scoresOk = Object.values(scores).every((score) => typeof score === 'number' && Number.isFinite(score));
-    if (!Array.isArray(value.checklist) || !scoresOk || !Array.isArray(value.tips) || typeof value.improved !== 'string') return null;
+    if (!Array.isArray(value.checklist) || !scoresOk || !Array.isArray(value.tips)) return null;
     return {
       checklist: value.checklist as FeedbackReply['checklist'],
       scores: scores as FeedbackReply['scores'],
-      tips: (value.tips as unknown[]).filter((tip): tip is string => typeof tip === 'string' && tip.trim() !== '').slice(0, 3),
-      improved: value.improved,
+      tips: (value.tips as unknown[])
+        .filter((tip): tip is string => typeof tip === 'string')
+        .map(cleanTip)
+        .filter((tip) => tip !== '')
+        .slice(0, 3),
     };
   } catch {
     return null;
   }
 }
 
-/** Schema for a model answer written from scratch (used when an answer is too short to rewrite). */
-export const MODEL_ANSWER_SCHEMA = {
-  type: 'object',
-  properties: { answer: { type: 'string' } },
-  required: ['answer'],
-} as const;
+const MAX_TIP_WORDS = 30;
+
+/** Tidies a tip: drops wrapping or unmatched quote marks and cuts a long tip to its first sentence. */
+export function cleanTip(raw: string): string {
+  let tip = raw.trim().replace(/^["'“”]+(?=[A-Z])/, '').replace(/^[-•*\d.)\s]+(?=[A-Za-z"“])/, '');
+  if (/^["“].*["”]$/.test(tip) && (tip.match(/["“”]/g) ?? []).length === 2) tip = tip.slice(1, -1);
+  // An odd number of straight quotes means one is stray: remove the last one.
+  if ((tip.match(/"/g) ?? []).length % 2 === 1) {
+    const at = tip.lastIndexOf('"');
+    tip = (tip.slice(0, at) + tip.slice(at + 1)).replace(/\s{2,}/g, ' ');
+  }
+  if (tip.split(/\s+/).length > MAX_TIP_WORDS) {
+    const first = tip.match(/^.+?[.!?](?=\s|$)/)?.[0];
+    if (first && first.split(/\s+/).length >= 5) tip = first;
+  }
+  tip = tip.trim();
+  return tip && !/[.!?"”)]$/.test(tip) ? `${tip}.` : tip;
+}
+
+export interface RewriteRequest {
+  taskTitle: string;
+  promptText: string;
+  goal: number;
+  goalLabel?: string;
+  answer: string;
+  spoken: boolean;
+  /** The tips from step 1, so the rewrite shows them in action. */
+  tips?: string[];
+}
+
+/** Step 2 prompt: the learner's answer rewritten at the goal level, as plain text. */
+export function buildRewritePrompt(request: RewriteRequest): { system: string; user: string } {
+  const goal = request.goalLabel ? `CLB ${request.goal} (${request.goalLabel})` : `CLB ${request.goal}`;
+  const system = [
+    'You are a kind, precise CELPIP-style English coach.',
+    `Rewrite the learner's ${request.spoken ? 'spoken answer' : 'answer'} at ${goal} level, in about the same length.`,
+    "Keep every idea, detail, reason and example the learner gave. Improve wording, linking and structure instead of removing content.",
+    request.spoken
+      ? 'Write it the way a confident speaker would say it. No headings.'
+      : 'Keep the paragraphs. CELPIP emails have no subject, To or From line, so never add one.',
+    'Write only the rewritten answer: no introduction, notes or quotation marks around it.',
+  ].join('\n');
+  const user = [
+    `Task: ${request.taskTitle}`,
+    `Prompt: ${request.promptText}`,
+    request.tips?.length ? `Fixes to apply: ${request.tips.join(' ')}` : '',
+    `Answer: """${request.answer}"""`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return { system, user };
+}
 
 export interface ModelAnswerRequest {
   taskTitle: string;
@@ -166,6 +226,7 @@ export interface ModelAnswerRequest {
   length: string;
 }
 
+/** For answers too short to rewrite: a model answer written from scratch, as plain text. */
 export function buildModelAnswerPrompt(request: ModelAnswerRequest): { system: string; user: string } {
   const goal = request.goalLabel ? `CLB ${request.goal} (${request.goalLabel})` : `CLB ${request.goal}`;
   const system = [
@@ -175,17 +236,30 @@ export function buildModelAnswerPrompt(request: ModelAnswerRequest): { system: s
     request.spoken
       ? 'Write it the way a confident speaker would say it, with clear linking words. No headings.'
       : 'Use paragraphs. For an email, start with a greeting and end with a sign-off that fit the tone. Do not write a subject, To or From line.',
-    'Reply with JSON only: {"answer": "..."}.',
+    'Write only the answer itself: no introduction, notes or quotation marks around it.',
   ].join('\n');
   const user = [`Task: ${request.taskTitle}`, `Prompt: ${request.promptText}`].join('\n');
   return { system, user };
 }
 
-export function parseModelAnswer(text: string): string | null {
-  try {
-    const value = extractJson(text) as { answer?: unknown };
-    return typeof value.answer === 'string' && value.answer.trim() ? value.answer.trim() : null;
-  } catch {
-    return null;
+/**
+ * Tidies a plain-text answer from the model: drops code fences, a lead-in
+ * like "Here is the rewritten answer:", and quote marks around the whole
+ * thing. Returns null when nothing usable is left.
+ */
+export function cleanAnswerText(raw: string): string | null {
+  let text = raw.trim().replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '').trim();
+  // A model that answers in JSON anyway.
+  if (text.startsWith('{')) {
+    try {
+      const value = extractJson(text) as { answer?: unknown; improved?: unknown };
+      const inner = value.answer ?? value.improved;
+      if (typeof inner === 'string') text = inner.trim();
+    } catch {
+      // Not JSON after all: keep the text.
+    }
   }
+  text = text.replace(/^(?:sure[,!.]?\s*)?(?:here(?:'s| is)[^\n]{0,60}?:)\s*/i, '');
+  if (/^["“][\s\S]*["”]$/.test(text)) text = text.slice(1, -1).trim();
+  return text.split(/\s+/).filter(Boolean).length >= 5 ? text : null;
 }

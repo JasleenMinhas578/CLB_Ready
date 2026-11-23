@@ -7,7 +7,7 @@ import { href } from '@/app/router';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { friendlyModelError } from '@/services/ai/errorText';
-import type { AiPerf, FeedbackOutcome, FeedbackProgress } from './useFeedback';
+import type { AiPerf, AnswerStream, FeedbackOutcome, FeedbackProgress, StepPerf } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
 import { DiffView } from './DiffView';
 
@@ -29,8 +29,8 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   const text =
     progress?.phase === 'loading-model'
       ? `Getting the AI coach ready${progress.modelProgress != null ? ` (${Math.round(progress.modelProgress * 100)}%)` : ''}. The first time can take a minute.`
-      : progress?.phase === 'writing'
-        ? `Pip is writing your feedback${progress.written ? ` (${progress.written} characters)` : ''}…`
+      : progress?.phase === 'scoring'
+        ? `Pip is checking your answer${progress.written ? ` (${progress.written} characters)` : ''}…`
         : 'Starting the AI coach…';
   return (
     <p className="ai-status" aria-live="polite">
@@ -147,6 +147,40 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
   );
 }
 
+/**
+ * The improved (or model) answer, which arrives after the scores. Shows it
+ * word by word while it's written, then the full card with changes marked.
+ */
+export function AnswerCard({ answer, goal, spoken, original, fromScratch = false }: {
+  answer: AnswerStream | undefined;
+  goal: number;
+  spoken: boolean;
+  original?: string;
+  fromScratch?: boolean;
+}) {
+  if (!answer || answer.state === 'off') return null;
+  if (answer.state === 'done') return <ImprovedCard goal={goal} text={answer.text} spoken={spoken} original={original} fromScratch={fromScratch} />;
+  const heading = fromScratch ? `A model answer at CLB ${goal}` : `Your answer at CLB ${goal}`;
+  if (answer.state === 'failed') {
+    return (
+      <div className="results-card improved-card">
+        <h2>{heading}</h2>
+        <p className="fine-print">Pip couldn’t write this answer this time. Your scores and tips above are complete. Try the task again for a new one.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="results-card improved-card is-writing" aria-busy="true">
+      <h2>{heading}</h2>
+      <p className="ai-status" aria-live="polite">
+        <Emoji symbol="✍️" motion="wiggle" /> {answer.text ? 'Pip is writing it now…' : 'Pip is starting to write…'}
+        {!fromScratch && ' Changes will be marked when it’s done.'}
+      </p>
+      {answer.text && <blockquote className="transcript streaming-text">{answer.text}</blockquote>}
+    </div>
+  );
+}
+
 export interface ChecklistRow {
   met: boolean | null;
   /** Decided by code rather than the AI coach. */
@@ -235,21 +269,29 @@ function seconds(ms: number): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`;
 }
 
+function stepRows(label: string, step: StepPerf): [string, string][] {
+  return [
+    [`${label}: first word after`, seconds(step.firstTokenMs)],
+    [`${label}: writing time`, seconds(step.generateMs)],
+    [`${label}: tokens in / out`, `${step.inputTokens} / ${step.outputTokens}${step.attempts > 1 ? ` (${step.attempts} tries)` : ''}`],
+  ];
+}
+
 /**
  * How fast the AI ran on this device: useful for testing and for
  * explaining the app's performance. Collapsed by default.
  */
 export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: number }) {
+  const speed = perf.answer?.tokensPerSecond ?? perf.scoring?.tokensPerSecond;
   const rows: [string, string][] = [
     ['AI coach', perf.model ?? 'Unknown'],
     ['Model load', perf.loadMs == null ? 'Already loaded' : seconds(perf.loadMs)],
     ...(transcribeMs != null ? ([['Speech to text', seconds(transcribeMs)]] as [string, string][]) : []),
-    ['First word after', seconds(perf.firstTokenMs)],
-    ['Writing speed', `${perf.tokensPerSecond.toFixed(1)} tokens/s`],
-    ['Writing time', seconds(perf.generateMs)],
-    ['Tokens in / out', `${perf.inputTokens} / ${perf.outputTokens}`],
-    ['Tries needed', String(perf.attempts)],
-    ['Total wait', seconds(perf.totalWaitMs)],
+    ...(perf.scoresWaitMs != null ? ([['Scores on screen after', seconds(perf.scoresWaitMs)]] as [string, string][]) : []),
+    ['Full answer on screen after', perf.answerWaitMs != null ? seconds(perf.answerWaitMs) : 'Still writing…'],
+    ...(speed != null ? ([['Writing speed', `${speed.toFixed(1)} tokens/s`]] as [string, string][]) : []),
+    ...(perf.scoring ? stepRows('Scores', perf.scoring) : []),
+    ...(perf.answer ? stepRows('Answer', perf.answer) : []),
   ];
   return (
     <details className="results-card perf-card">
@@ -262,7 +304,7 @@ export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: 
           </div>
         ))}
       </dl>
-      <p className="fine-print">Measured in your browser. A token is about three quarters of a word.</p>
+      <p className="fine-print">Measured in your browser. Scores come first; the answer is written while you read them. A token is about three quarters of a word.</p>
     </details>
   );
 }
