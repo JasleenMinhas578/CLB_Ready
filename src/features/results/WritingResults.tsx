@@ -74,22 +74,28 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
 
   if (!scorable) {
     return (
-      <section className="narrow results">
+      <section className="results">
         {header}
-        <TooShortCard
-          attempt={attempt}
-          need={`at least ${MIN_SCORABLE_WRITING_WORDS} words (the task asks for ${attempt.metrics.wordRange.min}–${attempt.metrics.wordRange.max})`}
-          unit="word"
-          outcome={outcome}
-          progress={progress}
-        />
-        {sample && <ImprovedCard goal={attempt.goal} text={sample} spoken={false} fromScratch />}
-        <TipsCard goal={attempt.goal} tips={writingTips(attempt.metrics, attempt.goal, attempt.options).slice(0, 3)} />
-        <div className="results-card">
-          <h2>What you wrote</h2>
-          <blockquote className="transcript essay">{attempt.text.trim() || '(Nothing written)'}</blockquote>
+        <div className="results-grid">
+          <div className="results-side">
+            <TooShortCard
+              attempt={attempt}
+              need={`at least ${MIN_SCORABLE_WRITING_WORDS} words (the task asks for ${attempt.metrics.wordRange.min}–${attempt.metrics.wordRange.max})`}
+              unit="word"
+              outcome={outcome}
+              progress={progress}
+            />
+            <TipsCard goal={attempt.goal} tips={writingTips(attempt.metrics, attempt.goal, attempt.options).slice(0, 3)} />
+            {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} />}
+          </div>
+          <div className="results-main">
+            {sample && <ImprovedCard goal={attempt.goal} text={sample} spoken={false} fromScratch />}
+            <div className="results-card">
+              <h2>What you wrote</h2>
+              <blockquote className="transcript essay">{attempt.text.trim() || '(Nothing written)'}</blockquote>
+            </div>
+          </div>
         </div>
-        {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} />}
         <ResultsActions attempt={attempt} />
       </section>
     );
@@ -107,34 +113,40 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
   const final = outcome !== null;
 
   return (
-    <section className="narrow results">
+    <section className="results">
       <div className="screen-head">
         <Emoji symbol={overall >= attempt.goal ? '🎉' : '🍭'} size="xl" motion="bounce" />
         <h1>Your feedback</h1>
         <p>{attempt.taskTitle}</p>
       </div>
-      <LevelCard
-        attempt={attempt}
-        criteria={getCriteria('writing')}
-        scores={scores}
-        overall={overall}
-        final={final}
-        status={<AiStatus outcome={outcome} progress={progress} />}
-        notes={outlierNotes(checked?.ignored ?? [], getCriteria('writing'))}
-      />
-      <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, writingTips(attempt.metrics, attempt.goal, attempt.options), !!ai)} />
-      {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken={false} original={attempt.text} />}
-      <ChecklistCard items={attempt.checklist} results={checklist} final={final} />
-      <div className="results-card">
-        <h2>What we measured</h2>
-        <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />
+      <div className="results-grid">
+        <div className="results-side">
+          <LevelCard
+            attempt={attempt}
+            criteria={getCriteria('writing')}
+            scores={scores}
+            overall={overall}
+            final={final}
+            status={<AiStatus outcome={outcome} progress={progress} />}
+            notes={outlierNotes(checked?.ignored ?? [], getCriteria('writing'))}
+          />
+          <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, writingTips(attempt.metrics, attempt.goal, attempt.options), !!ai)} />
+          <ChecklistCard items={attempt.checklist} results={checklist} final={final} />
+          <div className="results-card">
+            <h2>What we measured</h2>
+            <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />
+          </div>
+          {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} />}
+        </div>
+        <div className="results-main">
+          {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken={false} original={attempt.text} />}
+          <div className="results-card">
+            <h2>Your writing, checked</h2>
+            <EssayView text={attempt.text} issues={attempt.issues} />
+            <p className="fine-print">The checker catches common mistakes only, so a clean result doesn’t mean zero errors.</p>
+          </div>
+        </div>
       </div>
-      <div className="results-card">
-        <h2>Your writing, checked</h2>
-        <EssayView text={attempt.text} issues={attempt.issues} />
-        <p className="fine-print">The checker catches common mistakes only, so a clean result doesn’t mean zero errors.</p>
-      </div>
-      {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} />}
       <ResultsActions attempt={attempt} />
     </section>
   );

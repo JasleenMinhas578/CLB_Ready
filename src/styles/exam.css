@@ -18,7 +18,7 @@
 .exam-bar {
   position: sticky; top: 0; z-index: 5;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
-  padding: 0.7rem 24px; background: var(--grape); color: #fff;
+  padding: 0.7rem var(--gutter); background: var(--grape); color: #fff;
 }
 .exam-bar-title { display: flex; align-items: center; gap: 1rem; min-width: 0; }
 .exam-bar h1 { margin: 0; font-family: var(--font-body); font-size: 1.15rem; font-weight: 800; line-height: 1.2; }
@@ -43,9 +43,9 @@
 .exam-bar :focus-visible { outline-color: var(--lemon); }
 
 /* Body */
-.exam-body { flex: 1; display: grid; gap: 16px; width: 100%; max-width: 1280px; margin: 0 auto; padding: 20px 24px; align-items: start; }
+.exam-body { flex: 1; display: grid; gap: 20px; width: 100%; margin: 0 auto; padding: 20px var(--gutter); align-items: start; }
 .exam-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.exam-stack { grid-template-columns: minmax(0, 1fr); max-width: 860px; }
+.exam-stack { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .exam-panel { background: #fff; border: 1px solid var(--exam-line); border-radius: 10px; padding: 20px 22px; }
 
 .exam-prompt { font-size: 1.1rem; line-height: 1.6; margin-bottom: 0.75rem; max-width: none; }
@@ -121,12 +121,12 @@
 .exam-alert { margin: 0 auto 1rem; padding: 0.7rem 1rem; max-width: 860px; background: #fff3c4; border: 1px solid #e6c84f; border-radius: 8px; font-weight: 700; }
 .exam-meta {
   display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
-  width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 24px 12px; font-size: 0.85rem; color: var(--exam-soft);
+  width: 100%; margin: 0 auto; padding: 0 var(--gutter) 12px; font-size: 0.85rem; color: var(--exam-soft);
 }
 .exam-meta .plan-badge { margin: 0; font-size: 0.85rem; }
 
 @media (max-width: 860px) {
-  .exam-columns { grid-template-columns: 1fr; }
+  .exam-columns, .exam-stack { grid-template-columns: 1fr; }
   .exam-bar { padding: 0.6rem 16px; }
   .exam-body { padding: 14px 16px; }
   .exam-meta { padding: 0 16px 12px; }

@@ -42,6 +42,8 @@
   --gap-3: 1.5rem;
   --gap-4: 2.5rem;
   --gap-5: 4rem;
-  --page-width: 1080px;
+  --page-width: 1440px;
+  /* Side gutters grow with the screen: 16px on phones, up to 64px on wide monitors. */
+  --gutter: clamp(16px, 4vw, 64px);
   --text-width: 64ch;
 }
