@@ -1,6 +1,9 @@
 import type { LoadProgress, SpeechToText, Transcript } from './types';
 import type { WhisperRequest, WhisperResponse } from './whisper.protocol';
 
+/** Omit that works on each member of a union separately. */
+type WithoutId<T> = T extends unknown ? Omit<T, 'id'> : never;
+
 type Pending = {
   resolve: (response: WhisperResponse) => void;
   reject: (error: Error) => void;
@@ -38,7 +41,7 @@ export class WhisperSpeechToText implements SpeechToText {
     else entry.resolve(response);
   }
 
-  private send(request: Omit<WhisperRequest, 'id'>, onProgress?: Pending['onProgress'], transfer: Transferable[] = []) {
+  private send(request: WithoutId<WhisperRequest>, onProgress?: Pending['onProgress'], transfer: Transferable[] = []) {
     const id = this.nextId++;
     return new Promise<WhisperResponse>((resolve, reject) => {
       this.pending.set(id, { resolve, reject, onProgress });

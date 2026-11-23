@@ -8,6 +8,13 @@ const worker = self as unknown as {
   addEventListener(type: 'message', listener: (event: MessageEvent<WhisperRequest>) => void): void;
 };
 
+// pipeline()'s full typing is too complex for TypeScript; narrow it to what we use.
+const createAsr = pipeline as unknown as (
+  task: 'automatic-speech-recognition',
+  model: string,
+  options: Record<string, unknown>,
+) => Promise<AutomaticSpeechRecognitionPipeline>;
+
 let asr: AutomaticSpeechRecognitionPipeline | null = null;
 const fileProgress = new Map<string, number>();
 
@@ -23,7 +30,7 @@ interface ProgressEvent {
 
 async function load(id: number, model: string, device: 'webgpu' | 'wasm') {
   fileProgress.clear();
-  asr = (await pipeline('automatic-speech-recognition', model, {
+  asr = await createAsr('automatic-speech-recognition', model, {
     device,
     // fp32 is safest on WebGPU; 8-bit keeps the CPU fallback small and quick.
     dtype: device === 'webgpu' ? 'fp32' : 'q8',
@@ -35,7 +42,7 @@ async function load(id: number, model: string, device: 'webgpu' | 'wasm') {
         post({ id, type: 'progress', fraction, text: `Downloading ${event.file}` });
       }
     },
-  })) as AutomaticSpeechRecognitionPipeline;
+  });
   post({ id, type: 'loaded' });
 }
 
