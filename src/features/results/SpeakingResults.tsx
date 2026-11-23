@@ -4,7 +4,7 @@ import { blendScores, codeEstimates, overallLevel, type Scores } from '@/domain/
 import { codeTips } from '@/domain/scoring/codeTips';
 import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, mergeTips } from './cards';
+import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { MIN_SCORABLE_SPEAKING_WORDS, isScorable, lengthCeiling } from '@/domain/scoring/sufficiency';
 import { TranscriptView } from './TranscriptView';
 import { MeasureTiles } from './MeasureTiles';
@@ -36,6 +36,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
           <blockquote className="transcript">{attempt.transcript.trim() || '(No words detected)'}</blockquote>
           <p className="fine-print">If you spoke more than this, check your microphone in the mic check and try again.</p>
         </div>
+        {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} transcribeMs={attempt.transcribeMs} />}
         <ResultsActions attempt={attempt} />
       </section>
     );
@@ -76,6 +77,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
         <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />
         <p className="fine-print">Speech recognition can drop filler words, so counts are a minimum.</p>
       </div>
+      {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} transcribeMs={attempt.transcribeMs} />}
       <ResultsActions attempt={attempt} />
     </section>
   );

@@ -5,7 +5,7 @@ import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstim
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
 import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, mergeTips } from './cards';
+import { AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { EssayView } from './EssayView';
 import { TileList, type Tile } from './MeasureTiles';
 import { MIN_SCORABLE_WRITING_WORDS, MIN_SENTENCES_FOR_VARIETY, MIN_WORDS_FOR_VARIETY, isScorable, lengthCeiling, plural } from '@/domain/scoring/sufficiency';
@@ -87,6 +87,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
           <h2>What you wrote</h2>
           <blockquote className="transcript essay">{attempt.text.trim() || '(Nothing written)'}</blockquote>
         </div>
+        {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} />}
         <ResultsActions attempt={attempt} />
       </section>
     );
@@ -127,6 +128,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
         <EssayView text={attempt.text} issues={attempt.issues} />
         <p className="fine-print">The checker catches common mistakes only, so a clean result doesn’t mean zero errors.</p>
       </div>
+      {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} />}
       <ResultsActions attempt={attempt} />
     </section>
   );
