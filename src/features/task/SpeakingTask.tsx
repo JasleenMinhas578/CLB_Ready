@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { SpeakingTaskType } from '@/domain/tasks/types';
 import { useSession } from '@/app/session';
 import { navigate } from '@/app/router';
 import { DEFAULT_GOAL, newAttemptId } from '@/domain/attempt';
 import { measureSpeaking } from '@/domain/measure/speakingMetrics';
+import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import type { PracticePrompt } from '@/content/types';
+import { promptForModel } from '@/content/promptText';
 import { Button } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
-import { LevelMeter } from '@/components/LevelMeter';
-import { TimerRing } from '@/components/TimerRing';
 import { getSpeechEngine, useSpeechStatus, type SpeechEngineStore } from '@/services/ai/speechEngine';
 import { getFeedbackEngine } from '@/services/ai/feedbackEngine';
 import { WHISPER_SAMPLE_RATE, toWhisperAudio } from '@/services/audio/recorder';
@@ -19,6 +18,10 @@ import { useCountdown } from './useCountdown';
 import { useAnswerRecorder } from './useAnswerRecorder';
 import { MicCheck } from './MicCheck';
 import { SpeechModelBadge } from './SpeechModelBadge';
+import { ModelPlanBadge } from './ModelPlanBadge';
+import { ExamBar } from './exam/ExamBar';
+import { PromptPanel } from './exam/PromptPanel';
+import { PhaseTimer } from './exam/PhaseTimer';
 
 type FlowState = 'ready' | 'mic-check' | 'running' | 'transcribing' | 'problem';
 
@@ -27,18 +30,27 @@ const PROBLEM_TEXT: Record<Exclude<RecordingProblem, null>, { title: string; hel
   'too-quiet': { title: 'We couldn’t hear you', help: 'Move closer to the microphone or speak a little louder, then try again.' },
 };
 
+interface SpeakingTaskProps {
+  task: SpeakingTaskType;
+  prompt: PracticePrompt;
+  moduleId: string;
+}
+
 /**
- * Timed speaking flow: (choose) → prepare → speak → transcribe → results.
+ * Test-style speaking task: (choose) → preparation → recording, each
+ * starting automatically, then transcription and results.
  * Both AI models load in the background while the learner reads and prepares:
  * speech first (needed first), then the feedback model.
  */
-export function SpeakingTask({ task, prompt, moduleId }: { task: SpeakingTaskType; prompt: PracticePrompt; moduleId: string }) {
+export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   const { goal, micReady, setMicReady, setLastAttempt } = useSession();
   const phases = buildSpeakingPhases(task.timing);
   const [state, setState] = useState<FlowState>('ready');
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [problem, setProblem] = useState<{ title: string; help: string } | null>(null);
+  const [selected, setSelected] = useState<0 | 1 | null>(null);
   const phase = phases[phaseIndex];
+  const total = getTaskTypesForSkill('speaking').length;
 
   const [engine, setEngine] = useState<SpeechEngineStore | null>(null);
   const speechStatus = useSpeechStatus(engine);
@@ -46,7 +58,6 @@ export function SpeakingTask({ task, prompt, moduleId }: { task: SpeakingTaskTyp
   const level = useMicLevel(recorder.stream);
   const recordingStarted = useRef(false);
 
-  // Start downloading or warming the speech model during instructions and prep.
   useEffect(() => {
     let cancelled = false;
     void getSpeechEngine().then((store) => {
@@ -62,7 +73,7 @@ export function SpeakingTask({ task, prompt, moduleId }: { task: SpeakingTaskTyp
     };
   }, []);
 
-  // Turn the microphone on exactly when the speaking phase begins.
+  // Turn the microphone on exactly when the recording phase begins.
   useEffect(() => {
     if (state !== 'running' || phase.id !== 'answer' || recordingStarted.current) return;
     recordingStarted.current = true;
@@ -97,7 +108,7 @@ export function SpeakingTask({ task, prompt, moduleId }: { task: SpeakingTaskTyp
         moduleId,
         taskTypeId: task.id,
         taskTitle: `Speaking task ${task.order}: ${task.title}`,
-        promptText: prompt.options ? `${prompt.text} Options: ${prompt.options.join(' / ')}` : prompt.text,
+        promptText: promptForModel(prompt, selected),
         checklist: prompt.checklist,
         goal: goal ?? DEFAULT_GOAL,
         goalChosen: goal !== null,
@@ -122,107 +133,115 @@ export function SpeakingTask({ task, prompt, moduleId }: { task: SpeakingTaskTyp
     else void finishAnswer();
   };
 
-  const secondsLeft = useCountdown(phase.seconds, state === 'running', advance, phase.id);
-  const speaking = state === 'running' && phase.id === 'answer';
-
-  const begin = () => setState(micReady ? 'running' : 'mic-check');
+  const running = state === 'running';
+  const secondsLeft = useCountdown(phase.seconds, running, advance, phase.id);
 
   const restart = () => {
     void recorder.stop();
     recordingStarted.current = false;
     setPhaseIndex(0);
     setProblem(null);
+    setSelected(null);
     setState('ready');
   };
 
-  const steps = (
-    <ol className="phase-steps" aria-label="Task steps">
-      {phases.map((item, index) => {
-        const finished = index < phaseIndex || state === 'transcribing';
-        const current = index === phaseIndex && state === 'running';
-        return (
-          <li key={item.id} className={current ? 'is-current' : finished ? 'is-done' : ''}>
-            {item.label} <small>{item.seconds}s</small>
-          </li>
-        );
-      })}
-    </ol>
-  );
+  const nextLabel = !running ? 'Next' : phase.id === 'answer' ? 'Finish answer' : 'Skip';
 
+  let panel: ReactNode;
   if (state === 'mic-check') {
-    return (
-      <div className="flow-panel">
-        <MicCheck
-          onReady={() => {
-            setMicReady(true);
-            setState('running');
-          }}
-          onCancel={() => setState('ready')}
-        />
-      </div>
+    panel = (
+      <MicCheck
+        onReady={() => {
+          setMicReady(true);
+          setState('running');
+        }}
+        onCancel={() => setState('ready')}
+      />
     );
-  }
-
-  if (state === 'problem') {
+  } else if (state === 'problem') {
     const text = problem ?? MIC_PROBLEM_TEXT[recorder.problem ?? 'unknown'];
-    return (
-      <div className="flow-panel flow-done" role="alert">
-        <Emoji symbol="🙉" size="xl" />
+    panel = (
+      <div className="exam-message" role="alert">
         <h2>{text.title}</h2>
         <p>{text.help}</p>
-        <div className="row-actions">
-          <Button onClick={restart}>Try again</Button>
-        </div>
+        <Button onClick={restart}>Try again</Button>
       </div>
     );
-  }
-
-  if (state === 'transcribing') {
-    return (
-      <div className="flow-panel">
-        {steps}
-        <div className="flow-done" aria-live="polite">
-          <Emoji symbol="🤔" size="xl" motion="wiggle" />
-          <h2>Listening back to your answer…</h2>
-          <p>This happens on your device. It usually takes a few seconds.</p>
-          <SpeechModelBadge status={speechStatus} />
-        </div>
+  } else if (state === 'transcribing') {
+    panel = (
+      <div className="exam-message" aria-live="polite">
+        <h2>Saving your response…</h2>
+        <p>Your answer is being turned into text on this device. This usually takes a few seconds.</p>
+        <SpeechModelBadge status={speechStatus} />
+      </div>
+    );
+  } else if (state === 'ready') {
+    panel = (
+      <div className="exam-message">
+        <h2>Ready when you are</h2>
+        <p>
+          Read the task. When you press Start, {phases[0].id === 'select' ? 'the choosing time' : 'the preparation time'} begins,
+          then recording starts automatically. Speak until the recording time ends.
+        </p>
+        <Button onClick={() => setState(micReady ? 'running' : 'mic-check')}>Start</Button>
+        <SpeechModelBadge status={speechStatus} />
+      </div>
+    );
+  } else {
+    panel = (
+      <div className="phase-timers">
+        {phases.map((item, index) => (
+          <PhaseTimer
+            key={item.id}
+            kind={item.id}
+            totalSeconds={item.seconds}
+            secondsLeft={index === phaseIndex ? secondsLeft : index < phaseIndex ? 0 : item.seconds}
+            active={index === phaseIndex}
+            done={index < phaseIndex}
+            level={level}
+          />
+        ))}
+        {phase.id === 'select' && (
+          <p className="exam-note">Choose Option A or Option B in the task panel.</p>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="flow-panel">
-      {steps}
-      <div className="flow-live">
-        <TimerRing secondsLeft={secondsLeft} totalSeconds={phase.seconds} label={phase.label} />
-        <div className="mic-area">
-          <span className={`mic-dot ${speaking ? 'is-live' : ''}`}>
-            <Emoji symbol="🎤" size="lg" motion={speaking ? 'pulse' : 'none'} label="Microphone" />
-          </span>
-          {speaking ? (
-            <>
-              <LevelMeter level={level} />
-              <p className="mic-note">Recording. Speak until the timer ends.</p>
-            </>
-          ) : (
-            <p className="mic-note">
-              {state === 'ready'
-                ? 'Read the task, then start. Recording begins when the speaking time starts.'
-                : 'Plan your answer. Recording starts automatically.'}
-            </p>
-          )}
-        </div>
-        <div className="row-actions">
-          {state === 'ready' ? (
-            <Button onClick={begin}>Start the task</Button>
-          ) : (
-            <Button variant="secondary" onClick={advance}>
-              {phase.id === 'answer' ? 'Finish answer' : 'Skip to next step'}
-            </Button>
-          )}
-        </div>
-        <SpeechModelBadge status={speechStatus} />
+    <div className="exam-screen">
+      <ExamBar
+        position={`Speaking Task ${task.order} of ${total}`}
+        title={task.title}
+        exitTo={`/practice/speaking/${moduleId}`}
+        action={
+          <button
+            type="button"
+            className="exam-next"
+            onClick={running ? advance : () => setState(micReady ? 'running' : 'mic-check')}
+            disabled={state === 'transcribing' || state === 'mic-check' || state === 'problem'}
+          >
+            {nextLabel}
+          </button>
+        }
+      />
+
+      <div className={`exam-body ${task.needsImage ? 'exam-columns' : 'exam-stack'}`}>
+        <PromptPanel
+          task={task}
+          prompt={prompt}
+          selected={selected}
+          onSelect={setSelected}
+          optionsLocked={running && phase.id !== 'select'}
+        />
+        <section className="exam-panel status-panel" aria-label="Timers">
+          {panel}
+        </section>
+      </div>
+
+      <div className="exam-meta">
+        <span>Find a quiet room. Your recording stays on this device.</span>
+        <ModelPlanBadge needsSpeech />
       </div>
     </div>
   );

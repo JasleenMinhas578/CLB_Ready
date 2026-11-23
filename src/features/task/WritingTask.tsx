@@ -1,17 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { WritingTaskType } from '@/domain/tasks/types';
 import type { PracticePrompt } from '@/content/types';
+import { promptForModel } from '@/content/promptText';
 import { useSession } from '@/app/session';
 import { navigate } from '@/app/router';
 import { DEFAULT_GOAL, newAttemptId } from '@/domain/attempt';
 import { measureWriting } from '@/domain/measure/writingMetrics';
-import { Button } from '@/components/Button';
-import { formatSeconds } from '@/components/TimerRing';
+import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { ruleChecker } from '@/services/grammar/ruleChecker';
 import type { GrammarChecker } from '@/domain/grammar';
 import { getFeedbackEngine } from '@/services/ai/feedbackEngine';
-import { countWords } from './phases';
 import { useCountdown } from './useCountdown';
+import { ExamBar, TimeRemaining } from './exam/ExamBar';
+import { PromptPanel } from './exam/PromptPanel';
+import { WritingEditor } from './exam/WritingEditor';
+import { ModelPlanBadge } from './ModelPlanBadge';
 
 interface WritingTaskProps {
   task: WritingTaskType;
@@ -22,38 +25,35 @@ interface WritingTaskProps {
 }
 
 /**
- * Timed writing box with a live word count, like test day: no spell check
- * or grammar hints while writing. Checks run when the learner finishes.
+ * Test-style writing task: the timer starts when the screen opens, like
+ * test day, and the answer is submitted automatically when time runs out.
+ * No spell check or grammar hints while writing; checks run after.
  * Writing tasks never load the speech model, only the feedback model.
  */
 export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: WritingTaskProps) {
   const { goal, setLastAttempt } = useSession();
   const [text, setText] = useState('');
-  const [started, setStarted] = useState(false);
+  const [selected, setSelected] = useState<0 | 1 | null>(null);
   const [state, setState] = useState<'writing' | 'checking'>('writing');
   const [timeUp, setTimeUp] = useState(false);
-  const secondsLeft = useCountdown(task.timing.minutes * 60, started && state === 'writing' && !timeUp, () => setTimeUp(true));
+  const textRef = useRef(text);
+  textRef.current = text;
+
+  const secondsLeft = useCountdown(task.timing.minutes * 60, state === 'writing' && !timeUp, () => setTimeUp(true));
+  const total = getTaskTypesForSkill('writing').length;
 
   // Warm up the AI coach while the learner writes.
   useEffect(() => {
     void getFeedbackEngine().then((store) => store.preload());
   }, []);
 
-  const words = countWords(text);
-  const { min, max } = task.wordRange;
-  const status = words === 0 ? 'empty' : words < min ? 'short' : words > max ? 'long' : 'good';
-  const statusText = {
-    empty: `Aim for ${min}–${max} words`,
-    short: `${min - words} more to reach ${min}`,
-    good: 'Right in range',
-    long: `${words - max} over ${max}`,
-  }[status];
-
   const finish = async () => {
+    if (state === 'checking') return;
     setState('checking');
-    const issues = await grammar.check(text);
+    const answer = textRef.current;
+    const issues = await grammar.check(answer);
     const metrics = measureWriting({
-      text,
+      text: answer,
       wordRange: task.wordRange,
       grammarIssues: issues.length,
       emailTone: task.order === 1 ? (prompt.tone ?? 'formal') : undefined,
@@ -65,11 +65,11 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
       moduleId,
       taskTypeId: task.id,
       taskTitle: `Writing task ${task.order}: ${task.title}`,
-      promptText: prompt.options ? `${prompt.text} Options: ${prompt.options.join(' / ')}` : prompt.text,
+      promptText: promptForModel(prompt, selected),
       checklist: prompt.checklist,
       goal: goal ?? DEFAULT_GOAL,
       goalChosen: goal !== null,
-      text,
+      text: answer,
       issues,
       options: prompt.options,
       metrics,
@@ -77,36 +77,38 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
     navigate('/results');
   };
 
+  // Time's up: submit what's written, as the real test does.
+  useEffect(() => {
+    if (timeUp && textRef.current.trim()) void finish();
+    // finish only needs to run once when time runs out
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeUp]);
+
   return (
-    <div className="flow-panel">
-      <div className="writing-bar">
-        <span className={`word-count is-${status}`} aria-live="polite">
-          <strong>{words}</strong> words, {statusText}
-        </span>
-        <span className="writing-clock" role="timer">
-          {timeUp ? 'Time’s up' : started ? `${formatSeconds(secondsLeft)} left` : `${task.timing.minutes}:00 left`}
-        </span>
+    <div className="exam-screen">
+      <ExamBar
+        position={`Writing Task ${task.order} of ${total}`}
+        title={task.title}
+        exitTo={`/practice/writing/${moduleId}`}
+        status={<TimeRemaining seconds={secondsLeft} warnBelow={300} />}
+        action={
+          <button type="button" className="exam-next" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'}>
+            {state === 'checking' ? 'Checking…' : 'Next'}
+          </button>
+        }
+      />
+
+      <div className="exam-body exam-columns">
+        <PromptPanel task={task} prompt={prompt} selected={selected} onSelect={setSelected} />
+        <WritingEditor value={text} onChange={setText} disabled={timeUp || state === 'checking'} wordRange={task.wordRange} />
       </div>
 
-      <label className="sr-only" htmlFor="answer">Your answer</label>
-      <textarea
-        id="answer"
-        className="writing-box"
-        value={text}
-        disabled={timeUp || state === 'checking'}
-        placeholder="Start typing your answer here…"
-        onChange={(event) => {
-          if (!started) setStarted(true);
-          setText(event.target.value);
-        }}
-        spellCheck={false}
-      />
-      <p className="fine-print">Spell check is off, as on test day. Mistakes are marked after you finish.</p>
-
-      <div className="row-actions">
-        <Button onClick={() => void finish()} disabled={words === 0 || state === 'checking'}>
-          {state === 'checking' ? 'Checking…' : timeUp ? 'Get feedback' : 'Finish and get feedback'}
-        </Button>
+      {timeUp && !text.trim() && (
+        <p className="exam-alert" role="alert">Time is up and nothing was written. Exit to try again.</p>
+      )}
+      <div className="exam-meta">
+        <span>Press Next when you finish. Your writing is checked after you submit.</span>
+        <ModelPlanBadge needsSpeech={false} />
       </div>
     </div>
   );
