@@ -1,6 +1,9 @@
 # CLB Ready
 
 A free, private AI coach for CELPIP-style speaking, writing, reading and listening practice.
+
+**Try it:** https://jasleenminhas578.github.io/CLB_Ready/ (Chrome or Edge on a laptop works best).
+
 All AI runs inside your browser, so your voice and answers never leave your device.
 
 > CLB Ready is an independent practice tool. It is not affiliated with, endorsed by or connected to
@@ -16,7 +19,7 @@ npm install
 npm run dev      # open the local address it prints, in Chrome or Edge
 npm test         # unit tests
 npm run build    # production build in dist/
-npm run audio    # make the listening recordings (see below)
+npm run audio    # optional: pre-record listening audio (see below)
 ```
 
 ### Listening recordings
