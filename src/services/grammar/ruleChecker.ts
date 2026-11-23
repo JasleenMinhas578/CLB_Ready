@@ -52,6 +52,9 @@ const SPLIT_WORDS: Record<string, string> = {
 const A_EXCEPTIONS = /^(uni|use|usu|usa|euro|eu|one|once|ufo|uk|us\b)/;
 const AN_EXCEPTIONS = /^(hour|honest|honou?r|heir|herb)/;
 
+/** Text ending in a common abbreviation, so its full stop doesn't end a sentence. */
+const ABBREVIATION_END = /\b(?:a\.m|p\.m|e\.g|i\.e|etc|vs|approx|Mr|Mrs|Ms|Dr|St|Jr|Sr|No)\.$/i;
+
 const RULES: Rule[] = [
   // Spelling: common misspellings, irregular past tenses, missing apostrophes.
   (text) =>
@@ -92,9 +95,10 @@ const RULES: Rule[] = [
       return { start, end: start + m[2].length, kind: 'capitals', message: 'Start with a capital letter.', suggestion: capitalize(m[2]) };
     }),
 
-  // Sentence starts with a lowercase letter.
+  // Sentence starts with a lowercase letter (but "7 a.m. on" or "Dr. smith" aren't sentence ends).
   (text) =>
     eachMatch(text, /([.!?]\s+)([a-z][\w'’]*)/, (m) => {
+      if (m[1].startsWith('.') && ABBREVIATION_END.test(text.slice(0, m.index + 1))) return null;
       const start = m.index + m[1].length;
       return { start, end: start + m[2].length, kind: 'capitals', message: 'Start the sentence with a capital letter.', suggestion: capitalize(m[2]) };
     }),

@@ -36,6 +36,8 @@ export interface PracticePrompt {
   /** Expected tone for email tasks (writing task 1). */
   tone?: Tone;
   image?: PromptImage;
+  /** Speaking: a hand-written sample answer at CLB 10+, sized to the speaking time. */
+  modelAnswer?: string;
   /** For picture tasks: what the picture shows. */
   scene?: SceneBrief;
   /** Points a good answer covers. The feedback model ticks these off. */

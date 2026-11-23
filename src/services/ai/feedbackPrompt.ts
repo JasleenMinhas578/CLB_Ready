@@ -167,7 +167,11 @@ const MAX_TIP_WORDS = 30;
 
 /** Tidies a tip: drops wrapping or unmatched quote marks and cuts a long tip to its first sentence. */
 export function cleanTip(raw: string): string {
-  let tip = raw.trim().replace(/^["'“”]+(?=[A-Z])/, '').replace(/^[-•*\d.)\s]+(?=[A-Za-z"“])/, '');
+  let tip = raw
+    .trim()
+    .replace(/(['"“”‘’])\s*\1/g, '$1') // ' 'Hey → 'Hey
+    .replace(/,\s*,/g, ',')
+    .replace(/^["'“”]+(?=[A-Z])/, '').replace(/^[-•*\d.)\s]+(?=[A-Za-z"“])/, '');
   if (/^["“].*["”]$/.test(tip) && (tip.match(/["“”]/g) ?? []).length === 2) tip = tip.slice(1, -1);
   // An odd number of straight quotes means one is stray: remove the last one.
   if ((tip.match(/"/g) ?? []).length % 2 === 1) {
@@ -179,7 +183,7 @@ export function cleanTip(raw: string): string {
     if (first && first.split(/\s+/).length >= 5) tip = first;
   }
   tip = tip.trim();
-  return tip && !/[.!?"”)]$/.test(tip) ? `${tip}.` : tip;
+  return tip && !/[.!?"”’')]$/.test(tip) ? `${tip}.` : tip;
 }
 
 export interface RewriteRequest {
@@ -191,6 +195,8 @@ export interface RewriteRequest {
   spoken: boolean;
   /** The tips from step 1, so the rewrite shows them in action. */
   tips?: string[];
+  /** How long the rewrite should be. Short answers are expanded to this. */
+  targetWords?: number;
 }
 
 /** Step 2 prompt: the learner's answer rewritten at the goal level, as plain text. */
@@ -198,13 +204,18 @@ export function buildRewritePrompt(request: RewriteRequest): { system: string; u
   const goal = request.goalLabel ? `CLB ${request.goal} (${request.goalLabel})` : `CLB ${request.goal}`;
   const system = [
     'You are a kind, precise CELPIP-style English coach.',
-    `Rewrite the learner's ${request.spoken ? 'spoken answer' : 'answer'} at ${goal} level, in about the same length.`,
+    `Rewrite the learner's ${request.spoken ? 'spoken answer' : 'answer'} at ${goal} level${request.targetWords ? `, about ${request.targetWords} words long` : ', in about the same length'}.`,
     "Keep every idea, detail, reason and example the learner gave. Improve wording, linking and structure instead of removing content.",
+    request.targetWords
+      ? 'If the answer is short or repeats itself, keep its ideas and add clear reasons, examples and details until it reaches that length.'
+      : '',
     request.spoken
-      ? 'Write it the way a confident speaker would say it. No headings.'
+      ? 'Write it the way a confident speaker would say it to the person in the task: speak to them directly (use "you"), do not repeat the task instructions, and use linking words like first, also and finally. No headings or lists.'
       : 'Keep the paragraphs. CELPIP emails have no subject, To or From line, so never add one.',
     'Write only the rewritten answer: no introduction, notes or quotation marks around it.',
-  ].join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
   const user = [
     `Task: ${request.taskTitle}`,
     `Prompt: ${request.promptText}`,

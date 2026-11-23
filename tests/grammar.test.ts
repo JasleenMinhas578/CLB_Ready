@@ -71,6 +71,8 @@ const LEAVES_ALONE = [
   'Thank you is not enough.',
   'I returned the item yesterday.',
   'I will listen to music.',
+  'Let’s meet at 7 a.m. on Monday.',
+  'Bring snacks, drinks, etc. and a blanket.',
 ];
 
 describe('learner grammar rules', () => {

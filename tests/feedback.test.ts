@@ -122,6 +122,15 @@ describe('two-step feedback', () => {
     expect(user.includes('hi i want refund')).toBe(true);
   });
 
+  it('asks a short spoken answer to be expanded to fill the speaking time, speaking to the listener', () => {
+    const { system } = buildRewritePrompt({
+      taskTitle: 'Giving advice', promptText: 'Help a friend', goal: 9, answer: 'join club', spoken: true, targetWords: 210,
+    });
+    expect(system.includes('about 210 words long')).toBe(true);
+    expect(system.includes('add clear reasons, examples and details')).toBe(true);
+    expect(system.includes('speak to them directly')).toBe(true);
+  });
+
   it('runs requests one at a time', async () => {
     let running = 0;
     let overlapped = false;
@@ -183,5 +192,6 @@ describe('cleanTip', () => {
     const long = 'Explain the damage in more detail so the reader understands. ' + 'Then add more words '.repeat(8);
     expect(cleanTip(long)).toBe('Explain the damage in more detail so the reader understands.');
     expect(cleanTip('Use linking words')).toBe('Use linking words.');
+    expect(cleanTip("Use more like ' 'Hey, if you're lonely,, join a team.'")).toBe("Use more like 'Hey, if you're lonely, join a team.'");
   });
 });

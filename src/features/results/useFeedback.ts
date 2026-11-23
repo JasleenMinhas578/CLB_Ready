@@ -5,10 +5,14 @@ import { GOAL_OPTIONS } from '@/domain/goals';
 import { getTaskType } from '@/domain/tasks/catalog';
 import { isWritingTask } from '@/domain/tasks/types';
 import { isScorable } from '@/domain/scoring/sufficiency';
+import { getPrompt } from '@/content/modules';
 import { GenerationInterruptedError, getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
 import { answerTokenBudget, buildFeedbackPrompt, buildModelAnswerPrompt, buildRewritePrompt } from '@/services/ai/feedbackPrompt';
 import { ModelUnavailableError } from '@/services/ai/modelStore';
 import type { GenerationStats } from '@/services/ai/types';
+
+/** A clear, natural speaking pace for model answers. */
+const SPEAKING_WORDS_PER_MINUTE = 140;
 
 /** Timing for one AI step. */
 export interface StepPerf {
@@ -112,14 +116,18 @@ function stepPerf(stats: GenerationStats, attempts: number): StepPerf {
 /** Prompt and length cap for step 2: a rewrite of a scorable answer, or a model answer from scratch. */
 function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string; user: string; maxTokens: number } {
   const spoken = attempt.skill === 'speaking';
+  const task = getTaskType(attempt.taskTypeId);
   if (tips) {
+    // Speaking: fill the speaking time (about 140 words a minute). Writing: at least the minimum word count.
+    const targetWords = attempt.skill === 'speaking'
+      ? Math.round((attempt.metrics.answerSeconds * SPEAKING_WORDS_PER_MINUTE) / 60)
+      : task && isWritingTask(task) && attempt.metrics.wordCount < task.wordRange.min ? task.wordRange.min : undefined;
     const prompt = buildRewritePrompt({
       taskTitle: attempt.taskTitle, promptText: attempt.promptText, goal: attempt.goal, goalLabel: goalLabel(attempt.goal),
-      answer: answerText(attempt), spoken, tips,
+      answer: answerText(attempt), spoken, tips, targetWords,
     });
-    return { ...prompt, maxTokens: answerTokenBudget(attempt.metrics.wordCount) };
+    return { ...prompt, maxTokens: answerTokenBudget(Math.max(attempt.metrics.wordCount, targetWords ?? 0)) };
   }
-  const task = getTaskType(attempt.taskTypeId);
   const targetWords = task && isWritingTask(task)
     ? task.wordRange.max
     : attempt.skill === 'speaking' ? Math.round(attempt.metrics.answerSeconds * 2) : 180;
@@ -166,6 +174,11 @@ function startJob(attempt: Attempt): Job {
   };
 
   job.promise = (async (): Promise<FeedbackOutcome> => {
+    // Too short to score, and a hand-written sample answer exists: nothing for the AI to do.
+    if (!isScorable(attempt.skill, attempt.metrics.wordCount) && getPrompt(attempt.moduleId, attempt.taskTypeId)?.modelAnswer) {
+      update({ phase: 'done' });
+      return { kind: 'sample' };
+    }
     try {
       store = await getFeedbackEngine();
       const engine = store;

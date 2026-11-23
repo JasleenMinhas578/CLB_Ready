@@ -9,11 +9,20 @@ import { MIN_SCORABLE_SPEAKING_WORDS, isScorable, lengthCeiling } from '@/domain
 import { TranscriptView } from './TranscriptView';
 import { dropOutlierScores } from '@/domain/scoring/outliers';
 import { MeasureTiles } from './MeasureTiles';
+import { SampleAnswerCard } from './SampleAnswerCard';
+import { getPrompt } from '@/content/modules';
+import { getTaskType } from '@/domain/tasks/catalog';
+import { isSpeakingTask } from '@/domain/tasks/types';
 
 export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
   const scorable = isScorable('speaking', attempt.metrics.wordCount);
   const { outcome, progress } = useFeedback(attempt);
   const ai = outcome?.kind === 'ai' ? outcome.run.reply : null;
+  const modelAnswer = getPrompt(attempt.moduleId, attempt.taskTypeId)?.modelAnswer;
+  const task = getTaskType(attempt.taskTypeId);
+  const sample = modelAnswer && task && isSpeakingTask(task) ? (
+    <SampleAnswerCard text={modelAnswer} taskTypeId={task.id} seconds={task.timing.answerSeconds} />
+  ) : null;
 
   if (!scorable) {
     return (
@@ -36,6 +45,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
           </div>
           <div className="results-main">
             <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken fromScratch />
+            {sample}
             <div className="results-card">
               <h2>What we heard</h2>
               <blockquote className="transcript">{attempt.transcript.trim() || '(No words detected)'}</blockquote>
@@ -86,6 +96,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
         </div>
         <div className="results-main">
           <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken original={attempt.transcript} />
+          {sample}
           <div className="results-card">
             <h2>What we heard</h2>
             <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />

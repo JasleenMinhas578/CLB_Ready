@@ -1,11 +1,12 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ClbGoal } from '@/domain/goals';
 import type { AnyAttempt } from '@/domain/attempt';
+import { markDone } from '@/services/progress/progress';
 
 /**
- * Session state lives in memory only. Per the privacy spec, nothing about
- * the learner is saved: closing the tab clears it. Only the latest answer
- * is kept, for the results screen.
+ * Session state lives in memory only: closing the tab clears it. Only the
+ * latest answer is kept, for the results screen. The one thing saved is
+ * which tasks were finished (services/progress), never the answers.
  */
 interface SessionValue {
   goal: ClbGoal | null;
@@ -22,9 +23,19 @@ const SessionContext = createContext<SessionValue | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [goal, setGoal] = useState<ClbGoal | null>(null);
   const [micReady, setMicReady] = useState(false);
-  const [lastAttempt, setLastAttempt] = useState<AnyAttempt | null>(null);
+  const [lastAttempt, setAttempt] = useState<AnyAttempt | null>(null);
   const value = useMemo(
-    () => ({ goal, setGoal, micReady, setMicReady, lastAttempt, setLastAttempt }),
+    () => ({
+      goal,
+      setGoal,
+      micReady,
+      setMicReady,
+      lastAttempt,
+      setLastAttempt: (attempt: AnyAttempt) => {
+        markDone(attempt.moduleId, attempt.taskTypeId);
+        setAttempt(attempt);
+      },
+    }),
     [goal, micReady, lastAttempt],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

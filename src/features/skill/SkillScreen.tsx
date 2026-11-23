@@ -1,7 +1,7 @@
 import type { RouteParams } from '@/app/router';
 import { href } from '@/app/router';
 import { useSession } from '@/app/session';
-import { getSkill } from '@/domain/skills';
+import { getSkill, type SkillId } from '@/domain/skills';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
 import { MODULES, getModule, moduleHasSkill, moduleTaskIds } from '@/content/modules';
@@ -9,6 +9,7 @@ import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
 import { formatSeconds } from '@/components/TimerRing';
+import { countDone, taskKey, useProgress } from '@/services/progress/progress';
 
 function timingText(task: TaskType): string {
   if (isSpeakingTask(task)) {
@@ -26,6 +27,7 @@ function timingText(task: TaskType): string {
 
 export function SkillScreen({ params }: { params: RouteParams }) {
   const { goal } = useSession();
+  const progress = useProgress();
   const skill = getSkill(params.skillId);
   const practiceModule = getModule(params.moduleId);
   if (!skill || !practiceModule) return <NotFound />;
@@ -67,6 +69,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
               aria-current={item.id === practiceModule.id ? 'page' : undefined}
             >
               {item.title}
+              <ModuleCount done={countDone(progress, item.id, skillTaskIds(item.id, skill.id))} total={skillTaskIds(item.id, skill.id).length} />
             </a>
           ) : (
             <span key={item.id} className="module-tab is-soon" aria-disabled="true">
@@ -79,7 +82,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
       <ol className="task-list">
         {tasks.map((task) => (
           <li key={task.id}>
-            <a className="task-row" href={href(`/task/${practiceModule.id}/${task.id}`)}>
+            <a className={`task-row ${progress[taskKey(practiceModule.id, task.id)] ? 'is-done' : ''}`} href={href(`/task/${practiceModule.id}/${task.id}`)}>
               <span className="task-number" aria-hidden="true">{task.order}</span>
               <span className="task-text">
                 <strong>{task.title}</strong>
@@ -89,11 +92,35 @@ export function SkillScreen({ params }: { params: RouteParams }) {
                   {task.needsImage && <span className="tag">Picture</span>}
                 </span>
               </span>
-              <span className="task-go" aria-hidden="true">▸</span>
+              {progress[taskKey(practiceModule.id, task.id)] ? (
+                <span className="task-done" title={`Finished ${new Date(progress[taskKey(practiceModule.id, task.id)]).toLocaleDateString()}`}>
+                  <span aria-hidden="true">✓</span> Done
+                </span>
+              ) : (
+                <span className="task-go" aria-hidden="true">▸</span>
+              )}
             </a>
           </li>
         ))}
       </ol>
     </section>
+  );
+}
+
+/** Task ids of one skill that a module has content for. */
+function skillTaskIds(moduleId: string, skillId: SkillId): string[] {
+  const practiceModule = getModule(moduleId);
+  if (!practiceModule) return [];
+  const available = new Set(moduleTaskIds(practiceModule));
+  return getTaskTypesForSkill(skillId).map((task) => task.id).filter((id) => available.has(id));
+}
+
+/** "3/8" beside a module name, or a tick when every task is done. */
+function ModuleCount({ done, total }: { done: number; total: number }) {
+  if (!done || !total) return null;
+  return (
+    <small className={`module-count ${done === total ? 'is-complete' : ''}`} aria-label={`${done} of ${total} done`}>
+      {done === total ? '✓' : `${done}/${total}`}
+    </small>
   );
 }
