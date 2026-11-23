@@ -1,6 +1,7 @@
 import { useRef, type KeyboardEvent } from 'react';
 import { countWords } from '../phases';
 import { createHistory, record, redo, replaceRange, undo, type EditorHistory } from './editorHistory';
+import { targetText } from './wordTarget';
 
 interface WritingEditorProps {
   value: string;
@@ -131,13 +132,7 @@ export function WritingEditor({ value, onChange, disabled = false, wordRange }: 
         <span className="exam-wordcount-number">
           Word count:<strong>{words}</strong>
         </span>
-        <span>
-          {words < wordRange.min
-            ? `${wordRange.min - words} more to reach ${wordRange.min}`
-            : words > wordRange.max
-              ? `${words - wordRange.max} over ${wordRange.max}`
-              : `Within ${wordRange.min}–${wordRange.max}`}
-        </span>
+        <span>{targetText(words, wordRange)}</span>
       </p>
     </section>
   );
