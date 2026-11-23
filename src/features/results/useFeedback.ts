@@ -5,46 +5,65 @@ import { GOAL_OPTIONS } from '@/domain/goals';
 import { getTaskType } from '@/domain/tasks/catalog';
 import { isWritingTask } from '@/domain/tasks/types';
 import { isScorable } from '@/domain/scoring/sufficiency';
-import { getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
-import { buildFeedbackPrompt, buildModelAnswerPrompt } from '@/services/ai/feedbackPrompt';
+import { GenerationInterruptedError, getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
+import { answerTokenBudget, buildFeedbackPrompt, buildModelAnswerPrompt, buildRewritePrompt } from '@/services/ai/feedbackPrompt';
 import { ModelUnavailableError } from '@/services/ai/modelStore';
 import type { GenerationStats } from '@/services/ai/types';
+
+/** Timing for one AI step. */
+export interface StepPerf {
+  firstTokenMs: number;
+  tokensPerSecond: number;
+  generateMs: number;
+  outputTokens: number;
+  inputTokens: number;
+  attempts: number;
+}
 
 /** How fast the AI coach was on this device, for the results screen. */
 export interface AiPerf {
   model: string | null;
   /** Time to load the model, or null if it was already loaded. */
   loadMs: number | null;
-  firstTokenMs: number;
-  tokensPerSecond: number;
-  /** Time spent writing the reply (last attempt). */
-  generateMs: number;
-  outputTokens: number;
-  inputTokens: number;
-  attempts: number;
-  /** From opening results to feedback on screen, everything included. */
-  totalWaitMs: number;
+  /** Step 1: checklist, tips and scores. Null for answers too short to score. */
+  scoring: StepPerf | null;
+  /** Step 2: the improved or model answer, once it's done. */
+  answer: StepPerf | null;
+  /** From opening results to scores on screen. */
+  scoresWaitMs: number | null;
+  /** From opening results to the full answer on screen. */
+  answerWaitMs: number | null;
 }
 
 export type FeedbackOutcome =
-  /** Full feedback on the learner's answer. */
-  | { kind: 'ai'; run: FeedbackRun; perf: AiPerf }
-  /** Answer too short to score: a model answer written from scratch instead. */
-  | { kind: 'sample'; answer: string; perf: AiPerf }
+  /** Checklist, tips and scores from the AI coach. The improved answer follows in `progress.answer`. */
+  | { kind: 'ai'; run: FeedbackRun }
+  /** Answer too short to score: a model answer is written from scratch in `progress.answer`. */
+  | { kind: 'sample' }
   | { kind: 'code'; reason: 'light-mode' | 'error'; message?: string };
 
+/** The improved (or model) answer, which streams in after the scores. */
+export interface AnswerStream {
+  state: 'off' | 'waiting' | 'writing' | 'done' | 'failed';
+  text: string;
+}
+
 export interface FeedbackProgress {
-  phase: 'starting' | 'loading-model' | 'writing' | 'done';
+  phase: 'starting' | 'loading-model' | 'scoring' | 'done';
   /** Model download progress, 0 to 1. */
   modelProgress: number | null;
-  /** Characters of feedback written so far. */
+  /** Characters of the scoring reply written so far. */
   written: number;
+  answer: AnswerStream;
+  perf: AiPerf | null;
 }
 
 interface Job {
   promise: Promise<FeedbackOutcome>;
   progress: FeedbackProgress;
   listeners: Set<(progress: FeedbackProgress) => void>;
+  /** Stops any AI work still running for this answer. */
+  cancel: () => void;
 }
 
 /**
@@ -79,89 +98,115 @@ function answerText(attempt: Attempt): string {
   return attempt.skill === 'speaking' ? attempt.transcript : attempt.text;
 }
 
-function wordCount(attempt: Attempt): number {
-  return attempt.metrics.wordCount;
+function stepPerf(stats: GenerationStats, attempts: number): StepPerf {
+  return {
+    firstTokenMs: stats.firstTokenMs,
+    tokensPerSecond: stats.tokensPerSecond,
+    generateMs: stats.totalMs,
+    outputTokens: stats.completionTokens,
+    inputTokens: stats.promptTokens,
+    attempts,
+  };
 }
 
-/** Full feedback for a scorable answer, or a fresh model answer for one that's too short. */
-type RunResult =
-  | { kind: 'ai'; run: FeedbackRun; stats: GenerationStats; attempts: number }
-  | { kind: 'sample'; answer: string; stats: GenerationStats; attempts: number };
-
-async function runFor(attempt: Attempt, store: FeedbackEngineStore, onText: (soFar: string) => void): Promise<RunResult> {
-  if (!isScorable(attempt.skill, wordCount(attempt))) {
-    const task = getTaskType(attempt.taskTypeId);
-    const length = task && isWritingTask(task)
-      ? `${task.wordRange.min} to ${task.wordRange.max} words`
-      : `about ${attempt.skill === 'speaking' ? Math.round(attempt.metrics.answerSeconds * 2) : 180} words, enough to fill the speaking time`;
-    const { system, user } = buildModelAnswerPrompt({
-      taskTitle: attempt.taskTitle,
-      promptText: attempt.promptText,
-      goal: attempt.goal,
-      goalLabel: goalLabel(attempt.goal),
-      spoken: attempt.skill === 'speaking',
-      length,
+/** Prompt and length cap for step 2: a rewrite of a scorable answer, or a model answer from scratch. */
+function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string; user: string; maxTokens: number } {
+  const spoken = attempt.skill === 'speaking';
+  if (tips) {
+    const prompt = buildRewritePrompt({
+      taskTitle: attempt.taskTitle, promptText: attempt.promptText, goal: attempt.goal, goalLabel: goalLabel(attempt.goal),
+      answer: answerText(attempt), spoken, tips,
     });
-    const run = await store.generateModelAnswer(system, user, onText);
-    return { kind: 'sample', answer: run.answer, stats: run.stats, attempts: run.attempts };
+    return { ...prompt, maxTokens: answerTokenBudget(attempt.metrics.wordCount) };
   }
-
-  const { system, user } = buildFeedbackPrompt({
-    taskTitle: attempt.taskTitle,
-    promptText: attempt.promptText,
-    checklist: attempt.checklist,
-    criteria: getCriteria(attempt.skill),
-    goal: attempt.goal,
-    goalLabel: goalLabel(attempt.goal),
-    answer: answerText(attempt),
-    spoken: attempt.skill === 'speaking',
-    measured: measuredFacts(attempt),
+  const task = getTaskType(attempt.taskTypeId);
+  const targetWords = task && isWritingTask(task)
+    ? task.wordRange.max
+    : attempt.skill === 'speaking' ? Math.round(attempt.metrics.answerSeconds * 2) : 180;
+  const length = task && isWritingTask(task)
+    ? `${task.wordRange.min} to ${task.wordRange.max} words`
+    : `about ${targetWords} words, enough to fill the speaking time`;
+  const prompt = buildModelAnswerPrompt({
+    taskTitle: attempt.taskTitle, promptText: attempt.promptText, goal: attempt.goal, goalLabel: goalLabel(attempt.goal), spoken, length,
   });
-  const run = await store.generate(system, user, onText);
-  return { kind: 'ai', run, stats: run.stats, attempts: run.attempts };
+  return { ...prompt, maxTokens: answerTokenBudget(targetWords) };
 }
 
 function startJob(attempt: Attempt): Job {
+  let cancelled = false;
+  let store: FeedbackEngineStore | null = null;
   const job: Job = {
-    progress: { phase: 'starting', modelProgress: null, written: 0 },
+    progress: { phase: 'starting', modelProgress: null, written: 0, answer: { state: 'off', text: '' }, perf: null },
     listeners: new Set(),
     promise: Promise.resolve(null as never),
+    cancel: () => {
+      cancelled = true;
+      store?.interrupt();
+    },
   };
   const update = (next: Partial<FeedbackProgress>) => {
+    if (cancelled) return;
     job.progress = { ...job.progress, ...next };
     job.listeners.forEach((listener) => listener(job.progress));
   };
+  const updatePerf = (next: Partial<AiPerf>) => job.progress.perf && update({ perf: { ...job.progress.perf, ...next } });
+  const startedAt = performance.now();
+
+  /** Step 2: streams the answer onto the screen. Runs after the scores are shown. */
+  const writeAnswer = async (engine: FeedbackEngineStore, tips: string[] | null) => {
+    if (cancelled) return;
+    const { system, user, maxTokens } = answerPrompt(attempt, tips);
+    try {
+      const run = await engine.writeText(system, user, maxTokens, (soFar) => update({ answer: { state: 'writing', text: soFar } }));
+      update({ answer: { state: 'done', text: run.text } });
+      updatePerf({ answer: stepPerf(run.stats, run.attempts), answerWaitMs: performance.now() - startedAt });
+    } catch (error) {
+      if (!(error instanceof GenerationInterruptedError)) update({ answer: { state: 'failed', text: '' } });
+    }
+  };
 
   job.promise = (async (): Promise<FeedbackOutcome> => {
-    const startedAt = performance.now();
     try {
-      const store = await getFeedbackEngine();
-      const unsubscribe = store.subscribe(() => {
-        const status = store.getStatus();
+      store = await getFeedbackEngine();
+      const engine = store;
+      const unsubscribe = engine.subscribe(() => {
+        const status = engine.getStatus();
         if (status.state === 'loading') update({ phase: 'loading-model', modelProgress: status.progress });
       });
-      const alreadyLoaded = store.getStatus().state === 'ready';
+      const alreadyLoaded = engine.getStatus().state === 'ready';
       const loadStartedAt = performance.now();
       try {
-        await store.ensureLoaded();
+        await engine.ensureLoaded();
       } finally {
         unsubscribe();
       }
-      const loadMs = alreadyLoaded ? null : performance.now() - loadStartedAt;
-      update({ phase: 'writing' });
-      const result = await runFor(attempt, store, (soFar) => update({ written: soFar.length }));
-      const perf: AiPerf = {
-        model: store.getStatus().model,
-        loadMs,
-        firstTokenMs: result.stats.firstTokenMs,
-        tokensPerSecond: result.stats.tokensPerSecond,
-        generateMs: result.stats.totalMs,
-        outputTokens: result.stats.completionTokens,
-        inputTokens: result.stats.promptTokens,
-        attempts: result.attempts,
-        totalWaitMs: performance.now() - startedAt,
-      };
-      return result.kind === 'ai' ? { kind: 'ai', run: result.run, perf } : { kind: 'sample', answer: result.answer, perf };
+      update({
+        perf: { model: engine.getStatus().model, loadMs: alreadyLoaded ? null : performance.now() - loadStartedAt, scoring: null, answer: null, scoresWaitMs: null, answerWaitMs: null },
+      });
+
+      if (!isScorable(attempt.skill, attempt.metrics.wordCount)) {
+        update({ answer: { state: 'waiting', text: '' } });
+        void writeAnswer(engine, null);
+        return { kind: 'sample' };
+      }
+
+      update({ phase: 'scoring' });
+      const { system, user } = buildFeedbackPrompt({
+        taskTitle: attempt.taskTitle,
+        promptText: attempt.promptText,
+        checklist: attempt.checklist,
+        criteria: getCriteria(attempt.skill),
+        goal: attempt.goal,
+        goalLabel: goalLabel(attempt.goal),
+        answer: answerText(attempt),
+        spoken: attempt.skill === 'speaking',
+        measured: measuredFacts(attempt),
+      });
+      const run = await engine.generate(system, user, (soFar) => update({ written: soFar.length }));
+      updatePerf({ scoring: stepPerf(run.stats, run.attempts), scoresWaitMs: performance.now() - startedAt });
+      update({ answer: { state: 'waiting', text: '' } });
+      void writeAnswer(engine, run.reply.tips);
+      return { kind: 'ai', run };
     } catch (error) {
       if (error instanceof ModelUnavailableError) return { kind: 'code', reason: 'light-mode' };
       return { kind: 'code', reason: 'error', message: error instanceof Error ? error.message : String(error) };
@@ -181,7 +226,8 @@ export function useFeedback(attempt: Attempt | null) {
     let active = true;
     let job = jobs.get(attempt.id);
     if (!job) {
-      // Keep only the latest answer's feedback in memory.
+      // Keep only the latest answer's feedback in memory, and stop work on older ones.
+      jobs.forEach((old) => old.cancel());
       jobs.clear();
       job = startJob(attempt);
       jobs.set(attempt.id, job);

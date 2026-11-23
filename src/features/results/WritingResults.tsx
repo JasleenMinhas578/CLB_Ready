@@ -5,7 +5,7 @@ import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstim
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
 import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { outlierNotes, AiStatus, ChecklistCard, ImprovedCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { EssayView } from './EssayView';
 import { dropOutlierScores } from '@/domain/scoring/outliers';
 import { mergeChecklist } from '@/domain/scoring/autoChecks';
@@ -64,7 +64,6 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
   const scorable = isScorable('writing', attempt.metrics.wordCount);
   const { outcome, progress } = useFeedback(attempt);
   const ai = outcome?.kind === 'ai' ? outcome.run.reply : null;
-  const sample = outcome?.kind === 'sample' ? outcome.answer : null;
   const header = (
     <div className="screen-head">
       <h1>Your feedback</h1>
@@ -86,10 +85,10 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
               progress={progress}
             />
             <TipsCard goal={attempt.goal} tips={writingTips(attempt.metrics, attempt.goal, attempt.options).slice(0, 3)} />
-            {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} />}
+            {progress?.perf && <PerfCard perf={progress.perf} />}
           </div>
           <div className="results-main">
-            {sample && <ImprovedCard goal={attempt.goal} text={sample} spoken={false} fromScratch />}
+            <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} fromScratch />
             <div className="results-card">
               <h2>What you wrote</h2>
               <blockquote className="transcript essay">{attempt.text.trim() || '(Nothing written)'}</blockquote>
@@ -136,10 +135,10 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             <h2>What we measured</h2>
             <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />
           </div>
-          {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} />}
+          {progress?.perf && <PerfCard perf={progress.perf} />}
         </div>
         <div className="results-main">
-          {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken={false} original={attempt.text} />}
+          <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} original={attempt.text} />
           <div className="results-card">
             <h2>Your writing, checked</h2>
             <EssayView text={attempt.text} issues={attempt.issues} />

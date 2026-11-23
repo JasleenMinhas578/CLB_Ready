@@ -3,7 +3,7 @@ import { detectDevice, type DeviceReport } from '@/services/device/detectDevice'
 import { planModels, type ModelPlan } from '@/services/device/tier';
 import { WhisperSpeechToText } from '@/services/ai/whisperClient';
 import { WebLlmFeedbackModel, estimatedGpuMb } from '@/services/ai/webllmClient';
-import { buildFeedbackPrompt, parseFeedback } from '@/services/ai/feedbackPrompt';
+import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, buildFeedbackPrompt, parseFeedback } from '@/services/ai/feedbackPrompt';
 import type { GenerationStats, LoadProgress } from '@/services/ai/types';
 import { startRecording, toWhisperAudio } from '@/services/audio/recorder';
 import { getCriteria } from '@/domain/criteria';
@@ -174,7 +174,7 @@ export default function LabScreen() {
         goal: 9,
         answer: transcript?.text || SAMPLE_ANSWER,
       });
-      const result = await llm.current.generateJson(system, user, setReply);
+      const result = await llm.current.complete(system, user, { schema: FEEDBACK_JSON_SCHEMA, maxTokens: SCORING_MAX_TOKENS, onText: setReply });
       setGenStats(result.stats);
       setValidJson(parseFeedback(result.text) !== null);
       await llm.current.reset();

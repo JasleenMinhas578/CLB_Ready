@@ -91,7 +91,7 @@ describe('checklist items checked by code', () => {
 describe('clearer score names in AI replies', () => {
   it('reads the full criterion names', () => {
     const reply = parseFeedback(JSON.stringify({
-      checklist: [], tips: ['a'], improved: 'b',
+      checklist: [], tips: ['a'],
       scores: { content_and_coherence: 9, vocabulary: 8, listenability_or_readability: 9, task_fulfillment: 10 },
     }));
     expect(reply?.scores).toEqual({ content: 9, vocabulary: 8, delivery: 9, task: 10 });

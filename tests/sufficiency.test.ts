@@ -3,7 +3,7 @@ import { isScorable, lengthCeiling, plural } from '../src/domain/scoring/suffici
 import { measureWriting } from '../src/domain/measure/writingMetrics';
 import { codeEstimatesWriting, writingTips } from '../src/domain/scoring/writingEstimate';
 import { blendScores } from '../src/domain/scoring/estimate';
-import { extractJson, parseFeedback, parseModelAnswer, buildModelAnswerPrompt } from '../src/services/ai/feedbackPrompt';
+import { extractJson, parseFeedback, cleanAnswerText, buildModelAnswerPrompt } from '../src/services/ai/feedbackPrompt';
 import { FeedbackEngineStore } from '../src/services/ai/feedbackEngine';
 import type { FeedbackModel } from '../src/services/ai/types';
 import type { ModelPlan } from '../src/services/device/tier';
@@ -45,7 +45,7 @@ describe('too short to score', () => {
 });
 
 describe('reading AI replies', () => {
-  const reply = '{"checklist":[{"item":"a","met":true}],"scores":{"content":8,"vocabulary":7,"delivery":7,"task":8},"tips":["t"],"improved":"x"}';
+  const reply = '{"checklist":[{"item":"a","met":true}],"scores":{"content":8,"vocabulary":7,"delivery":7,"task":8},"tips":["t"]}';
 
   it('copes with code fences and text around the JSON', () => {
     expect(parseFeedback('```json\n' + reply + '\n```')).not.toBeNull();
@@ -53,10 +53,13 @@ describe('reading AI replies', () => {
     expect(extractJson('noise {"a": 1} noise')).toEqual({ a: 1 });
   });
 
-  it('reads a model answer and rejects an empty one', () => {
-    expect(parseModelAnswer('{"answer": "Dear team, ..."}')).toBe('Dear team, ...');
-    expect(parseModelAnswer('{"answer": "  "}')).toBeNull();
-    expect(parseModelAnswer('{"answer": "cut off')).toBeNull();
+  it('tidies a plain-text answer and rejects an empty one', () => {
+    expect(cleanAnswerText('Here is the rewritten answer:\nDear team, I am writing today.')).toBe('Dear team, I am writing today.');
+    expect(cleanAnswerText('"Dear team, I am writing today."')).toBe('Dear team, I am writing today.');
+    expect(cleanAnswerText('```\nDear team, I am writing today.\n```')).toBe('Dear team, I am writing today.');
+    expect(cleanAnswerText('{"answer": "Dear team, I am writing today."}')).toBe('Dear team, I am writing today.');
+    expect(cleanAnswerText('   ')).toBeNull();
+    expect(cleanAnswerText('Dear')).toBeNull();
   });
 
   it('asks for the right length and level in a model answer prompt', () => {
@@ -65,15 +68,16 @@ describe('reading AI replies', () => {
     expect(system.includes('150 to 200 words')).toBe(true);
   });
 
-  it('generates a model answer with its own schema, retrying a cut-off reply', async () => {
-    const schemas: unknown[] = [];
-    const replies = ['{"answer": "cut', '{"answer": "Dear Sir or Madam, I am writing..."}'];
+  it('writes a model answer as plain text with a length cap, retrying an empty reply', async () => {
+    const calls: { schema?: object; maxTokens: number }[] = [];
+    const replies = ['', 'Dear Sir or Madam, I am writing about my order.'];
     const model: FeedbackModel = {
       async load() { return { elapsedMs: 1 }; },
-      async generateJson(_s, _u, _t, schema) {
-        schemas.push(schema);
-        return { text: replies.shift() ?? '', stats: { promptTokens: 1, completionTokens: 1, firstTokenMs: 1, totalMs: 1, tokensPerSecond: 1 }, truncated: true };
+      async complete(_s, _u, options) {
+        calls.push(options);
+        return { text: replies.shift() ?? '', stats: { promptTokens: 1, completionTokens: 1, firstTokenMs: 1, totalMs: 1, tokensPerSecond: 1 } };
       },
+      interrupt() {},
       async reset() {},
       async unload() {},
     };
@@ -81,10 +85,11 @@ describe('reading AI replies', () => {
     const store = new FeedbackEngineStore(async () => plan, () => model);
     const originalWarn = console.warn;
     console.warn = () => {};
-    const run = await store.generateModelAnswer('s', 'u');
+    const run = await store.writeText('s', 'u', 500);
     console.warn = originalWarn;
-    expect(run.answer.startsWith('Dear Sir')).toBe(true);
+    expect(run.text.startsWith('Dear Sir')).toBe(true);
     expect(run.attempts).toBe(2);
-    expect(JSON.stringify(schemas[0]).includes('"answer"')).toBe(true);
+    expect(calls[0].schema).toBeUndefined();
+    expect(calls[0].maxTokens).toBe(500);
   });
 });

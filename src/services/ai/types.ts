@@ -37,16 +37,21 @@ export interface GenerationStats {
   tokensPerSecond: number;
 }
 
+export interface CompleteOptions {
+  /** JSON schema the reply must follow. Leave out for plain text. */
+  schema?: object;
+  /** Hard cap on reply length. Short caps keep the wait short. */
+  maxTokens: number;
+  /** Called with the reply so far, as it streams. */
+  onText?: (soFar: string) => void;
+}
+
 export interface FeedbackModel {
   load(onProgress?: (progress: LoadProgress) => void): Promise<{ elapsedMs: number }>;
-  /** Streams text; resolves with the full reply and timing stats. */
-  generateJson(
-    system: string,
-    user: string,
-    onText?: (soFar: string) => void,
-    /** JSON schema the reply must follow. Defaults to the feedback schema. */
-    schema?: object,
-  ): Promise<{ text: string; stats: GenerationStats; truncated?: boolean }>;
+  /** Streams a reply; resolves with the full text and timing stats. */
+  complete(system: string, user: string, options: CompleteOptions): Promise<{ text: string; stats: GenerationStats; truncated?: boolean }>;
+  /** Stops the reply being written now, if any. */
+  interrupt(): void;
   /** Clears chat history so nothing carries over between answers. */
   reset(): Promise<void>;
   unload(): Promise<void>;
