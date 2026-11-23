@@ -20,6 +20,6 @@ export const ROUTES: readonly RouteDef[] = [
   { pattern: '/goal', component: GoalScreen },
   { pattern: '/practice/:skillId/:moduleId', component: SkillScreen },
   { pattern: '/task/:moduleId/:taskTypeId', component: TaskScreen },
-  { pattern: '/results/sample', component: ResultsScreen },
+  { pattern: '/results', component: ResultsScreen },
   { pattern: '/lab', component: LabScreen },
 ];
