@@ -6,6 +6,8 @@ import type { Criterion } from '@/domain/criteria';
  */
 export const FEEDBACK_JSON_SCHEMA = {
   type: 'object',
+  // Order matters: the model writes the checklist and tips before it scores,
+  // so the scores follow from what it has already noticed.
   properties: {
     checklist: {
       type: 'array',
@@ -15,21 +17,33 @@ export const FEEDBACK_JSON_SCHEMA = {
         required: ['item', 'met'],
       },
     },
+    tips: { type: 'array', items: { type: 'string' } },
     scores: {
       type: 'object',
+      // Full names, so a small model doesn't confuse "content" with length.
       properties: {
-        content: { type: 'integer' },
+        content_and_coherence: { type: 'integer' },
         vocabulary: { type: 'integer' },
-        delivery: { type: 'integer' },
-        task: { type: 'integer' },
+        listenability_or_readability: { type: 'integer' },
+        task_fulfillment: { type: 'integer' },
       },
-      required: ['content', 'vocabulary', 'delivery', 'task'],
+      required: ['content_and_coherence', 'vocabulary', 'listenability_or_readability', 'task_fulfillment'],
     },
-    tips: { type: 'array', items: { type: 'string' } },
     improved: { type: 'string' },
   },
-  required: ['checklist', 'scores', 'tips', 'improved'],
+  required: ['checklist', 'tips', 'scores', 'improved'],
 } as const;
+
+/** Fixed reference points so the model's numbers mean the same thing each time. */
+export const LEVEL_ANCHORS = [
+  '12: near-native, precise and natural throughout',
+  '10: highly effective, rich and well organized, very few errors',
+  '9: effective, clear and well developed, minor errors only',
+  '8: good, organized with some range, some errors',
+  '7: adequate, covers the task simply, noticeable errors',
+  '6: developing, basic ideas, frequent errors',
+  '5 or lower: limited, hard to follow or far too short',
+];
 
 export interface FeedbackReply {
   checklist: { item: string; met: boolean }[];
@@ -62,11 +76,13 @@ export function buildFeedbackPrompt(request: FeedbackRequest): { system: string;
     `The learner's goal is ${goal}.`,
     'Rate each dimension from 4 to 12 using these official factors. Be honest; most learners score 6 to 9.',
     criteria,
-    'In "scores", "delivery" means listenability (speaking) or readability (writing).',
+    `Level guide: ${LEVEL_ANCHORS.join('; ')}.`,
+    'Rate each dimension on its own. Content and coherence is about ideas, details and organization, not length.',
+    `Here "listenability_or_readability" means ${request.spoken ? 'listenability' : 'readability'}.`,
     request.spoken ? 'The answer is a speech transcript: ignore spelling and punctuation.' : '',
     'Mark each checklist item true only if the answer clearly covers it. Keep the items in the same order.',
     `Give at most 3 short, specific tips that would move this answer toward ${goal}. Quote the learner's words when useful.`,
-    `"improved": rewrite the answer at ${goal} level in the same length, keeping the learner's own ideas.`,
+    `"improved": rewrite the answer at ${goal} level in about the same length. Keep every idea, detail, reason and example the learner gave; improve wording, linking and structure instead of removing content.`,
     'Reply with JSON only.',
   ]
     .filter(Boolean)
@@ -96,15 +112,36 @@ export function extractJson(text: string): unknown {
   return JSON.parse(text.slice(start, end + 1));
 }
 
+interface RawScores {
+  content_and_coherence?: unknown;
+  vocabulary?: unknown;
+  listenability_or_readability?: unknown;
+  task_fulfillment?: unknown;
+  // Older key names, still accepted.
+  content?: unknown;
+  delivery?: unknown;
+  task?: unknown;
+}
+
 /** Parses and sanity-checks a reply. Returns null if anything required is missing. */
 export function parseFeedback(text: string): FeedbackReply | null {
   try {
-    const value = extractJson(text) as FeedbackReply;
-    const scoresOk =
-      value.scores != null &&
-      ['content', 'vocabulary', 'delivery', 'task'].every((key) => typeof value.scores[key as keyof FeedbackReply['scores']] === 'number');
+    const value = extractJson(text) as { checklist?: unknown; scores?: RawScores; tips?: unknown; improved?: unknown };
+    const raw = value.scores ?? {};
+    const scores = {
+      content: raw.content_and_coherence ?? raw.content,
+      vocabulary: raw.vocabulary,
+      delivery: raw.listenability_or_readability ?? raw.delivery,
+      task: raw.task_fulfillment ?? raw.task,
+    };
+    const scoresOk = Object.values(scores).every((score) => typeof score === 'number' && Number.isFinite(score));
     if (!Array.isArray(value.checklist) || !scoresOk || !Array.isArray(value.tips) || typeof value.improved !== 'string') return null;
-    return { ...value, tips: value.tips.filter((tip) => typeof tip === 'string' && tip.trim()).slice(0, 3) };
+    return {
+      checklist: value.checklist as FeedbackReply['checklist'],
+      scores: scores as FeedbackReply['scores'],
+      tips: (value.tips as unknown[]).filter((tip): tip is string => typeof tip === 'string' && tip.trim() !== '').slice(0, 3),
+      improved: value.improved,
+    };
   } catch {
     return null;
   }

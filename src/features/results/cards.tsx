@@ -46,9 +46,11 @@ interface LevelCardProps {
   overall: number;
   final: boolean;
   status: ReactNode;
+  /** Short notes under the bars, e.g. which AI score was ignored. */
+  notes?: string[];
 }
 
-export function LevelCard({ attempt, criteria, scores, overall, final, status }: LevelCardProps) {
+export function LevelCard({ attempt, criteria, scores, overall, final, status, notes = [] }: LevelCardProps) {
   const goal = attempt.goal;
   return (
     <div className="results-card level-card">
@@ -86,6 +88,9 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status }:
           );
         })}
       </ul>
+      {notes.map((note) => (
+        <p key={note} className="fine-print score-note">{note}</p>
+      ))}
       <p className="fine-print">{final ? 'Estimates' : 'First estimates from your measurements'} for practice only, not official CELPIP scores.</p>
     </div>
   );
@@ -142,23 +147,32 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
   );
 }
 
-export function ChecklistCard({ items, results, final }: { items: string[]; results: { met: boolean }[] | null; final: boolean }) {
+export interface ChecklistRow {
+  met: boolean | null;
+  /** Decided by code rather than the AI coach. */
+  byCode?: boolean;
+}
+
+export function ChecklistCard({ items, results, final }: { items: string[]; results: ChecklistRow[] | null; final: boolean }) {
+  const anyUnchecked = !results || results.some((row) => row.met === null);
   return (
     <div className="results-card">
       <h2>Did you cover the task?</h2>
       <ul className="checklist">
         {items.map((item, i) => {
-          const met = results ? results[i]?.met : undefined;
+          const row = results?.[i];
+          const met = row?.met ?? null;
           return (
             <li key={item} className={met === true ? 'is-met' : met === false ? 'is-missed' : ''}>
               <span aria-hidden="true">{met === true ? '✅' : met === false ? '⭕' : final ? '➖' : '⏳'}</span>
               <span>{item}</span>
+              {row?.byCode && <span className="checked-by">checked automatically</span>}
               <span className="sr-only">{met === true ? 'covered' : met === false ? 'not covered' : 'not checked'}</span>
             </li>
           );
         })}
       </ul>
-      {final && !results && <p className="fine-print">Checking these needs the AI coach.</p>}
+      {final && anyUnchecked && <p className="fine-print">Items marked ➖ need the AI coach to check.</p>}
     </div>
   );
 }
@@ -251,4 +265,12 @@ export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: 
       <p className="fine-print">Measured in your browser. A token is about three quarters of a word.</p>
     </details>
   );
+}
+
+/** Explains an ignored AI score in plain words. */
+export function outlierNotes(ignored: { id: string; modelScore: number }[], criteria: Criterion[]): string[] {
+  return ignored.map(({ id, modelScore }) => {
+    const name = criteria.find((criterion) => criterion.id === id)?.name ?? id;
+    return `The AI coach gave ${name} a ${modelScore}, which didn’t fit your other results, so that score uses your measurements instead.`;
+  });
 }
