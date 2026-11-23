@@ -141,3 +141,8 @@
   .exam-time strong { font-size: 1.1rem; }
   .exam-next { min-width: 5.5rem; }
 }
+
+/* Picture tasks before the picture is drawn: the scene in words. */
+.exam-scene { margin: 0; padding: 14px 16px; background: #faf9fc; border: 1px dashed var(--exam-line); border-radius: 8px; }
+.exam-scene figcaption { font-size: 0.85rem; font-weight: 700; color: var(--exam-soft); margin-bottom: 0.4rem; }
+.exam-scene p { margin: 0; font-size: 1.05rem; line-height: 1.6; max-width: none; }

@@ -21,6 +21,14 @@ describe('content integrity', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+  it('has speaking and writing in every module', () => {
+    for (const practiceModule of MODULES) {
+      const covered = practiceModule.prompts.map((prompt) => getTaskType(prompt.taskTypeId)?.skill);
+      expect(covered.filter((skill) => skill === 'speaking').length, practiceModule.id).toBe(8);
+      expect(covered.filter((skill) => skill === 'writing').length, practiceModule.id).toBe(2);
+    }
+  });
+
   it('has a complete module 1 for practice', () => {
     expect(MODULES[0].prompts.map((prompt) => prompt.taskTypeId).sort()).toEqual(TASK_TYPES.map((task) => task.id).sort());
   });
@@ -42,6 +50,12 @@ describe('content integrity', () => {
         for (const prompt of practiceModule.prompts) {
           expect(getTaskType(prompt.taskTypeId), prompt.id).toBeDefined();
           expect(prompt.checklist.length, prompt.id).toBeGreaterThan(0);
+        }
+      });
+
+      it('gives every picture task a picture or a scene brief', () => {
+        for (const prompt of practiceModule.prompts) {
+          if (getTaskType(prompt.taskTypeId)?.needsImage) expect(!!(prompt.image || prompt.scene), prompt.id).toBe(true);
         }
       });
 

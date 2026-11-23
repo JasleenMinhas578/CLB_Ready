@@ -11,6 +11,17 @@ export interface PromptImage {
   keyElements: string[];
 }
 
+/**
+ * What a picture shows, written before the picture is drawn so the prompt
+ * and the picture always match. Until the picture exists, the learner
+ * sees this description instead.
+ */
+export interface SceneBrief {
+  description: string;
+  /** The details a good description mentions. */
+  keyElements: string[];
+}
+
 /** One concrete practice question for a task type. */
 export interface PracticePrompt {
   id: string;
@@ -24,6 +35,8 @@ export interface PracticePrompt {
   /** Expected tone for email tasks (writing task 1). */
   tone?: Tone;
   image?: PromptImage;
+  /** For picture tasks: what the picture shows. */
+  scene?: SceneBrief;
   /** Points a good answer covers. The feedback model ticks these off. */
   checklist: string[];
   /** Draft prompts are placeholders until final content is written. */
