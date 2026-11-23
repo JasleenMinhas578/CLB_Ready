@@ -66,7 +66,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
         status={<AiStatus outcome={outcome} progress={progress} />}
       />
       <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
-      {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken />}
+      {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken original={attempt.transcript} />}
       <ChecklistCard items={attempt.checklist} results={ai?.checklist ?? null} final={final} />
       <div className="results-card">
         <h2>What we measured</h2>

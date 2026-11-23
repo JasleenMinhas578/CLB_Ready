@@ -377,3 +377,21 @@ a.skill-card::after {
 .perf-grid dt { font-size: var(--step--1); font-weight: 700; color: var(--grape-soft); }
 .perf-grid dd { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; overflow-wrap: anywhere; }
 @media (max-width: 560px) { .perf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Improved answer: changes view */
+.improved-head { display: flex; justify-content: space-between; align-items: center; gap: var(--gap-2); flex-wrap: wrap; margin-bottom: var(--gap-1); }
+.improved-head h2 { margin: 0; }
+.view-switch { display: inline-flex; padding: 3px; background: var(--white); border: 2px solid var(--grape); border-radius: var(--radius-pill); }
+.view-switch button {
+  padding: 0.3rem 0.9rem; border: 0; border-radius: var(--radius-pill); background: transparent;
+  font: 800 0.9rem var(--font-body); color: var(--grape); cursor: pointer;
+}
+.view-switch button[aria-pressed='true'] { background: var(--grape); color: var(--milk); }
+.diff-text { white-space: pre-line; line-height: 1.85; }
+.diff-added { background: #c9f3e6; color: #0f5a4a; text-decoration: none; padding: 0.05em 0.2em; border-radius: 5px; }
+.diff-removed { background: #ffe0ea; color: #9b2450; text-decoration: line-through; text-decoration-thickness: 2px; padding: 0.05em 0.2em; border-radius: 5px; }
+.diff-summary { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; margin: 0 0 var(--gap-1); max-width: none; font-size: var(--step--1); font-weight: 700; }
+.diff-summary span { color: var(--grape-soft); }
+.diff-summary .diff-key { padding: 0.1em 0.55em; border-radius: var(--radius-pill); }
+.diff-summary .key-added { background: #c9f3e6; color: #0f5a4a; }
+.diff-summary .key-removed { background: #ffe0ea; color: #9b2450; }
