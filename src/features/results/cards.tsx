@@ -7,7 +7,7 @@ import { href } from '@/app/router';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { friendlyModelError } from '@/services/ai/errorText';
-import type { FeedbackOutcome, FeedbackProgress } from './useFeedback';
+import type { AiPerf, FeedbackOutcome, FeedbackProgress } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
 
 /** Shared building blocks for every skill's results screen. */
@@ -184,5 +184,41 @@ export function TooShortCard({ attempt, need, unit, outcome, progress }: {
         <AiStatus outcome={outcome} progress={progress} />
       ) : null}
     </div>
+  );
+}
+
+function seconds(ms: number): string {
+  return ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`;
+}
+
+/**
+ * How fast the AI ran on this device: useful for testing and for
+ * explaining the app's performance. Collapsed by default.
+ */
+export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: number }) {
+  const rows: [string, string][] = [
+    ['AI coach', perf.model ?? 'Unknown'],
+    ['Model load', perf.loadMs == null ? 'Already loaded' : seconds(perf.loadMs)],
+    ...(transcribeMs != null ? ([['Speech to text', seconds(transcribeMs)]] as [string, string][]) : []),
+    ['First word after', seconds(perf.firstTokenMs)],
+    ['Writing speed', `${perf.tokensPerSecond.toFixed(1)} tokens/s`],
+    ['Writing time', seconds(perf.generateMs)],
+    ['Tokens in / out', `${perf.inputTokens} / ${perf.outputTokens}`],
+    ['Tries needed', String(perf.attempts)],
+    ['Total wait', seconds(perf.totalWaitMs)],
+  ];
+  return (
+    <details className="results-card perf-card">
+      <summary>AI speed on this device</summary>
+      <dl className="perf-grid">
+        {rows.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="fine-print">Measured in your browser. A token is about three quarters of a word.</p>
+    </details>
   );
 }

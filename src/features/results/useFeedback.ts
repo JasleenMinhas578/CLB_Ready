@@ -8,12 +8,29 @@ import { isScorable } from '@/domain/scoring/sufficiency';
 import { getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
 import { buildFeedbackPrompt, buildModelAnswerPrompt } from '@/services/ai/feedbackPrompt';
 import { ModelUnavailableError } from '@/services/ai/modelStore';
+import type { GenerationStats } from '@/services/ai/types';
+
+/** How fast the AI coach was on this device, for the results screen. */
+export interface AiPerf {
+  model: string | null;
+  /** Time to load the model, or null if it was already loaded. */
+  loadMs: number | null;
+  firstTokenMs: number;
+  tokensPerSecond: number;
+  /** Time spent writing the reply (last attempt). */
+  generateMs: number;
+  outputTokens: number;
+  inputTokens: number;
+  attempts: number;
+  /** From opening results to feedback on screen, everything included. */
+  totalWaitMs: number;
+}
 
 export type FeedbackOutcome =
   /** Full feedback on the learner's answer. */
-  | { kind: 'ai'; run: FeedbackRun }
+  | { kind: 'ai'; run: FeedbackRun; perf: AiPerf }
   /** Answer too short to score: a model answer written from scratch instead. */
-  | { kind: 'sample'; answer: string }
+  | { kind: 'sample'; answer: string; perf: AiPerf }
   | { kind: 'code'; reason: 'light-mode' | 'error'; message?: string };
 
 export interface FeedbackProgress {
@@ -67,7 +84,11 @@ function wordCount(attempt: Attempt): number {
 }
 
 /** Full feedback for a scorable answer, or a fresh model answer for one that's too short. */
-async function runFor(attempt: Attempt, store: FeedbackEngineStore, onText: (soFar: string) => void): Promise<FeedbackOutcome> {
+type RunResult =
+  | { kind: 'ai'; run: FeedbackRun; stats: GenerationStats; attempts: number }
+  | { kind: 'sample'; answer: string; stats: GenerationStats; attempts: number };
+
+async function runFor(attempt: Attempt, store: FeedbackEngineStore, onText: (soFar: string) => void): Promise<RunResult> {
   if (!isScorable(attempt.skill, wordCount(attempt))) {
     const task = getTaskType(attempt.taskTypeId);
     const length = task && isWritingTask(task)
@@ -82,7 +103,7 @@ async function runFor(attempt: Attempt, store: FeedbackEngineStore, onText: (soF
       length,
     });
     const run = await store.generateModelAnswer(system, user, onText);
-    return { kind: 'sample', answer: run.answer };
+    return { kind: 'sample', answer: run.answer, stats: run.stats, attempts: run.attempts };
   }
 
   const { system, user } = buildFeedbackPrompt({
@@ -97,7 +118,7 @@ async function runFor(attempt: Attempt, store: FeedbackEngineStore, onText: (soF
     measured: measuredFacts(attempt),
   });
   const run = await store.generate(system, user, onText);
-  return { kind: 'ai', run };
+  return { kind: 'ai', run, stats: run.stats, attempts: run.attempts };
 }
 
 function startJob(attempt: Attempt): Job {
@@ -112,19 +133,35 @@ function startJob(attempt: Attempt): Job {
   };
 
   job.promise = (async (): Promise<FeedbackOutcome> => {
+    const startedAt = performance.now();
     try {
       const store = await getFeedbackEngine();
       const unsubscribe = store.subscribe(() => {
         const status = store.getStatus();
         if (status.state === 'loading') update({ phase: 'loading-model', modelProgress: status.progress });
       });
+      const alreadyLoaded = store.getStatus().state === 'ready';
+      const loadStartedAt = performance.now();
       try {
         await store.ensureLoaded();
       } finally {
         unsubscribe();
       }
+      const loadMs = alreadyLoaded ? null : performance.now() - loadStartedAt;
       update({ phase: 'writing' });
-      return await runFor(attempt, store, (soFar) => update({ written: soFar.length }));
+      const result = await runFor(attempt, store, (soFar) => update({ written: soFar.length }));
+      const perf: AiPerf = {
+        model: store.getStatus().model,
+        loadMs,
+        firstTokenMs: result.stats.firstTokenMs,
+        tokensPerSecond: result.stats.tokensPerSecond,
+        generateMs: result.stats.totalMs,
+        outputTokens: result.stats.completionTokens,
+        inputTokens: result.stats.promptTokens,
+        attempts: result.attempts,
+        totalWaitMs: performance.now() - startedAt,
+      };
+      return result.kind === 'ai' ? { kind: 'ai', run: result.run, perf } : { kind: 'sample', answer: result.answer, perf };
     } catch (error) {
       if (error instanceof ModelUnavailableError) return { kind: 'code', reason: 'light-mode' };
       return { kind: 'code', reason: 'error', message: error instanceof Error ? error.message : String(error) };
