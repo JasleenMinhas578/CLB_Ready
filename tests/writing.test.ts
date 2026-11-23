@@ -23,21 +23,35 @@ const CASUAL_EMAIL = `hey,
 i got the coffee machine and it's broken. it's gonna need fixing and i don't have time for this stuff. can you send a new one`;
 
 describe('checkGrammar', () => {
-  it('finds common mistakes with fixes', () => {
+  it('finds common mistakes with whole-word fixes', () => {
     const issues = checkGrammar('i recieve a email every day.They are good , but could of been shorter');
-    const messages = issues.map((issue) => issue.suggestion);
-    expect(messages.includes('I')).toBe(true);
-    expect(messages.includes('receive')).toBe(true);
-    expect(messages.includes('an')).toBe(true);
-    expect(messages.includes('. ')).toBe(true);
-    expect(messages.includes(',')).toBe(true);
-    expect(messages.includes('could have')).toBe(true);
+    const fixes = issues.map((issue) => issue.suggestion);
+    expect(fixes.includes('I')).toBe(true);
+    expect(fixes.includes('receive')).toBe(true);
+    expect(fixes.includes('an email')).toBe(true);
+    expect(fixes.includes('day. They')).toBe(true);
+    expect(fixes.includes('good,')).toBe(true);
+    expect(fixes.includes('could have')).toBe(true);
   });
 
-  it('flags a repeated word and a lowercase sentence start', () => {
+  it('marks a lowercase sentence start as the whole word, and a repeated word', () => {
     const issues = checkGrammar('I went to the the store. then I left.');
     expect(issues.some((issue) => issue.message.includes('repeated'))).toBe(true);
-    expect(issues.some((issue) => issue.suggestion === 'T')).toBe(true);
+    expect(issues.some((issue) => issue.suggestion === 'Then' && issue.kind === 'capitals')).toBe(true);
+  });
+
+  it('catches irregular past tenses, missing apostrophes and split words', () => {
+    const text = "hi,\n\ni buyed it and payed alot. water is going every where. i dont want it and im angry.";
+    const fixes = checkGrammar(text).map((issue) => `${text.slice(issue.start, issue.end)}→${issue.suggestion}`);
+    for (const pair of ['hi→Hi', 'buyed→bought', 'payed→paid', 'alot→a lot', 'water→Water', 'every where→everywhere', "dont→don't", "im→I'm"]) {
+      expect(fixes.includes(pair), pair).toBe(true);
+    }
+  });
+
+  it('inserts a missing full stop instead of replacing a letter', () => {
+    const issue = checkGrammar('I would like a refund for the broken machine').pop();
+    expect(issue?.start).toBe(issue?.end);
+    expect(issue?.suggestion).toBe('.');
   });
 
   it('accepts a correct, well-written email', () => {
@@ -58,6 +72,14 @@ describe('measureWriting', () => {
     expect(m.email?.hasClosing).toBe(true);
     expect(m.email?.toneMismatch).toBe(false);
     expect(m.linkingWords.length >= 4).toBe(true);
+  });
+
+  it('ignores a subject line when checking the greeting, and flags it', () => {
+    const text = `Subject: Damaged coffee machine\n\n${GOOD_EMAIL}`;
+    const m = measureWriting({ text, wordRange: RANGE, grammarIssues: 0, emailTone: 'formal' });
+    expect(m.email?.hasGreeting).toBe(true);
+    expect(m.email?.headerLines).toEqual(['Subject: Damaged coffee machine']);
+    expect(writingTips(m, 9).some((tip) => tip.includes('subject line'))).toBe(true);
   });
 
   it('spots a casual tone in a formal email', () => {

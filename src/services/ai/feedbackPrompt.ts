@@ -79,7 +79,9 @@ export function buildFeedbackPrompt(request: FeedbackRequest): { system: string;
     `Level guide: ${LEVEL_ANCHORS.join('; ')}.`,
     'Rate each dimension on its own. Content and coherence is about ideas, details and organization, not length.',
     `Here "listenability_or_readability" means ${request.spoken ? 'listenability' : 'readability'}.`,
-    request.spoken ? 'The answer is a speech transcript: ignore spelling and punctuation.' : '',
+    request.spoken
+      ? 'The answer is a speech transcript: ignore spelling and punctuation.'
+      : 'CELPIP emails have no subject, To or From line. Never add one or suggest adding one.',
     'Mark each checklist item true only if the answer clearly covers it. Keep the items in the same order.',
     `Give at most 3 short, specific tips that would move this answer toward ${goal}. Quote the learner's words when useful.`,
     `"improved": rewrite the answer at ${goal} level in about the same length. Keep every idea, detail, reason and example the learner gave; improve wording, linking and structure instead of removing content.`,
@@ -172,7 +174,7 @@ export function buildModelAnswerPrompt(request: ModelAnswerRequest): { system: s
     `Length: ${request.length}. Cover every point the task asks for, in a natural order.`,
     request.spoken
       ? 'Write it the way a confident speaker would say it, with clear linking words. No headings.'
-      : 'Use paragraphs. For an email, include a greeting and a sign-off that fit the tone.',
+      : 'Use paragraphs. For an email, start with a greeting and end with a sign-off that fit the tone. Do not write a subject, To or From line.',
     'Reply with JSON only: {"answer": "..."}.',
   ].join('\n');
   const user = [`Task: ${request.taskTitle}`, `Prompt: ${request.promptText}`].join('\n');
