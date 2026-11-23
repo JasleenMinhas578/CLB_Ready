@@ -46,6 +46,11 @@ export function PromptPanel({ task, prompt, selected = null, onSelect, optionsLo
       {task.needsImage &&
         (prompt.image ? (
           <img className="exam-image" src={prompt.image.src} alt={prompt.image.alt} />
+        ) : prompt.scene ? (
+          <figure className="exam-scene">
+            <figcaption>The picture for this task is coming soon. For now, imagine this scene:</figcaption>
+            <p>{prompt.scene.description}</p>
+          </figure>
         ) : (
           <div className="exam-image-placeholder" role="img" aria-label="Picture not added yet">
             Picture for this task is added in a later step.
