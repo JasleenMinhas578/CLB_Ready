@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Criterion } from '@/domain/criteria';
 import { MAX_LEVEL } from '@/domain/scoring/estimate';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
@@ -9,6 +9,7 @@ import { Emoji } from '@/components/Emoji';
 import { friendlyModelError } from '@/services/ai/errorText';
 import type { AiPerf, FeedbackOutcome, FeedbackProgress } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
+import { DiffView } from './DiffView';
 
 /** Shared building blocks for every skill's results screen. */
 
@@ -99,15 +100,44 @@ export function TipsCard({ goal, tips }: { goal: number; tips: string[] }) {
   );
 }
 
-export function ImprovedCard({ goal, text, spoken, fromScratch = false }: { goal: number; text: string; spoken: boolean; fromScratch?: boolean }) {
+interface ImprovedCardProps {
+  goal: number;
+  text: string;
+  spoken: boolean;
+  /** True for a model answer written from scratch (nothing to compare). */
+  fromScratch?: boolean;
+  /** The learner's own answer, to show what changed. */
+  original?: string;
+}
+
+export function ImprovedCard({ goal, text, spoken, fromScratch = false, original }: ImprovedCardProps) {
+  const canCompare = !fromScratch && !!original?.trim();
+  const [view, setView] = useState<'changes' | 'clean'>(canCompare ? 'changes' : 'clean');
+
   return (
     <div className="results-card improved-card">
-      <h2>{fromScratch ? `A model answer at CLB ${goal}` : `Your answer at CLB ${goal}`}</h2>
+      <div className="improved-head">
+        <h2>{fromScratch ? `A model answer at CLB ${goal}` : `Your answer at CLB ${goal}`}</h2>
+        {canCompare && (
+          <div className="view-switch" role="group" aria-label="How to show the improved answer">
+            <button type="button" aria-pressed={view === 'changes'} onClick={() => setView('changes')}>Changes</button>
+            <button type="button" aria-pressed={view === 'clean'} onClick={() => setView('clean')}>Clean copy</button>
+          </div>
+        )}
+      </div>
       <p className="fine-print">
-        {fromScratch ? 'Written by the AI coach for this task, as an example to learn from.' : 'Your ideas, rewritten at your goal level.'}{' '}
+        {fromScratch
+          ? 'Written by the AI coach for this task, as an example to learn from.'
+          : view === 'changes'
+            ? 'Your answer, edited to your goal level. Green is new; red was cut or replaced.'
+            : 'Your ideas, rewritten at your goal level.'}{' '}
         {spoken ? 'Read it aloud once to hear how it flows.' : 'Notice how each paragraph covers one point.'}
       </p>
-      <blockquote className="transcript">{text}</blockquote>
+      {canCompare && view === 'changes' && original ? (
+        <DiffView before={original} after={text} />
+      ) : (
+        <blockquote className="transcript">{text}</blockquote>
+      )}
     </div>
   );
 }
