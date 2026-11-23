@@ -360,3 +360,11 @@ a.skill-card::after {
 @media (max-width: 560px) {
   .model-rows li { grid-template-columns: 1fr; gap: 0.1rem; }
 }
+
+/* Too short to score */
+.too-short-card { background: #fff8e0; }
+.too-short-card h2 { font-size: var(--step-1); }
+.too-short-card .ai-status { margin: var(--gap-2) 0 0; }
+.measure-tiles li.tone-neutral { background: var(--milk); border-style: dashed; }
+/* Keep paragraph breaks in AI-written answers (emails especially). */
+.improved-card .transcript { white-space: pre-line; }

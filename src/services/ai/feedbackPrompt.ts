@@ -85,15 +85,67 @@ export function buildFeedbackPrompt(request: FeedbackRequest): { system: string;
   return { system, user };
 }
 
+/**
+ * Pulls the JSON object out of a reply, ignoring code fences or stray text
+ * a small model sometimes adds around it.
+ */
+export function extractJson(text: string): unknown {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end <= start) throw new Error('No JSON object in reply');
+  return JSON.parse(text.slice(start, end + 1));
+}
+
 /** Parses and sanity-checks a reply. Returns null if anything required is missing. */
 export function parseFeedback(text: string): FeedbackReply | null {
   try {
-    const value = JSON.parse(text) as FeedbackReply;
+    const value = extractJson(text) as FeedbackReply;
     const scoresOk =
       value.scores != null &&
       ['content', 'vocabulary', 'delivery', 'task'].every((key) => typeof value.scores[key as keyof FeedbackReply['scores']] === 'number');
     if (!Array.isArray(value.checklist) || !scoresOk || !Array.isArray(value.tips) || typeof value.improved !== 'string') return null;
     return { ...value, tips: value.tips.filter((tip) => typeof tip === 'string' && tip.trim()).slice(0, 3) };
+  } catch {
+    return null;
+  }
+}
+
+/** Schema for a model answer written from scratch (used when an answer is too short to rewrite). */
+export const MODEL_ANSWER_SCHEMA = {
+  type: 'object',
+  properties: { answer: { type: 'string' } },
+  required: ['answer'],
+} as const;
+
+export interface ModelAnswerRequest {
+  taskTitle: string;
+  promptText: string;
+  goal: number;
+  goalLabel?: string;
+  spoken: boolean;
+  /** Writing: word range. Speaking: roughly how long to talk. */
+  length: string;
+}
+
+export function buildModelAnswerPrompt(request: ModelAnswerRequest): { system: string; user: string } {
+  const goal = request.goalLabel ? `CLB ${request.goal} (${request.goalLabel})` : `CLB ${request.goal}`;
+  const system = [
+    'You are a kind, precise CELPIP-style English coach.',
+    `Write one model ${request.spoken ? 'spoken answer' : 'written answer'} at ${goal} level for the task below.`,
+    `Length: ${request.length}. Cover every point the task asks for, in a natural order.`,
+    request.spoken
+      ? 'Write it the way a confident speaker would say it, with clear linking words. No headings.'
+      : 'Use paragraphs. For an email, include a greeting and a sign-off that fit the tone.',
+    'Reply with JSON only: {"answer": "..."}.',
+  ].join('\n');
+  const user = [`Task: ${request.taskTitle}`, `Prompt: ${request.promptText}`].join('\n');
+  return { system, user };
+}
+
+export function parseModelAnswer(text: string): string | null {
+  try {
+    const value = extractJson(text) as { answer?: unknown };
+    return typeof value.answer === 'string' && value.answer.trim() ? value.answer.trim() : null;
   } catch {
     return null;
   }

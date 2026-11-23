@@ -8,16 +8,17 @@ import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { friendlyModelError } from '@/services/ai/errorText';
 import type { FeedbackOutcome, FeedbackProgress } from './useFeedback';
+import { plural } from '@/domain/scoring/sufficiency';
 
 /** Shared building blocks for every skill's results screen. */
 
 export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | null; progress: FeedbackProgress | null }) {
-  if (outcome?.kind === 'ai') return null;
+  if (outcome?.kind === 'ai' || outcome?.kind === 'sample') return null;
   if (outcome?.kind === 'code') {
     const why =
       outcome.reason === 'light-mode'
         ? 'Light mode: this device can’t run the AI coach, so feedback comes from your measurements only.'
-        : `${friendlyModelError(outcome.message)} Feedback below comes from your measurements only.`;
+        : `${friendlyModelError(outcome.message)} Feedback below comes from your measurements only. Try again in a moment.`;
     return (
       <p className="ai-status is-code">
         <Emoji symbol="🍬" /> {why} <a href={href('/settings')}>Settings</a>
@@ -98,12 +99,13 @@ export function TipsCard({ goal, tips }: { goal: number; tips: string[] }) {
   );
 }
 
-export function ImprovedCard({ goal, text, spoken }: { goal: number; text: string; spoken: boolean }) {
+export function ImprovedCard({ goal, text, spoken, fromScratch = false }: { goal: number; text: string; spoken: boolean; fromScratch?: boolean }) {
   return (
     <div className="results-card improved-card">
-      <h2>Your answer at CLB {goal}</h2>
+      <h2>{fromScratch ? `A model answer at CLB ${goal}` : `Your answer at CLB ${goal}`}</h2>
       <p className="fine-print">
-        Your ideas, rewritten at your goal level. {spoken ? 'Read it aloud once to hear the difference.' : 'Compare it with yours paragraph by paragraph.'}
+        {fromScratch ? 'Written by the AI coach for this task, as an example to learn from.' : 'Your ideas, rewritten at your goal level.'}{' '}
+        {spoken ? 'Read it aloud once to hear how it flows.' : 'Notice how each paragraph covers one point.'}
       </p>
       <blockquote className="transcript">{text}</blockquote>
     </div>
@@ -151,4 +153,36 @@ export function ResultsActions({ attempt }: { attempt: Attempt }) {
 /** Merges AI tips (first) with code tips, without duplicates. */
 export function mergeTips(aiTips: string[] | undefined, codeTips: string[], hasAi: boolean): string[] {
   return [...(aiTips ?? []), ...codeTips].filter((tip, i, all) => all.indexOf(tip) === i).slice(0, hasAi ? 4 : 3);
+}
+
+/**
+ * Shown instead of scores when an answer is too short to estimate a level.
+ * Explains what's needed and offers a model answer to learn from.
+ */
+export function TooShortCard({ attempt, need, unit, outcome, progress }: {
+  attempt: Attempt;
+  need: string;
+  unit: string;
+  outcome: FeedbackOutcome | null;
+  progress: FeedbackProgress | null;
+}) {
+  return (
+    <div className="results-card too-short-card">
+      <h2>Too short to score</h2>
+      <p>
+        Your answer has {plural(attempt.metrics.wordCount, unit)}. We need {need} to estimate a level, so there’s no score this
+        time. Try the task again and keep going until you reach the target.
+      </p>
+      {!attempt.goalChosen && (
+        <p className="fine-print">
+          No goal set, so the model answer below is written at CLB {attempt.goal}. <a href={href('/goal')}>Choose your goal</a>.
+        </p>
+      )}
+      {outcome === null ? (
+        <AiStatus outcome={outcome} progress={progress} />
+      ) : outcome.kind === 'code' ? (
+        <AiStatus outcome={outcome} progress={progress} />
+      ) : null}
+    </div>
+  );
 }

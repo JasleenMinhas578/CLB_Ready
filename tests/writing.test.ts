@@ -92,7 +92,7 @@ describe('writing estimates and tips', () => {
 
   it('gives format and tone tips to the casual email', () => {
     const tips = writingTips(casual, 9);
-    expect(tips.some((tip) => tip.includes('more to reach 150'))).toBe(true);
+    expect(tips.some((tip) => tip.includes('Aim for 150–200'))).toBe(true);
     expect(tips.some((tip) => tip.includes('Sincerely'))).toBe(true);
     expect(tips.some((tip) => tip.includes('formal'))).toBe(true);
   });

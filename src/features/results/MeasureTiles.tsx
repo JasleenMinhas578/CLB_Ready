@@ -1,6 +1,8 @@
 import type { SpeakingMetrics } from '@/domain/measure/speakingMetrics';
+import { MIN_WORDS_FOR_VARIETY } from '@/domain/scoring/sufficiency';
 
-export type Tone = 'good' | 'ok' | 'work';
+/** `neutral` = not enough text to judge this yet. */
+export type Tone = 'good' | 'ok' | 'work' | 'neutral';
 
 export interface Tile {
   label: string;
@@ -40,7 +42,7 @@ function tiles(m: SpeakingMetrics): Tile[] {
       label: 'Word variety',
       value: `${Math.round(m.variety * 100)}%`,
       note: 'different words used',
-      tone: m.variety >= 0.7 ? 'good' : m.variety >= 0.6 ? 'ok' : 'work',
+      tone: m.wordCount < MIN_WORDS_FOR_VARIETY ? 'neutral' : m.variety >= 0.7 ? 'good' : m.variety >= 0.6 ? 'ok' : 'work',
     },
     {
       label: 'Linking words',
@@ -51,7 +53,7 @@ function tiles(m: SpeakingMetrics): Tile[] {
   ];
 }
 
-const TONE_LABEL: Record<Tone, string> = { good: 'On track', ok: 'Close', work: 'Work on this' };
+const TONE_LABEL: Record<Tone, string> = { good: 'On track', ok: 'Close', work: 'Work on this', neutral: 'Not enough to judge yet' };
 
 /** A grid of measurement tiles, coloured by how close each is to target. */
 export function TileList({ tiles: items }: { tiles: Tile[] }) {

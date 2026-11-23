@@ -44,7 +44,9 @@ export interface FeedbackModel {
     system: string,
     user: string,
     onText?: (soFar: string) => void,
-  ): Promise<{ text: string; stats: GenerationStats }>;
+    /** JSON schema the reply must follow. Defaults to the feedback schema. */
+    schema?: object,
+  ): Promise<{ text: string; stats: GenerationStats; truncated?: boolean }>;
   /** Clears chat history so nothing carries over between answers. */
   reset(): Promise<void>;
   unload(): Promise<void>;

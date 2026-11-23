@@ -1,5 +1,6 @@
 import type { WritingMetrics } from '../measure/writingMetrics';
 import { CODE_LEVEL_CEILING, clampLevel, type Scores, type WritingCriterionId } from './estimate';
+import { MIN_SENTENCES_FOR_VARIETY, MIN_WORDS_FOR_VARIETY, lengthCeiling, plural } from './sufficiency';
 
 /**
  * Rough CLB-style levels for a written answer from code measurements.
@@ -22,12 +23,14 @@ export function codeEstimatesWriting(m: WritingMetrics): Scores<WritingCriterion
   const issuesPer100 = m.wordCount ? (m.grammarIssues / m.wordCount) * 100 : 0;
   if (issuesPer100 > 4) readability -= 2;
   else if (issuesPer100 > 2) readability -= 1;
-  if (m.sentences >= 4 && m.sentenceVariety < 3) readability -= 1;
+  if (m.sentences >= MIN_SENTENCES_FOR_VARIETY && m.sentenceVariety < 3) readability -= 1;
   if (m.avgSentenceLength > 30) readability -= 1;
   if (issuesPer100 === 0 && m.paragraphs >= 3 && m.sentenceVariety >= 5) readability += 1;
 
   // Vocabulary: variety, minus general words and repetition.
-  let vocabulary = m.variety >= 0.78 ? 10 : m.variety >= 0.7 ? 9 : m.variety >= 0.62 ? 8 : m.variety >= 0.54 ? 7 : 6;
+  // Variety means little in a handful of words, so short answers get a neutral 6.
+  let vocabulary =
+    m.wordCount < MIN_WORDS_FOR_VARIETY ? 6 : m.variety >= 0.78 ? 10 : m.variety >= 0.7 ? 9 : m.variety >= 0.62 ? 8 : m.variety >= 0.54 ? 7 : 6;
   if (m.vagueWords.length >= 4) vocabulary -= 1;
   if (m.repeatedWords.some((word) => word.count >= 5)) vocabulary -= 1;
 
@@ -36,11 +39,12 @@ export function codeEstimatesWriting(m: WritingMetrics): Scores<WritingCriterion
   let content = linking >= 6 ? 10 : linking >= 4 ? 9 : linking >= 3 ? 8 : linking >= 2 ? 7 : linking >= 1 ? 6 : 5;
   if (m.wordCount < min * 0.75) content -= 1;
 
+  const ceiling = Math.min(CODE_LEVEL_CEILING, lengthCeiling(m.wordCount, min));
   return {
-    content: clampLevel(content, CODE_LEVEL_CEILING),
-    vocabulary: clampLevel(vocabulary, CODE_LEVEL_CEILING),
-    readability: clampLevel(readability, CODE_LEVEL_CEILING),
-    task: clampLevel(task, CODE_LEVEL_CEILING),
+    content: clampLevel(content, ceiling),
+    vocabulary: clampLevel(vocabulary, ceiling),
+    readability: clampLevel(readability, ceiling),
+    task: clampLevel(task, ceiling),
   };
 }
 
@@ -49,8 +53,8 @@ export function writingTips(m: WritingMetrics, goal: number, options?: [string, 
   const tips: string[] = [];
   const { min, max } = m.wordRange;
 
-  if (m.wordCount < min) tips.push(`You wrote ${m.wordCount} words. Add ${min - m.wordCount} or more to reach ${min}: one more detail or example per paragraph.`);
-  else if (m.wordCount > max) tips.push(`You wrote ${m.wordCount} words, over the ${max} limit. Cut repeated ideas so every sentence adds something.`);
+  if (m.wordCount < min) tips.push(`You wrote ${plural(m.wordCount, 'word')}. Aim for ${min}–${max}: add ${min - m.wordCount} or more, with one more detail or example per paragraph.`);
+  else if (m.wordCount > max) tips.push(`You wrote ${plural(m.wordCount, 'word')}, over the ${max}-word limit. Cut repeated ideas so every sentence adds something.`);
 
   if (m.survey?.chosen === null && options) {
     tips.push(`Say clearly which option you choose, e.g. "I would choose ${options[0].toLowerCase()} because…", in your first sentence.`);
@@ -64,7 +68,7 @@ export function writingTips(m: WritingMetrics, goal: number, options?: [string, 
     }
   }
   if (m.paragraphs < 3) tips.push('Split your answer into 3 or more paragraphs: an opening, your main points, and a closing.');
-  if (m.grammarIssues >= 3) tips.push(`We marked ${m.grammarIssues} possible mistakes. Save 2 minutes at the end to reread and fix them.`);
+  if (m.grammarIssues >= 3) tips.push(`We marked ${plural(m.grammarIssues, 'possible mistake')}. Save 2 minutes at the end to reread and fix them.`);
   if (m.vagueWords.length >= 2) {
     const examples = m.vagueWords.slice(0, 3).map((word) => `"${word}"`).join(', ');
     tips.push(`Swap general words like ${examples} for precise ones. CLB ${goal} writing names exactly what it means.`);
@@ -74,7 +78,7 @@ export function writingTips(m: WritingMetrics, goal: number, options?: [string, 
     tips.push(`You used "${word}" ${count} times. Use a synonym or rephrase.`);
   }
   if (m.linkingWords.length < 3) tips.push('Connect your ideas with words like "however", "in addition" and "as a result".');
-  if (m.sentences >= 4 && m.sentenceVariety < 3) tips.push('Your sentences are all a similar length. Mix short sentences with longer ones joined by "although" or "which".');
+  if (m.sentences >= MIN_SENTENCES_FOR_VARIETY && m.sentenceVariety < 3) tips.push('Your sentences are all a similar length. Mix short sentences with longer ones joined by "although" or "which".');
 
   return tips;
 }
