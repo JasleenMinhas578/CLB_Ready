@@ -266,3 +266,51 @@ a.skill-card::after {
 }
 .answer-stats strong { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.1; }
 .answer-stats span { font-size: var(--step--1); color: var(--grape-soft); font-weight: 700; }
+
+/* Week 3: real results */
+.level-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-2); margin-bottom: var(--gap-2); }
+.level-pair > div {
+  display: flex; flex-direction: column; align-items: center; padding: var(--gap-2);
+  background: var(--milk-deep); border: var(--line); border-radius: 22px;
+}
+.level-pair > div:first-child { background: var(--lemon); }
+.level-pair span { font-weight: 800; font-size: var(--step--1); }
+.level-pair strong { font-family: var(--font-display); font-size: var(--step-3); line-height: 1.1; }
+
+.ai-status {
+  display: flex; gap: 0.5rem; align-items: center; max-width: none;
+  padding: 0.6rem 0.9rem; margin-bottom: var(--gap-2);
+  background: var(--milk); border: 2px dashed var(--grape); border-radius: 16px; font-weight: 700;
+}
+.ai-status.is-code { border-style: solid; background: #fff8e0; }
+
+.improved-card { background: #f3fffb; }
+.improved-card .transcript { background: var(--white); }
+
+.measure-tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-1); }
+.measure-tiles li {
+  display: flex; flex-direction: column; gap: 0.1rem; padding: 0.75rem 0.9rem;
+  border: 2px solid var(--grape); border-radius: 18px; background: var(--white);
+}
+.measure-tiles li.tone-good { background: #e6fbf5; }
+.measure-tiles li.tone-ok { background: #fff8e0; }
+.measure-tiles li.tone-work { background: #ffeaf3; }
+.tile-label { font-weight: 800; font-size: var(--step--1); }
+.measure-tiles strong { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.1; }
+.tile-note { font-size: 0.82rem; color: var(--grape-soft); overflow-wrap: anywhere; }
+.tile-tone { margin-top: 0.25rem; font-size: 0.78rem; font-weight: 800; }
+
+.transcript mark { padding: 0 0.2em; border-radius: 6px; color: var(--grape); }
+.mark-filler { background: var(--blush); }
+.mark-vague { background: #fff1a8; }
+.pause-chip {
+  display: inline-block; padding: 0 0.45em; font-size: 0.8em; font-weight: 800; white-space: nowrap;
+  background: var(--grape-candy); border: 1.5px solid var(--grape); border-radius: var(--radius-pill);
+}
+.transcript-key { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; font-size: var(--step--1); color: var(--grape-soft); max-width: none; }
+.transcript-key mark { padding: 0 0.4em; border-radius: 6px; color: var(--grape); }
+
+@media (max-width: 560px) {
+  .measure-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .level-pair strong { font-size: var(--step-2); }
+}

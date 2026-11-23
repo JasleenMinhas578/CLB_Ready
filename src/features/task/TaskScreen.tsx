@@ -24,8 +24,8 @@ function PromptImageArea({ task, prompt }: { task: TaskType; prompt: PracticePro
 }
 
 /** Picks the right flow for the task's skill. New skills add a branch here. */
-function TaskFlow({ task }: { task: TaskType }) {
-  if (isSpeakingTask(task)) return <SpeakingTask key={task.id} task={task} />;
+function TaskFlow({ task, prompt, moduleId }: { task: TaskType; prompt: PracticePrompt; moduleId: string }) {
+  if (isSpeakingTask(task)) return <SpeakingTask key={task.id} task={task} prompt={prompt} moduleId={moduleId} />;
   if (isWritingTask(task)) return <WritingTask key={task.id} task={task} />;
   return null;
 }
@@ -62,7 +62,7 @@ export function TaskScreen({ params }: { params: RouteParams }) {
           {prompt.draft && <p className="fine-print">Draft practice prompt.</p>}
         </article>
 
-        <TaskFlow task={task} />
+        <TaskFlow task={task} prompt={prompt} moduleId={practiceModule.id} />
       </div>
     </section>
   );

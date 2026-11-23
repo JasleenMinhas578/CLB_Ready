@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { WritingTaskType } from '@/domain/tasks/types';
-import { Button, LinkButton } from '@/components/Button';
+import { Button } from '@/components/Button';
 import { formatSeconds } from '@/components/TimerRing';
 import { countWords } from './phases';
 import { useCountdown } from './useCountdown';
@@ -50,7 +50,7 @@ export function WritingTask({ task }: { task: WritingTaskType }) {
 
       <div className="row-actions">
         {finished ? (
-          <LinkButton to="/results/sample">See sample results</LinkButton>
+          <p className="fine-print">Saved for this visit only. Writing feedback arrives in the next build step.</p>
         ) : (
           <Button onClick={() => setFinished(true)} disabled={words === 0}>Finish and get feedback</Button>
         )}

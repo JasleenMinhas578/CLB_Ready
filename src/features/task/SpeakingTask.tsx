@@ -1,29 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SpeakingTaskType } from '@/domain/tasks/types';
 import { useSession } from '@/app/session';
-import { Button, LinkButton } from '@/components/Button';
+import { navigate } from '@/app/router';
+import { DEFAULT_GOAL, newAttemptId } from '@/domain/attempt';
+import { measureSpeaking } from '@/domain/measure/speakingMetrics';
+import type { PracticePrompt } from '@/content/types';
+import { Button } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { LevelMeter } from '@/components/LevelMeter';
 import { TimerRing } from '@/components/TimerRing';
 import { getSpeechEngine, useSpeechStatus, type SpeechEngineStore } from '@/services/ai/speechEngine';
+import { getFeedbackEngine } from '@/services/ai/feedbackEngine';
 import { WHISPER_SAMPLE_RATE, toWhisperAudio } from '@/services/audio/recorder';
 import { useMicLevel } from '@/services/audio/useMicLevel';
-import { MIC_PROBLEM_TEXT, checkRecording, wordsPerMinute, type RecordingProblem } from '@/services/audio/analysis';
+import { MIC_PROBLEM_TEXT, checkRecording, type RecordingProblem } from '@/services/audio/analysis';
 import { buildSpeakingPhases } from './phases';
 import { useCountdown } from './useCountdown';
 import { useAnswerRecorder } from './useAnswerRecorder';
 import { MicCheck } from './MicCheck';
 import { SpeechModelBadge } from './SpeechModelBadge';
 
-type FlowState = 'ready' | 'mic-check' | 'running' | 'transcribing' | 'done' | 'problem';
-
-interface AnswerResult {
-  text: string;
-  wordCount: number;
-  recordedSeconds: number;
-  wpm: number;
-  transcribeMs: number;
-}
+type FlowState = 'ready' | 'mic-check' | 'running' | 'transcribing' | 'problem';
 
 const PROBLEM_TEXT: Record<Exclude<RecordingProblem, null>, { title: string; help: string }> = {
   'too-short': { title: 'That answer was very short', help: 'Try again and keep speaking until the timer ends.' },
@@ -31,16 +28,16 @@ const PROBLEM_TEXT: Record<Exclude<RecordingProblem, null>, { title: string; hel
 };
 
 /**
- * Timed speaking flow: (choose) → prepare → speak → transcribe → done.
- * The speech model loads in the background as soon as this screen opens.
+ * Timed speaking flow: (choose) → prepare → speak → transcribe → results.
+ * Both AI models load in the background while the learner reads and prepares:
+ * speech first (needed first), then the feedback model.
  */
-export function SpeakingTask({ task }: { task: SpeakingTaskType }) {
-  const { micReady, setMicReady } = useSession();
+export function SpeakingTask({ task, prompt, moduleId }: { task: SpeakingTaskType; prompt: PracticePrompt; moduleId: string }) {
+  const { goal, micReady, setMicReady, setLastAttempt } = useSession();
   const phases = buildSpeakingPhases(task.timing);
   const [state, setState] = useState<FlowState>('ready');
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [problem, setProblem] = useState<{ title: string; help: string } | null>(null);
-  const [result, setResult] = useState<AnswerResult | null>(null);
   const phase = phases[phaseIndex];
 
   const [engine, setEngine] = useState<SpeechEngineStore | null>(null);
@@ -55,7 +52,10 @@ export function SpeakingTask({ task }: { task: SpeakingTaskType }) {
     void getSpeechEngine().then((store) => {
       if (cancelled) return;
       setEngine(store);
-      store.preload();
+      // Feedback model second, so it never slows down the speech model.
+      void store.preload().then(async () => {
+        if (!cancelled) await (await getFeedbackEngine()).preload();
+      });
     });
     return () => {
       cancelled = true;
@@ -85,15 +85,28 @@ export function SpeakingTask({ task }: { task: SpeakingTaskType }) {
       }
       const store = engine ?? (await getSpeechEngine());
       const transcript = await store.transcribe(audio);
-      const words = transcript.words.length || transcript.text.split(/\s+/).filter(Boolean).length;
-      setResult({
+      const metrics = measureSpeaking({
         text: transcript.text,
-        wordCount: words,
+        words: transcript.words,
+        answerSeconds: phase.seconds,
         recordedSeconds: recording.durationSeconds,
-        wpm: wordsPerMinute(words, recording.durationSeconds),
-        transcribeMs: transcript.elapsedMs,
       });
-      setState('done');
+      setLastAttempt({
+        id: newAttemptId(),
+        moduleId,
+        taskTypeId: task.id,
+        taskTitle: `Speaking task ${task.order}: ${task.title}`,
+        promptText: prompt.options ? `${prompt.text} Options: ${prompt.options.join(' / ')}` : prompt.text,
+        checklist: prompt.checklist,
+        goal: goal ?? DEFAULT_GOAL,
+        goalChosen: goal !== null,
+        transcript: transcript.text,
+        words: transcript.words,
+        recordedSeconds: recording.durationSeconds,
+        transcribeMs: transcript.elapsedMs,
+        metrics,
+      });
+      navigate('/results');
     } catch (error) {
       setProblem({
         title: 'We couldn’t turn your answer into text',
@@ -118,14 +131,13 @@ export function SpeakingTask({ task }: { task: SpeakingTaskType }) {
     recordingStarted.current = false;
     setPhaseIndex(0);
     setProblem(null);
-    setResult(null);
     setState('ready');
   };
 
   const steps = (
     <ol className="phase-steps" aria-label="Task steps">
       {phases.map((item, index) => {
-        const finished = index < phaseIndex || state === 'transcribing' || state === 'done';
+        const finished = index < phaseIndex || state === 'transcribing';
         const current = index === phaseIndex && state === 'running';
         return (
           <li key={item.id} className={current ? 'is-current' : finished ? 'is-done' : ''}>
@@ -173,31 +185,6 @@ export function SpeakingTask({ task }: { task: SpeakingTaskType }) {
           <h2>Listening back to your answer…</h2>
           <p>This happens on your device. It usually takes a few seconds.</p>
           <SpeechModelBadge status={speechStatus} />
-        </div>
-      </div>
-    );
-  }
-
-  if (state === 'done' && result) {
-    return (
-      <div className="flow-panel">
-        {steps}
-        <div className="flow-done">
-          <Emoji symbol="🎉" size="xl" motion="bounce" />
-          <h2>Nice work! Here’s what we heard.</h2>
-        </div>
-        <blockquote className="transcript">{result.text || '(No words detected)'}</blockquote>
-        <div className="answer-stats">
-          <div><strong>{result.wordCount}</strong><span>words</span></div>
-          <div><strong>{result.wpm}</strong><span>words per minute</span></div>
-          <div><strong>{Math.round(result.recordedSeconds)}s</strong><span>of {phase.seconds}s used</span></div>
-        </div>
-        <p className="fine-print">
-          Full feedback on your answer arrives in the next build step. Transcribed in {(result.transcribeMs / 1000).toFixed(1)}s on this device.
-        </p>
-        <div className="row-actions center">
-          <LinkButton to="/results/sample">See sample results</LinkButton>
-          <Button variant="secondary" onClick={restart}>Try again</Button>
         </div>
       </div>
     );
