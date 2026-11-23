@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createHistory, record, redo, replaceRange, undo } from '../src/features/task/exam/editorHistory';
 import { promptForModel } from '../src/content/promptText';
+import { targetText } from '../src/features/task/exam/wordTarget';
 import { module1 } from '../src/content/modules/module1';
 
 describe('editor history', () => {
@@ -47,5 +48,16 @@ describe('promptForModel', () => {
     const text = promptForModel(survey, 1);
     expect(text.includes('- Choose Option A or Option B')).toBe(true);
     expect(text.includes('The learner selected option B.')).toBe(true);
+  });
+});
+
+describe('targetText', () => {
+  const range = { min: 150, max: 200 };
+  it('always shows the full 150–200 range', () => {
+    expect(targetText(0, range)).toBe('Target: 150–200 words');
+    expect(targetText(116, range)).toBe('Target: 150–200 words, 34 more needed');
+    expect(targetText(150, range)).toBe('Target: 150–200 words ✓');
+    expect(targetText(200, range)).toBe('Target: 150–200 words ✓');
+    expect(targetText(212, range)).toBe('Target: 150–200 words, 12 over');
   });
 });
