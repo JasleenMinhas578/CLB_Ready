@@ -431,3 +431,18 @@ a.skill-card::after {
 .issue-example ins::before { content: '→ '; color: var(--grape-soft); font-weight: 400; }
 .issue-example del + ins::before { content: ' → '; }
 .issue-example small, .issue-examples > small { color: var(--grape-soft); font-weight: 700; }
+
+/* Full-width layouts on large screens */
+.results-grid { display: grid; gap: 0 var(--gap-3); align-items: start; }
+.results-side, .results-main { min-width: 0; }
+@media (min-width: 1100px) {
+  .results-grid { grid-template-columns: minmax(0, 1.6fr) minmax(380px, 1fr); }
+  .results-main { grid-column: 1; grid-row: 1; }
+  .results-side { grid-column: 2; grid-row: 1; }
+  .results-side .measure-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .results-side .perf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .skill-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .task-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero h1 { max-width: 18ch; }
+}
+.narrow { max-width: 960px; }

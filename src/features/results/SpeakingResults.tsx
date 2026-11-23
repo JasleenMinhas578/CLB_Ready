@@ -18,26 +18,32 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
 
   if (!scorable) {
     return (
-      <section className="narrow results">
+      <section className="results">
         <div className="screen-head">
           <h1>Your feedback</h1>
           <p>{attempt.taskTitle}</p>
         </div>
-        <TooShortCard
-          attempt={attempt}
-          need={`at least ${MIN_SCORABLE_SPEAKING_WORDS} spoken words`}
-          unit="word"
-          outcome={outcome}
-          progress={progress}
-        />
-        {sample && <ImprovedCard goal={attempt.goal} text={sample} spoken fromScratch />}
-        <TipsCard goal={attempt.goal} tips={codeTips(attempt.metrics, attempt.goal).slice(0, 3)} />
-        <div className="results-card">
-          <h2>What we heard</h2>
-          <blockquote className="transcript">{attempt.transcript.trim() || '(No words detected)'}</blockquote>
-          <p className="fine-print">If you spoke more than this, check your microphone in the mic check and try again.</p>
+        <div className="results-grid">
+          <div className="results-side">
+            <TooShortCard
+              attempt={attempt}
+              need={`at least ${MIN_SCORABLE_SPEAKING_WORDS} spoken words`}
+              unit="word"
+              outcome={outcome}
+              progress={progress}
+            />
+            <TipsCard goal={attempt.goal} tips={codeTips(attempt.metrics, attempt.goal).slice(0, 3)} />
+            {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} transcribeMs={attempt.transcribeMs} />}
+          </div>
+          <div className="results-main">
+            {sample && <ImprovedCard goal={attempt.goal} text={sample} spoken fromScratch />}
+            <div className="results-card">
+              <h2>What we heard</h2>
+              <blockquote className="transcript">{attempt.transcript.trim() || '(No words detected)'}</blockquote>
+              <p className="fine-print">If you spoke more than this, check your microphone in the mic check and try again.</p>
+            </div>
+          </div>
         </div>
-        {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} transcribeMs={attempt.transcribeMs} />}
         <ResultsActions attempt={attempt} />
       </section>
     );
@@ -54,34 +60,40 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
   const final = outcome !== null;
 
   return (
-    <section className="narrow results">
+    <section className="results">
       <div className="screen-head">
         <Emoji symbol={overall >= attempt.goal ? '🎉' : '🍭'} size="xl" motion="bounce" />
         <h1>Your feedback</h1>
         <p>{attempt.taskTitle}</p>
       </div>
-      <LevelCard
-        attempt={attempt}
-        criteria={getCriteria('speaking')}
-        scores={scores}
-        overall={overall}
-        final={final}
-        status={<AiStatus outcome={outcome} progress={progress} />}
-        notes={outlierNotes(checked?.ignored ?? [], getCriteria('speaking'))}
-      />
-      <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
-      {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken original={attempt.transcript} />}
-      <ChecklistCard items={attempt.checklist} results={ai ? ai.checklist.map((row) => ({ met: row.met })) : null} final={final} />
-      <div className="results-card">
-        <h2>What we measured</h2>
-        <MeasureTiles metrics={attempt.metrics} />
+      <div className="results-grid">
+        <div className="results-side">
+          <LevelCard
+            attempt={attempt}
+            criteria={getCriteria('speaking')}
+            scores={scores}
+            overall={overall}
+            final={final}
+            status={<AiStatus outcome={outcome} progress={progress} />}
+            notes={outlierNotes(checked?.ignored ?? [], getCriteria('speaking'))}
+          />
+          <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
+          <ChecklistCard items={attempt.checklist} results={ai ? ai.checklist.map((row) => ({ met: row.met })) : null} final={final} />
+          <div className="results-card">
+            <h2>What we measured</h2>
+            <MeasureTiles metrics={attempt.metrics} />
+          </div>
+          {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} transcribeMs={attempt.transcribeMs} />}
+        </div>
+        <div className="results-main">
+          {ai?.improved && <ImprovedCard goal={attempt.goal} text={ai.improved} spoken original={attempt.transcript} />}
+          <div className="results-card">
+            <h2>What we heard</h2>
+            <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />
+            <p className="fine-print">Speech recognition can drop filler words, so counts are a minimum.</p>
+          </div>
+        </div>
       </div>
-      <div className="results-card">
-        <h2>What we heard</h2>
-        <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />
-        <p className="fine-print">Speech recognition can drop filler words, so counts are a minimum.</p>
-      </div>
-      {outcome && outcome.kind !== 'code' && <PerfCard perf={outcome.perf} transcribeMs={attempt.transcribeMs} />}
       <ResultsActions attempt={attempt} />
     </section>
   );
