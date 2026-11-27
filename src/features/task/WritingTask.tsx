@@ -15,6 +15,12 @@ import { ExamBar, TimeRemaining } from './exam/ExamBar';
 import { PromptPanel } from './exam/PromptPanel';
 import { WritingEditor } from './exam/WritingEditor';
 import { ModelPlanBadge } from './ModelPlanBadge';
+import { clearDraft, hasUnsavedWork, loadDraft, saveDraft, tabStorage } from './exam/unsavedWork';
+
+/** Asks the browser to confirm before closing or reloading mid-answer. */
+function warnBeforeLeaving(event: BeforeUnloadEvent) {
+  event.preventDefault();
+}
 
 interface WritingTaskProps {
   task: WritingTaskType;
@@ -32,12 +38,14 @@ interface WritingTaskProps {
  */
 export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: WritingTaskProps) {
   const { goal, setLastAttempt } = useSession();
-  const [text, setText] = useState('');
+  // Brings back a draft if the learner left this task earlier in this tab.
+  const [text, setText] = useState(() => loadDraft(tabStorage, moduleId, task.id));
   const [selected, setSelected] = useState<0 | 1 | null>(null);
   const [state, setState] = useState<'writing' | 'checking'>('writing');
   const [timeUp, setTimeUp] = useState(false);
   const textRef = useRef(text);
   textRef.current = text;
+  const unsaved = hasUnsavedWork({ writing: state === 'writing', text });
 
   const secondsLeft = useCountdown(task.timing.minutes * 60, state === 'writing' && !timeUp, () => setTimeUp(true));
   const total = getTaskTypesForSkill('writing').length;
@@ -46,6 +54,16 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
   useEffect(() => {
     void getFeedbackEngine().then((store) => store.preload());
   }, []);
+
+  useEffect(() => {
+    if (state === 'writing') saveDraft(tabStorage, moduleId, task.id, text);
+  }, [state, text, moduleId, task.id]);
+
+  useEffect(() => {
+    if (!unsaved) return;
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [unsaved]);
 
   const finish = async () => {
     if (state === 'checking') return;
@@ -74,6 +92,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
       options: prompt.options,
       metrics,
     });
+    clearDraft(tabStorage, moduleId, task.id);
     navigate('/results');
   };
 
@@ -90,6 +109,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
         position={`Writing Task ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/writing/${moduleId}`}
+        exitWarning={unsaved ? 'Your writing is kept in this tab and comes back if you open this task again, but the timer starts over.' : undefined}
         status={<TimeRemaining seconds={secondsLeft} warnBelow={300} />}
         action={
           <button type="button" className="exam-next" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'}>

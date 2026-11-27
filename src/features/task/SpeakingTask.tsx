@@ -20,6 +20,7 @@ import { MicCheck } from './MicCheck';
 import { SpeechModelBadge } from './SpeechModelBadge';
 import { ModelPlanBadge } from './ModelPlanBadge';
 import { ExamBar } from './exam/ExamBar';
+import { hasUnsavedWork } from './exam/unsavedWork';
 import { PromptPanel } from './exam/PromptPanel';
 import { PhaseTimer } from './exam/PhaseTimer';
 
@@ -214,6 +215,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
         position={`Speaking Task ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/speaking/${moduleId}`}
+        exitWarning={hasUnsavedWork({ recording: recorder.stream !== null }) ? 'You are recording an answer. If you leave now, the recording is lost.' : undefined}
         action={
           <button
             type="button"
