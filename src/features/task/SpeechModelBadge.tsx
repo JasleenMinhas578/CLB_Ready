@@ -6,8 +6,8 @@ export function SpeechModelBadge({ status }: { status: SpeechStatus }) {
   if (status.state === 'idle' || status.state === 'unavailable') return null;
   const percent = status.progress == null ? null : Math.round(status.progress * 100);
   const text = {
-    loading: `Getting the speech model ready${percent != null ? ` (${percent}%)` : ''}`,
-    ready: `Speech model ready: Whisper ${status.model ?? ''}`,
+    loading: `Getting speech-to-text ready${percent != null ? ` (${percent}%)` : ''}`,
+    ready: 'Speech-to-text is ready.',
     error: `${friendlyModelError(status.error)} Your answer will still be timed.`,
   }[status.state];
 

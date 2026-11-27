@@ -98,9 +98,9 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
           {player.source && player.state !== 'preparing' && (
             <p className="exam-note">
               {player.source === 'ai'
-                ? 'Voices made by Kokoro, an AI voice model running in your browser. Nothing is sent anywhere.'
+                ? 'These voices are made by AI in your browser. Nothing is sent anywhere.'
                 : player.source === 'recorded'
-                  ? 'Recorded with Kokoro AI voices.'
+                  ? 'These voices were made by AI.'
                   : 'The AI voice couldn’t run on this device, so your browser’s own voice is reading the recording.'}
             </p>
           )}

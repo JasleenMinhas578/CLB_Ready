@@ -19,8 +19,8 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   if (outcome?.kind === 'code') {
     const why =
       outcome.reason === 'light-mode'
-        ? 'Light mode: this device can’t run the AI coach, so feedback comes from your measurements only.'
-        : `${friendlyModelError(outcome.message)} Feedback below comes from your measurements only. Try again in a moment.`;
+        ? 'Light mode is on, so there is no AI coach. This feedback uses your measurements only.'
+        : `${friendlyModelError(outcome.message)} The feedback below uses your measurements only.`;
     return (
       <p className="ai-status is-code">
         <Emoji symbol="🍬" /> {why} <a href={href('/settings')}>Settings</a>
@@ -29,9 +29,9 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   }
   const text =
     progress?.phase === 'loading-model'
-      ? `Getting the AI coach ready${progress.modelProgress != null ? ` (${Math.round(progress.modelProgress * 100)}%)` : ''}. The first time can take a minute.`
+      ? `Getting the AI coach ready${progress.modelProgress != null ? ` (${Math.round(progress.modelProgress * 100)}%)` : ''}. The first time can take a few minutes.`
       : progress?.phase === 'scoring'
-        ? `Pip is checking your answer${progress.written ? ` (${progress.written} characters)` : ''}…`
+        ? `Pip is checking your answer${progress.written ? ` (${progress.written} characters so far)` : ''}…`
         : 'Starting the AI coach…';
   return (
     <p className="ai-status" aria-live="polite">
@@ -101,7 +101,7 @@ export function TipsCard({ goal, tips }: { goal: number; tips: string[] }) {
   return (
     <div className="results-card">
       <h2>To reach CLB {goal}, try this next</h2>
-      {tips.length ? <ol className="tips">{tips.map((tip) => <li key={tip}>{tip}</li>)}</ol> : <p>Your measurements look strong. Keep practising with new prompts.</p>}
+      {tips.length ? <ol className="tips">{tips.map((tip) => <li key={tip}>{tip}</li>)}</ol> : <p>Your measurements look strong. Keep practising with new tasks.</p>}
     </div>
   );
 }
@@ -125,7 +125,7 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
   return (
     <div className="results-card improved-card">
       <div className="improved-head">
-        <h2>{fromScratch ? `A model answer at CLB ${goal}` : `Your answer at CLB ${goal}`}</h2>
+        <h2>{fromScratch ? `An example answer at CLB ${goal}` : `Your answer at CLB ${goal}`}</h2>
         {canCompare && (
           <div className="view-switch" role="group" aria-label="How to show the improved answer">
             <button type="button" aria-pressed={view === 'changes'} onClick={() => setView('changes')}>Changes</button>
@@ -165,7 +165,7 @@ export function AnswerCard({ answer, goal, spoken, original, fromScratch = false
 }) {
   if (!answer || answer.state === 'off') return null;
   if (answer.state === 'done') return <ImprovedCard goal={goal} text={answer.text} spoken={spoken} original={original} fromScratch={fromScratch} />;
-  const heading = fromScratch ? `A model answer at CLB ${goal}` : `Your answer at CLB ${goal}`;
+  const heading = fromScratch ? `An example answer at CLB ${goal}` : `Your answer at CLB ${goal}`;
   if (answer.state === 'failed') {
     return (
       <div className="results-card improved-card">
@@ -211,7 +211,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           );
         })}
       </ul>
-      {final && anyUnchecked && <p className="fine-print">Items marked ➖ need the AI coach to check.</p>}
+      {final && anyUnchecked && <p className="fine-print">Items marked ➖ were not checked. Only the AI coach can check them.</p>}
     </div>
   );
 }
@@ -259,7 +259,7 @@ export function TooShortCard({ attempt, need, unit, outcome, progress }: {
       </p>
       {!attempt.goalChosen && (
         <p className="fine-print">
-          No goal set, so the model answer below is written at CLB {attempt.goal}. <a href={href('/goal')}>Choose your goal</a>.
+          No goal set, so the example answer below is written at CLB {attempt.goal}. <a href={href('/goal')}>Choose your goal</a>.
         </p>
       )}
       {outcome === null ? (

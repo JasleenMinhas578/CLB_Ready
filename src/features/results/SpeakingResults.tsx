@@ -47,8 +47,8 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             {sample}
             <div className="results-card">
               <h2>What we heard</h2>
-              <blockquote className="transcript">{attempt.transcript.trim() || '(No words detected)'}</blockquote>
-              <p className="fine-print">If you spoke more than this, check your microphone in the mic check and try again.</p>
+              <blockquote className="transcript">{attempt.transcript.trim() || '(We didn’t hear any words)'}</blockquote>
+              <p className="fine-print">If you said more than this, check your microphone and try again.</p>
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
           <div className="results-card">
             <h2>What we heard</h2>
             <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />
-            <p className="fine-print">Speech recognition can drop filler words, so counts are a minimum.</p>
+            <p className="fine-print">Speech-to-text can miss filler words like “um”, so the real count may be higher.</p>
           </div>
         </div>
       </div>
