@@ -137,6 +137,19 @@ describe('feedback job paths', () => {
 });
 
 describe('cancelling a feedback job', () => {
+  it('drops a job cancelled while the model downloads, so the next answer goes first', async () => {
+    const loading = gate();
+    const { deps, prompts } = setup({ load: loading.opened, replies: [SCORES_REPLY, ANSWER_REPLY, SCORES_REPLY, ANSWER_REPLY] });
+    const old = feedbackJobFor(writing(LONG_TEXT), deps);
+    await until(() => (deps.getEngine as ReturnType<typeof vi.fn>).mock.calls.length === 1);
+    const next = feedbackJobFor(writing(LONG_TEXT.replaceAll('kettle', 'toaster')), deps);
+    loading.open();
+    expect(await old.promise).toMatchObject({ kind: 'code', reason: 'error' });
+    expect((await next.promise).kind).toBe('ai');
+    await until(answerDone(next));
+    expect(prompts.some((prompt) => prompt.includes('kettle'))).toBe(false);
+  });
+
   it('stops scoring mid-reply and never starts step 2', async () => {
     const generating = gate();
     const { deps, log } = setup({ generating: generating.opened });
