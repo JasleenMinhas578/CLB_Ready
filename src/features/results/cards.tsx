@@ -10,6 +10,7 @@ import { friendlyModelError } from '@/services/ai/errorText';
 import type { AiPerf, AnswerStream, FeedbackOutcome, FeedbackProgress, StepPerf } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
 import { DiffView } from './DiffView';
+import { isMostlyRewritten } from '@/domain/diff';
 
 /** Shared building blocks for every skill's results screen. */
 
@@ -117,7 +118,9 @@ interface ImprovedCardProps {
 
 export function ImprovedCard({ goal, text, spoken, fromScratch = false, original }: ImprovedCardProps) {
   const canCompare = !fromScratch && !!original?.trim();
-  const [view, setView] = useState<'changes' | 'clean'>(canCompare ? 'changes' : 'clean');
+  // When most words are new, the marked view is a wall of colour; start on the clean copy instead.
+  const rewritten = canCompare && isMostlyRewritten(original ?? '', text);
+  const [view, setView] = useState<'changes' | 'clean'>(canCompare && !rewritten ? 'changes' : 'clean');
 
   return (
     <div className="results-card improved-card">
@@ -135,7 +138,9 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
           ? 'Written by the AI coach for this task, as an example to learn from.'
           : view === 'changes'
             ? 'Your answer, edited to your goal level. Green is new; red was cut or replaced.'
-            : 'Your ideas, rewritten at your goal level.'}{' '}
+            : rewritten
+              ? 'Most of your answer was rewritten, so this shows the clean copy first. Choose Changes to see what changed.'
+              : 'Your ideas, rewritten at your goal level.'}{' '}
         {spoken ? 'Read it aloud once to hear how it flows.' : 'Notice how each paragraph covers one point.'}
       </p>
       {canCompare && view === 'changes' && original ? (

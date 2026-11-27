@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diffTokens, diffWords, summarizeDiff } from '../src/domain/diff';
+import { diffTokens, diffWords, isMostlyRewritten, summarizeDiff } from '../src/domain/diff';
 
 const join = (parts: { kind: string; text: string }[], kind: string) =>
   parts.filter((part) => part.kind === kind).map((part) => part.text).join(' | ');
@@ -49,5 +49,20 @@ describe('summarizeDiff', () => {
     const summary = summarizeDiff(diffWords(before, after));
     expect(Date.now() - started < 200).toBe(true);
     expect(summary.keptShare > 0.6).toBe(true);
+  });
+});
+
+describe('isMostlyRewritten', () => {
+  it('is false when most of the improved answer is the learner’s words', () => {
+    expect(isMostlyRewritten('I think it was a good day for us.', 'I think it was a wonderful day for us.')).toBe(false);
+  });
+
+  it('is true when most of the improved answer is new', () => {
+    expect(isMostlyRewritten('Good day.', 'In my opinion, yesterday was an excellent and memorable day.')).toBe(true);
+  });
+
+  it('is false at exactly half', () => {
+    // Kept: "a b", added: "c d", so half the improved words are the learner's own.
+    expect(isMostlyRewritten('a b', 'a b c d')).toBe(false);
   });
 });
