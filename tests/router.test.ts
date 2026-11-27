@@ -15,6 +15,10 @@ describe('matchPath', () => {
     expect(matchPath('/goal', '/lab')).toBeNull();
     expect(matchPath('/task/:a/:b', '/task/only-one')).toBeNull();
   });
+
+  it('treats a malformed escape as no match instead of throwing', () => {
+    expect(matchPath('/task/:moduleId', '/task/%E0')).toBeNull();
+  });
 });
 
 describe('speaking phases', () => {
