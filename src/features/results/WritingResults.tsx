@@ -140,7 +140,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
           <div className="results-card">
             <h2>Your writing, checked</h2>
             <EssayView text={attempt.text} issues={attempt.issues} />
-            <p className="fine-print">The checker catches common mistakes only, so a clean result doesn’t mean zero errors.</p>
+            <p className="fine-print">The checker finds common mistakes only, so it may miss some.</p>
           </div>
         </div>
       </div>

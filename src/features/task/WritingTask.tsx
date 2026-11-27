@@ -127,8 +127,8 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
         <p className="exam-alert" role="alert">Time is up and nothing was written. Exit to try again.</p>
       )}
       <div className="exam-meta">
-        <span>Press Next when you finish. Your writing is checked after you submit.</span>
-        <ModelPlanBadge needsSpeech={false} />
+        <span>Press Next when you finish. Then we check your writing.</span>
+        <ModelPlanBadge />
       </div>
     </div>
   );

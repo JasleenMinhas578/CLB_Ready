@@ -142,7 +142,7 @@ export function SettingsScreen() {
                 className={`tier-option ${choice === option.value ? 'is-selected' : ''}`}
                 onClick={() => void choose(option.value)}
               >
-                <strong>{option.title}{option.value === 'auto' && detected ? ` (${detected === 'no-webgpu' ? 'light mode' : detected})` : ''}</strong>
+                <strong>{option.title}{option.value === 'auto' && detected ? ` (${CHOICES.find((item) => item.value === detected)?.title ?? detected})` : ''}</strong>
                 <span>{option.text}</span>
                 {preview && <small>Coach: {shortModel(preview.feedbackModel)}</small>}
                 {disabled && <small>Needs WebGPU, which this browser doesn’t offer.</small>}

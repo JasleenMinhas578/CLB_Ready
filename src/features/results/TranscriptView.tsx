@@ -11,7 +11,7 @@ const FILLERS = new Set(['um', 'uh', 'er', 'erm', 'ah', 'hmm', 'mm', 'uhm']);
 
 /** The transcript with fillers, vague words and long pauses marked inline. */
 export function TranscriptView({ text, words, metrics }: TranscriptViewProps) {
-  if (words.length === 0) return <blockquote className="transcript">{text || '(No words detected)'}</blockquote>;
+  if (words.length === 0) return <blockquote className="transcript">{text || '(We didn’t hear any words)'}</blockquote>;
 
   const vague = new Set(metrics.vagueWords);
   const pauseAfter = new Map(metrics.longPauses.map((pause) => [pause.afterWord, pause.seconds]));

@@ -37,7 +37,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
       <section className="empty-state">
         <Emoji symbol={skill.emoji} size="xl" motion="float" />
         <h1>{skill.name} practice is coming soon</h1>
-        <p>We're starting with speaking and writing. Check back for {skill.name.toLowerCase()} tasks.</p>
+        <p>This skill isn’t ready yet. Please check again soon.</p>
         <LinkButton to="/">Back to skills</LinkButton>
       </section>
     );

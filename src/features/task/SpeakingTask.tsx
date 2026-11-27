@@ -10,6 +10,7 @@ import { promptForModel } from '@/content/promptText';
 import { Button } from '@/components/Button';
 import { getSpeechEngine, useSpeechStatus, type SpeechEngineStore } from '@/services/ai/speechEngine';
 import { getFeedbackEngine } from '@/services/ai/feedbackEngine';
+import { friendlyModelError } from '@/services/ai/errorText';
 import { WHISPER_SAMPLE_RATE, toWhisperAudio } from '@/services/audio/recorder';
 import { useMicLevel } from '@/services/audio/useMicLevel';
 import { MIC_PROBLEM_TEXT, checkRecording, type RecordingProblem } from '@/services/audio/analysis';
@@ -123,7 +124,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     } catch (error) {
       setProblem({
         title: 'We couldn’t turn your answer into text',
-        help: error instanceof Error ? error.message : 'Please try again.',
+        help: friendlyModelError(error, 'Please try again. If it happens again, reload the page.'),
       });
       setState('problem');
     }
@@ -179,10 +180,10 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   } else if (state === 'ready') {
     panel = (
       <div className="exam-message">
-        <h2>Ready when you are</h2>
+        <h2>Press Start when you’re ready</h2>
         <p>
-          Read the task. When you press Start, {phases[0].id === 'select' ? 'the choosing time' : 'the preparation time'} begins,
-          then recording starts automatically. Speak until the recording time ends.
+          Read the task first. When you press Start, {phases[0].id === 'select' ? 'the choosing time' : 'the preparation time'} begins.
+          Recording starts by itself after that. Keep speaking until the recording time ends.
         </p>
         <Button onClick={() => setState(micReady ? 'running' : 'mic-check')}>Start</Button>
         <SpeechModelBadge status={speechStatus} />
@@ -244,7 +245,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
 
       <div className="exam-meta">
         <span>Find a quiet room. Your recording stays on this device.</span>
-        <ModelPlanBadge needsSpeech />
+        <ModelPlanBadge />
       </div>
     </div>
   );

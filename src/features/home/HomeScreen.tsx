@@ -25,12 +25,12 @@ const counts = (() => {
 })();
 
 const INSIDE = [
-  { emoji: '🎤', title: 'Speaking with a coach', text: `${counts.speaking} timed prompts. Your answer is transcribed, measured (pace, pauses, fillers) and rewritten at your goal level.` },
+  { emoji: '🎤', title: 'Speaking with a coach', text: `${counts.speaking} timed tasks. Your answer is turned into text, you see your pace, pauses and filler words, and you get a better version at your goal level.` },
   { emoji: '🔊', title: 'Sample answers you can hear', text: `${counts.samples} CLB 10+ answers, each with notes on why it works and a button to hear it read aloud.` },
   { emoji: '✏️', title: 'Writing, marked like a teacher would', text: `${counts.writing} email and survey tasks in a test-style editor with a live word count, grammar marks and an improved version.` },
-  { emoji: '📖', title: 'Reading with every answer explained', text: `${counts.reading} questions across messages, charts and articles. Each answer quotes the line that proves it.` },
-  { emoji: '🎧', title: 'Listening that plays once', text: `${counts.listening} questions with AI voices, like test day: no replay, then the full transcript to check.` },
-  { emoji: '🎯', title: 'Aimed at your CLB goal', text: 'Pick CLB 7 to 12. Every score, tip and model answer is aimed at the level you need.' },
+  { emoji: '📖', title: 'Reading with every answer explained', text: `${counts.reading} questions about messages, charts and articles. Each answer shows the line in the text that proves it.` },
+  { emoji: '🎧', title: 'Listening that plays once', text: `${counts.listening} questions with AI voices. Each recording plays once, like test day. Then you can read every word that was said.` },
+  { emoji: '🎯', title: 'Aimed at your CLB goal', text: 'Pick CLB 7 to 12. Every score, tip and example answer is aimed at the level you need.' },
 ];
 
 const STEPS = [
@@ -42,15 +42,15 @@ const STEPS = [
 const FAQ = [
   {
     q: 'Is it really free?',
-    a: 'Yes. There’s no account, trial or card. The AI runs on your own computer, so there are no server bills to pass on to you.',
+    a: 'Yes. There’s no account, trial or card. The AI runs on your own device, so there are no server costs to charge you for.',
   },
   {
     q: 'Does anyone hear my recordings or read my writing?',
-    a: 'No. Speech recognition and feedback run inside your browser. Your answers are never uploaded, and they disappear when you close the tab. Only the ticks for finished tasks are saved, on your device.',
+    a: 'No. Speech-to-text and feedback run inside your browser, and your answers are never uploaded. Your answers disappear when you close the tab. Until then, an unfinished writing draft stays in the tab, so reloading the page doesn’t lose it. Only the ticks for finished tasks are saved, on your device.',
   },
   {
     q: 'Which device works best?',
-    a: 'A laptop or desktop with Chrome or Edge. The first visit downloads the AI models once (they’re saved in your browser after that). Phones work with lighter models.',
+    a: 'A laptop or desktop with Chrome or Edge. The first visit downloads the AI models once (they’re saved in your browser after that). Phones work too, with a smaller AI.',
   },
   {
     q: 'Are the scores official?',
@@ -71,9 +71,9 @@ export function HomeScreen() {
       <section className="landing-hero">
         <div className="landing-copy">
           <p className="price-sticker">
-            <strong>$0</strong> No account. No card. No catch.
+            <strong>$0</strong> No account. No card. Nothing to pay.
           </p>
-          <h1>Free CELPIP practice with an AI coach that lives in your browser.</h1>
+          <h1>Free CELPIP practice with an AI coach that runs in your browser.</h1>
           <p className="hero-lede">
             Speak, write, read and listen under real test timers, then see exactly what to change to reach your CLB goal. Your
             answers never leave your device.
@@ -132,14 +132,14 @@ export function HomeScreen() {
         <div>
           <h2 id="private-heading">Free because it runs on your device</h2>
           <p>
-            Most AI apps send your voice to a server and charge you for it. CLB Ready downloads small open AI models into your
-            browser once, then does everything on your own computer: speech recognition, feedback and voices.
+            Most AI apps send your voice to a server and charge you for it. CLB Ready downloads free, open-source AI into your
+            browser once. Then it does everything on your own device: speech-to-text, feedback and voices.
           </p>
         </div>
         <ul className="private-points">
           <li><Emoji symbol="🔒" /> Your recordings and writing are never uploaded</li>
           <li><Emoji symbol="🍭" /> No account, so nothing to sell or leak</li>
-          <li><Emoji symbol="⚡" /> Models download once, then load straight from your browser</li>
+          <li><Emoji symbol="⚡" /> The AI downloads once, then loads from your browser</li>
         </ul>
       </section>
 

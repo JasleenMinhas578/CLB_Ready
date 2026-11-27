@@ -3,8 +3,8 @@ import { href } from '@/app/router';
 import { getModelPlan, getTierChoice, onPlanChange } from '@/services/device/plan';
 import type { ModelPlan } from '@/services/device/tier';
 
-/** "Running Qwen2.5-1.5B, best for your device" with a link to switch. */
-export function ModelPlanBadge({ needsSpeech }: { needsSpeech: boolean }) {
+/** "AI setup: best for this device" with a link to switch. Model names live in Settings. */
+export function ModelPlanBadge() {
   const [plan, setPlan] = useState<ModelPlan | null>(null);
 
   useEffect(() => {
@@ -14,14 +14,15 @@ export function ModelPlanBadge({ needsSpeech }: { needsSpeech: boolean }) {
   }, []);
 
   if (!plan) return null;
-  const coach = plan.feedbackModel ? plan.feedbackModel.replace(/-q4f(16|32)_1-MLC$/, '') : 'light mode';
-  const speech = plan.whisperModel.replace(/^.*whisper-/, 'Whisper ');
-  const why = getTierChoice() === 'auto' ? 'best for your device' : 'your choice';
+  const text = !plan.feedbackModel
+    ? 'Light mode: feedback uses your measurements only.'
+    : getTierChoice() === 'auto'
+      ? 'AI setup: best for this device.'
+      : 'AI setup: your choice in Settings.';
 
   return (
     <p className="plan-badge">
-      <span aria-hidden="true">🧠</span> Running {needsSpeech ? `${speech} and ` : ''}
-      {coach}, {why}. <a href={href('/settings')}>Change</a>
+      <span aria-hidden="true">🧠</span> {text} <a href={href('/settings')}>Change</a>
     </p>
   );
 }

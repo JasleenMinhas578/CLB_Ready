@@ -125,7 +125,7 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
       </div>
       <div className="exam-meta">
         <span>{answered} of {part.questions.length} answered. Unanswered questions count as wrong, so make a guess.</span>
-        <span>Suggested time for this part: {task.timing.minutes} minutes.</span>
+        <span>Time for this part: {task.timing.minutes} minutes.</span>
       </div>
     </div>
   );

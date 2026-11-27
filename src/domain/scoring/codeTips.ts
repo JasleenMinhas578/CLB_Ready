@@ -15,26 +15,26 @@ export function codeTips(metrics: SpeakingMetrics, goal: number): string[] {
     );
   }
   if (metrics.wordsPerMinute < 100) {
-    tips.push(`Your pace was ${metrics.wordsPerMinute} words a minute. Aim for about 120 to 150 by planning your points during the prep time.`);
+    tips.push(`Your pace was ${metrics.wordsPerMinute} words a minute. Aim for about 120 to 150 by planning your points during the preparation time.`);
   } else if (metrics.wordsPerMinute > 180) {
     tips.push(`Your pace was ${metrics.wordsPerMinute} words a minute. Slow down a little so every word is clear.`);
   }
   if (metrics.longPauses.length >= 2) {
     tips.push(
-      `You paused for more than 2 seconds ${plural(metrics.longPauses.length, 'time')}. Use short linking phrases like "another reason is" to keep going while you think.`,
+      `You paused for more than 2 seconds ${plural(metrics.longPauses.length, 'time')}. Use short linking phrases like "another reason is" to keep talking while you think.`,
     );
   }
   if (metrics.fillerCount >= 3) {
     const top = metrics.fillers[0]?.word ?? 'um';
-    tips.push(`You said "${top}" and similar fillers ${metrics.fillerCount} times. A short silent pause sounds more confident.`);
+    tips.push(`You said "${top}" or a similar filler word ${metrics.fillerCount} times. A short, silent pause sounds more confident.`);
   }
   if (metrics.vagueWords.length >= 2) {
     const examples = metrics.vagueWords.slice(0, 3).map((word) => `"${word}"`).join(', ');
-    tips.push(`Swap general words like ${examples} for precise ones. CLB ${goal} answers name exactly what they mean.`);
+    tips.push(`Replace general words like ${examples} with more exact words. CLB ${goal} answers say exactly what they mean.`);
   }
   if (metrics.repeatedWords.length > 0) {
     const { word, count } = metrics.repeatedWords[0];
-    tips.push(`You used "${word}" ${plural(count, 'time')}. Try a synonym or rephrase the second and third time.`);
+    tips.push(`You used "${word}" ${plural(count, 'time')}. Next time, use a different word with the same meaning, or say it another way.`);
   }
   if (metrics.linkingWords.length < 3) {
     tips.push('Organize your answer with linking words such as "first", "for example" and "as a result".');

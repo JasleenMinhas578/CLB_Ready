@@ -86,10 +86,10 @@ export function planModels(signals: DeviceSignals, options: PlanOptions = {}): M
   const onCpu = tier === 'no-webgpu' || Boolean(options.speechOnCpu);
   const whisper = onCpu ? 'tiny.en' : { high: 'small.en', mid: 'base.en', low: 'tiny.en' }[tier];
   const reasons: Record<DeviceTier, string> = {
-    high: 'Strong GPU and plenty of memory: using the larger, smarter models.',
-    mid: 'Good GPU: using balanced models for speed and quality.',
-    low: 'Limited memory: using the smallest models to keep things smooth.',
-    'no-webgpu': 'WebGPU is not available: speech runs on the CPU and feedback uses light mode.',
+    high: 'Strong graphics chip and plenty of memory, so this uses the largest models.',
+    mid: 'Good graphics chip, so this uses balanced models for speed and quality.',
+    low: 'Limited memory, so this uses the smallest models to keep things fast.',
+    'no-webgpu': 'This browser has no WebGPU, so speech-to-text runs on the processor and feedback uses light mode.',
   };
 
   return {

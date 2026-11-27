@@ -60,7 +60,7 @@ export function ExamBar({ position, title, exitTo, status, action, exitWarning }
               navigate(exitTo);
             }}
           >
-            Leave
+            Leave task
           </button>
         </div>
       </dialog>
