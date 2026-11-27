@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
 import type { ReadingTaskType } from '@/domain/tasks/types';
 import type { ReadingPart } from '@/content/objective';
 import { useSession } from '@/app/session';
@@ -9,6 +9,21 @@ import { useCountdown } from './useCountdown';
 import { ExamBar, TimeRemaining } from './exam/ExamBar';
 import { PassageView, QuestionList, type Answers } from './objective/Questions';
 import { numberQuestions } from './objective/numbering';
+
+// Matches the breakpoint where exam columns stack (exam.css).
+const NARROW = '(max-width: 860px)';
+const watchNarrow = (onChange: () => void) => {
+  const query = window.matchMedia(NARROW);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+};
+const isNarrow = () => window.matchMedia(NARROW).matches;
+
+type Tab = 'passage' | 'questions';
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'passage', label: 'Passage' },
+  { id: 'questions', label: 'Questions' },
+];
 
 /**
  * Test-style reading part: the passage on the left, questions on the right
@@ -25,6 +40,26 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
   const { numbers, listed } = numberQuestions(part.blocks, part.questions);
   const answered = part.questions.filter((question) => answers[question.id] != null).length;
   const total = getTaskTypesForSkill('reading').length;
+  // On narrow screens the questions would sit a long scroll below the passage, so show one at a time.
+  const narrow = useSyncExternalStore(watchNarrow, isNarrow);
+  const tabbed = narrow && listed.length > 0;
+  const [tab, setTab] = useState<Tab>('passage');
+  const tabList = useRef<HTMLDivElement>(null);
+
+  const showTab = (id: Tab) => {
+    setTab(id);
+    tabList.current?.scrollIntoView({ block: 'nearest' });
+  };
+  // Arrow keys move between the two tabs, as in the ARIA tabs pattern.
+  const onTabKey = (event: KeyboardEvent) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next: Tab = tab === 'passage' ? 'questions' : 'passage';
+    showTab(next);
+    document.getElementById(`reading-tab-${next}`)?.focus();
+  };
+  const panelProps = (id: Tab) =>
+    tabbed ? { id: `reading-panel-${id}`, role: 'tabpanel', 'aria-labelledby': `reading-tab-${id}`, hidden: tab !== id } : {};
 
   const answer = (id: string, option: number) => setAnswers((current) => ({ ...current, [id]: option }));
 
@@ -59,12 +94,31 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
         action={<button type="button" className="exam-next" onClick={finish}>Next</button>}
       />
       <p className="exam-instructions">{part.instructions}</p>
+      {tabbed && (
+        <div className="exam-tabs" role="tablist" aria-label="Passage or questions" ref={tabList}>
+          {TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              id={`reading-tab-${id}`}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              aria-controls={`reading-panel-${id}`}
+              tabIndex={tab === id ? 0 : -1}
+              onClick={() => showTab(id)}
+              onKeyDown={onTabKey}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="exam-body exam-columns objective-columns">
-        <div className="exam-panel passage-panel">
+        <div className="exam-panel passage-panel" {...panelProps('passage')}>
           <PassageView blocks={part.blocks} questions={part.questions} numbers={numbers} answers={answers} onAnswer={answer} />
         </div>
         {listed.length > 0 && (
-          <div className="exam-panel">
+          <div className="exam-panel" {...panelProps('questions')}>
             <QuestionList questions={listed} numbers={numbers} answers={answers} onAnswer={answer} />
           </div>
         )}
