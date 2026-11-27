@@ -598,6 +598,8 @@ a.skill-card::after {
 }
 @media (max-width: 600px) {
   .inside-grid { grid-template-columns: 1fr; }
+  .hero-actions { flex-direction: column; }
+  .hero-actions .btn, .final-cta .btn { width: 100%; }
   .private-band, .schools { padding: var(--gap-3); }
   .demo-sentence { font-size: 1.1rem; }
 }
