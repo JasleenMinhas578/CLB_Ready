@@ -1,5 +1,8 @@
 import { KokoroTTS } from 'kokoro-js';
 import type { KokoroRequest, KokoroResponse } from './kokoro.protocol';
+import { useLocalOnnxRuntime } from '@/services/ai/onnxRuntime';
+
+useLocalOnnxRuntime();
 
 /**
  * Runs Kokoro (82M parameters, Apache-2.0) off the main thread, so the
