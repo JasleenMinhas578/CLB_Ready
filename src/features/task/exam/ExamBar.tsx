@@ -1,5 +1,6 @@
 import { useRef, type MouseEvent, type ReactNode } from 'react';
 import { href, navigate } from '@/app/router';
+import { formatSeconds, passedWarning, warningText } from '@/domain/timer';
 
 interface ExamBarProps {
   /** e.g. "Writing Task 1 of 2" */
@@ -67,14 +68,55 @@ export function ExamBar({ position, title, exitTo, status, action, exitWarning }
   );
 }
 
-/** Time remaining, shown in the exam bar. Turns to a warning in the last minute or five. */
-export function TimeRemaining({ seconds, warnBelow = 60, label = 'Time remaining' }: { seconds: number; warnBelow?: number; label?: string }) {
-  const safe = Math.max(0, Math.ceil(seconds));
-  const text = `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, '0')}`;
+/** Time remaining, shown in the exam bar. In the warning window it gains an icon as well as a colour. */
+export function TimeRemaining({
+  seconds,
+  totalSeconds,
+  warnBelow = 60,
+  label = 'Time remaining',
+}: {
+  seconds: number;
+  totalSeconds: number;
+  warnBelow?: number;
+  label?: string;
+}) {
+  const text = formatSeconds(seconds);
+  const low = Math.ceil(seconds) <= warnBelow;
   return (
-    <div className={`exam-time ${safe <= warnBelow ? 'is-low' : ''}`} role="timer" aria-label={`${label}: ${text}`}>
-      <span>{label}</span>
-      <strong>{text}</strong>
-    </div>
+    <>
+      <div className={`exam-time ${low ? 'is-low' : ''}`} role="timer" aria-label={`${label}: ${text}`}>
+        <span>{label}</span>
+        <strong>
+          {low && <WarnIcon />}
+          {text}
+        </strong>
+      </div>
+      <TimeWarning secondsLeft={seconds} totalSeconds={totalSeconds} />
+    </>
+  );
+}
+
+/**
+ * Says "5 minutes left", "1 minute left" and "10 seconds left" once each.
+ * It stays mounted with empty text so screen readers notice each change.
+ * `muted` keeps it quiet while the mic records, so the warning is not in the answer.
+ */
+export function TimeWarning({ secondsLeft, totalSeconds, muted = false }: { secondsLeft: number; totalSeconds: number; muted?: boolean }) {
+  const mark = muted ? null : passedWarning(secondsLeft, totalSeconds);
+  return (
+    <span className="sr-only" aria-live="polite">
+      {mark === null ? '' : warningText(mark)}
+    </span>
+  );
+}
+
+/** A small "!" in a circle, so a low timer is not shown by colour alone. */
+export function WarnIcon() {
+  return (
+    <svg className="warn-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" strokeWidth="2.5" />
+      <path d="M12 7v6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="12" cy="17" r="1.5" fill="currentColor" />
+    </svg>
   );
 }

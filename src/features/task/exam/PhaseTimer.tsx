@@ -1,5 +1,6 @@
 import { LevelMeter } from '@/components/LevelMeter';
 import { formatSeconds } from '@/domain/timer';
+import { WarnIcon } from './ExamBar';
 
 interface PhaseTimerProps {
   kind: 'select' | 'prep' | 'answer';
@@ -19,15 +20,19 @@ export function PhaseTimer({ kind, secondsLeft, totalSeconds, active, done = fal
   // Every bar shows time left, so the number and the bar always move the same way.
   const fraction = done ? 0 : active ? secondsLeft / totalSeconds : 1;
   const recording = kind === 'answer' && active;
+  const low = active && totalSeconds > 10 && secondsLeft <= 10;
 
   return (
-    <div className={`phase-timer kind-${kind} ${active ? 'is-active' : ''} ${done ? 'is-done' : ''}`}>
+    <div className={`phase-timer kind-${kind} ${active ? 'is-active' : ''} ${done ? 'is-done' : ''} ${low ? 'is-low' : ''}`}>
       <div className="phase-timer-head">
         <span className="phase-timer-label">
           {recording && <span className="rec-dot" aria-hidden="true" />}
           {recording ? 'Recording…' : LABELS[kind]}
         </span>
-        <strong>{done ? 'Done' : active ? `${formatSeconds(secondsLeft)} left` : formatSeconds(totalSeconds)}</strong>
+        <strong>
+          {low && <WarnIcon />}
+          {done ? 'Done' : active ? `${formatSeconds(secondsLeft)} left` : formatSeconds(totalSeconds)}
+        </strong>
       </div>
       <div className="phase-bar" aria-hidden="true">
         <span style={{ width: `${Math.min(1, Math.max(0, fraction)) * 100}%` }} />

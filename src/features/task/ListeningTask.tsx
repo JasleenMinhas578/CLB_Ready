@@ -62,7 +62,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
         position={`Listening Part ${task.order} of ${total}${part.clips.length > 1 ? `, recording ${clipIndex + 1} of ${part.clips.length}` : ''}`}
         title={task.title}
         exitTo={`/practice/listening/${moduleId}`}
-        status={answering ? <TimeRemaining seconds={secondsLeft} warnBelow={20} label="Time to answer" /> : undefined}
+        status={answering ? <TimeRemaining seconds={secondsLeft} totalSeconds={clip.questions.length * SECONDS_PER_QUESTION} warnBelow={20} label="Time to answer" /> : undefined}
         action={
           <button type="button" className="exam-next" onClick={next} disabled={!answering}>
             {lastClip ? 'Finish' : 'Next'}
