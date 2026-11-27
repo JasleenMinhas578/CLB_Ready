@@ -1,9 +1,31 @@
-import { CreateWebWorkerMLCEngine, prebuiltAppConfig, type WebWorkerMLCEngine } from '@mlc-ai/web-llm';
+import { CreateWebWorkerMLCEngine, prebuiltAppConfig, type AppConfig, type WebWorkerMLCEngine } from '@mlc-ai/web-llm';
+import { WEBLLM_LIBS_SHA, WEBLLM_MODEL_SHAS } from '@/services/modelPins';
 import type { CompleteOptions, FeedbackModel, GenerationStats, LoadProgress } from './types';
+
+const LIBS_MAIN = '/mlc-ai/binary-mlc-llm-libs/main/';
+
+/**
+ * WebLLM's built-in list downloads from each repo's moving `main` branch.
+ * Keep only the models we use, pinned to exact commits.
+ */
+export const pinnedAppConfig: AppConfig = {
+  ...prebuiltAppConfig,
+  model_list: prebuiltAppConfig.model_list
+    .filter((model) => model.model_id in WEBLLM_MODEL_SHAS)
+    .map((model) => {
+      if (!model.model_lib.includes(LIBS_MAIN)) throw new Error(`Can't pin the WebLLM library for ${model.model_id}.`);
+      return {
+        ...model,
+        // An explicit /resolve/<sha>/ is kept as is by WebLLM (it only adds /resolve/main/ when missing).
+        model: `https://huggingface.co/mlc-ai/${model.model_id}/resolve/${WEBLLM_MODEL_SHAS[model.model_id]}/`,
+        model_lib: model.model_lib.replace(LIBS_MAIN, `/mlc-ai/binary-mlc-llm-libs/${WEBLLM_LIBS_SHA}/`),
+      };
+    }),
+};
 
 /** Approximate GPU memory WebLLM lists for a model, in MB. */
 export function estimatedGpuMb(modelId: string): number | null {
-  const record = prebuiltAppConfig.model_list.find((model) => model.model_id === modelId);
+  const record = pinnedAppConfig.model_list.find((model) => model.model_id === modelId);
   return record?.vram_required_MB ?? null;
 }
 
@@ -16,6 +38,7 @@ export class WebLlmFeedbackModel implements FeedbackModel {
     const started = performance.now();
     const worker = new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' });
     this.engine = await CreateWebWorkerMLCEngine(worker, this.modelId, {
+      appConfig: pinnedAppConfig,
       initProgressCallback: (report) => onProgress?.({ fraction: report.progress, text: report.text }),
     });
     return { elapsedMs: performance.now() - started };
