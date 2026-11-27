@@ -32,7 +32,9 @@
 .exam-time { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
 .exam-time span { font-size: 0.75rem; font-weight: 700; opacity: 0.8; }
 .exam-time strong { font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.exam-time strong { display: inline-flex; align-items: center; gap: 0.35rem; }
 .exam-time.is-low strong { color: var(--lemon); }
+.warn-icon { flex: none; }
 .exam-next {
   min-width: 7rem; min-height: 42px; padding: 0.4rem 1.2rem;
   font: 800 1rem var(--font-body); color: var(--grape);
@@ -111,7 +113,8 @@
 .phase-timer.is-done .phase-timer-head strong { color: var(--mint-deep); }
 .phase-timer-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 8px; }
 .phase-timer-label { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 800; }
-.phase-timer-head strong { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.phase-timer-head strong { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.phase-timer.is-low .phase-timer-head strong { color: #b8285f; }
 .phase-bar { height: 12px; background: #e8e4ee; border-radius: 6px; overflow: hidden; }
 .phase-bar span { display: block; height: 100%; background: var(--blueberry); transition: width 0.2s linear; }
 .kind-answer.is-active .phase-bar span { background: #e2486f; }

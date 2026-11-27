@@ -55,7 +55,7 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
         position={`Reading Part ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/reading/${moduleId}`}
-        status={<TimeRemaining seconds={secondsLeft} warnBelow={120} />}
+        status={<TimeRemaining seconds={secondsLeft} totalSeconds={task.timing.minutes * 60} warnBelow={120} />}
         action={<button type="button" className="exam-next" onClick={finish}>Next</button>}
       />
       <p className="exam-instructions">{part.instructions}</p>

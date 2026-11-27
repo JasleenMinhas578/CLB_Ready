@@ -19,7 +19,7 @@ import { useAnswerRecorder } from './useAnswerRecorder';
 import { MicCheck } from './MicCheck';
 import { SpeechModelBadge } from './SpeechModelBadge';
 import { ModelPlanBadge } from './ModelPlanBadge';
-import { ExamBar } from './exam/ExamBar';
+import { ExamBar, TimeWarning } from './exam/ExamBar';
 import { hasUnsavedWork } from './exam/unsavedWork';
 import { PromptPanel } from './exam/PromptPanel';
 import { PhaseTimer } from './exam/PhaseTimer';
@@ -238,6 +238,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
         />
         <section className="exam-panel status-panel" aria-label="Timers">
           {panel}
+          <TimeWarning secondsLeft={secondsLeft} totalSeconds={phase.seconds} muted={phase.id === 'answer'} />
         </section>
       </div>
 
