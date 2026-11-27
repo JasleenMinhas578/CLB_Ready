@@ -35,7 +35,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
         : 'Starting the AI coach…';
   return (
     <p className="ai-status" aria-live="polite">
-      <Emoji symbol="🤔" motion="wiggle" /> {text}
+      <Emoji symbol="🤔" /> {text}
     </p>
   );
 }
@@ -178,7 +178,7 @@ export function AnswerCard({ answer, goal, spoken, original, fromScratch = false
     <div className="results-card improved-card is-writing" aria-busy="true">
       <h2>{heading}</h2>
       <p className="ai-status" aria-live="polite">
-        <Emoji symbol="✍️" motion="wiggle" /> {answer.text ? 'Pip is writing it now…' : 'Pip is starting to write…'}
+        <Emoji symbol="✍️" /> {answer.text ? 'Pip is writing it now…' : 'Pip is starting to write…'}
         {!fromScratch && ' Changes will be marked when it’s done.'}
       </p>
       {answer.text && <blockquote className="transcript streaming-text">{answer.text}</blockquote>}

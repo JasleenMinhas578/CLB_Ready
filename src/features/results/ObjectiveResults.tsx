@@ -3,7 +3,6 @@ import { getObjectivePart } from '@/content/modules';
 import { partQuestions, type ChoiceQuestion, type ListeningClip } from '@/content/objective';
 import { correctForGoal, estimateObjective } from '@/domain/scoring/objective';
 import { href } from '@/app/router';
-import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
 import { numberQuestions } from '@/features/task/objective/numbering';
 import { ResultsActions } from './cards';
@@ -24,7 +23,6 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
   return (
     <section className="results">
       <div className="screen-head">
-        <Emoji symbol={reached ? '🎉' : '🍭'} size="xl" motion="bounce" />
         <h1>Your results</h1>
         <p>{attempt.taskTitle}</p>
       </div>

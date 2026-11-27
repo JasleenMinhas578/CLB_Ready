@@ -31,7 +31,7 @@ export function SampleAnswerCard({ text, taskTypeId, seconds }: { text: string; 
       </p>
       {voice.state === 'loading' && (
         <p className="ai-status" aria-live="polite">
-          <Emoji symbol="🎧" motion="pulse" />{' '}
+          <Emoji symbol="🎧" />{' '}
           {voice.loadProgress !== null
             ? `Downloading the AI voice (${Math.round(voice.loadProgress * 100)}%). This happens once.`
             : 'Getting the voice ready…'}

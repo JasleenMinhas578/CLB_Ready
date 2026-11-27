@@ -67,7 +67,7 @@ export function MicCheck({ onReady, onCancel }: MicCheckProps) {
 
   return (
     <div className="mic-check">
-      <Emoji symbol="🎙️" size="xl" motion={stream ? 'pulse' : 'none'} />
+      <Emoji symbol="🎙️" size="xl" />
       <h2>Quick microphone check</h2>
       {!stream ? (
         <>
