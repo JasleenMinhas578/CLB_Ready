@@ -62,7 +62,7 @@ export interface FeedbackProgress {
   perf: AiPerf | null;
 }
 
-interface Job {
+export interface Job {
   promise: Promise<FeedbackOutcome>;
   progress: FeedbackProgress;
   listeners: Set<(progress: FeedbackProgress) => void>;
@@ -76,6 +76,13 @@ interface Job {
  * Jobs live in memory only.
  */
 const jobs = new Map<string, Job>();
+
+/** What a feedback job needs from outside, injected so tests can pass a store with a fake model. */
+export interface FeedbackDeps {
+  getEngine: () => Promise<FeedbackEngineStore>;
+}
+
+const defaultDeps: FeedbackDeps = { getEngine: getFeedbackEngine };
 
 /** Facts already measured in code, passed to the model so tips don't repeat them. */
 function measuredFacts(attempt: Attempt): string[] {
@@ -140,7 +147,7 @@ function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string
   return { ...prompt, maxTokens: answerTokenBudget(targetWords) };
 }
 
-function startJob(attempt: Attempt): Job {
+function startJob(attempt: Attempt, deps: FeedbackDeps): Job {
   let cancelled = false;
   let store: FeedbackEngineStore | null = null;
   const job: Job = {
@@ -180,7 +187,7 @@ function startJob(attempt: Attempt): Job {
       return { kind: 'sample' };
     }
     try {
-      store = await getFeedbackEngine();
+      store = await deps.getEngine();
       const engine = store;
       const unsubscribe = engine.subscribe(() => {
         const status = engine.getStatus();
@@ -230,6 +237,19 @@ function startJob(attempt: Attempt): Job {
   return job;
 }
 
+/** The running job for this answer, or a new one. Older answers' jobs are stopped and forgotten. */
+export function feedbackJobFor(attempt: Attempt, deps: FeedbackDeps = defaultDeps): Job {
+  let job = jobs.get(attempt.id);
+  if (!job) {
+    // Keep only the latest answer's feedback in memory, and stop work on older ones.
+    jobs.forEach((old) => old.cancel());
+    jobs.clear();
+    job = startJob(attempt, deps);
+    jobs.set(attempt.id, job);
+  }
+  return job;
+}
+
 export function useFeedback(attempt: Attempt | null) {
   const [outcome, setOutcome] = useState<FeedbackOutcome | null>(null);
   const [progress, setProgress] = useState<FeedbackProgress | null>(null);
@@ -237,23 +257,15 @@ export function useFeedback(attempt: Attempt | null) {
   useEffect(() => {
     if (!attempt) return;
     let active = true;
-    let job = jobs.get(attempt.id);
-    if (!job) {
-      // Keep only the latest answer's feedback in memory, and stop work on older ones.
-      jobs.forEach((old) => old.cancel());
-      jobs.clear();
-      job = startJob(attempt);
-      jobs.set(attempt.id, job);
-    }
+    const job = feedbackJobFor(attempt);
     const listener = (next: FeedbackProgress) => active && setProgress(next);
     job.listeners.add(listener);
     setProgress(job.progress);
     setOutcome(null);
     void job.promise.then((result) => active && setOutcome(result));
-    const current = job;
     return () => {
       active = false;
-      current.listeners.delete(listener);
+      job.listeners.delete(listener);
     };
   }, [attempt]);
 
