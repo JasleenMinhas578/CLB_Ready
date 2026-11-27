@@ -17,7 +17,12 @@ export function matchPath(pattern: string, path: string): RouteParams | null {
     const expected = patternParts[i];
     const actual = pathParts[i];
     if (expected.startsWith(':')) {
-      params[expected.slice(1)] = decodeURIComponent(actual);
+      // A malformed escape like "%E0" throws; treat it as no match so the app shows NotFound.
+      try {
+        params[expected.slice(1)] = decodeURIComponent(actual);
+      } catch {
+        return null;
+      }
     } else if (expected !== actual) {
       return null;
     }
