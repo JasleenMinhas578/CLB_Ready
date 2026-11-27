@@ -1,4 +1,4 @@
-type Motion = 'none' | 'bounce' | 'wiggle' | 'pulse' | 'float';
+type Motion = 'none' | 'float';
 
 interface EmojiProps {
   symbol: string;

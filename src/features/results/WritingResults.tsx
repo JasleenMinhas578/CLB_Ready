@@ -3,7 +3,6 @@ import { getCriteria } from '@/domain/criteria';
 import { blendScores, overallLevel, DEFAULT_WRITING_WEIGHTS, type Scores, type WritingCriterionId } from '@/domain/scoring/estimate';
 import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstimate';
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
-import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
 import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { EssayView } from './EssayView';
@@ -114,7 +113,6 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
   return (
     <section className="results">
       <div className="screen-head">
-        <Emoji symbol={overall >= attempt.goal ? '🎉' : '🍭'} size="xl" motion="bounce" />
         <h1>Your feedback</h1>
         <p>{attempt.taskTitle}</p>
       </div>

@@ -12,7 +12,7 @@ export function ResultsScreen() {
   if (!attempt) {
     return (
       <section className="empty-state">
-        <Emoji symbol="🍬" size="xl" motion="float" />
+        <Emoji symbol="🍬" size="xl" />
         <h1>No answer to review yet</h1>
         <p>Finish a task or part and your feedback will appear here. Results are kept only until you close this tab.</p>
         <LinkButton to="/">Choose a task</LinkButton>

@@ -2,7 +2,6 @@ import type { SpeakingAttempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
 import { blendScores, codeEstimates, overallLevel, type Scores } from '@/domain/scoring/estimate';
 import { codeTips } from '@/domain/scoring/codeTips';
-import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
 import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { MIN_SCORABLE_SPEAKING_WORDS, isScorable, lengthCeiling } from '@/domain/scoring/sufficiency';
@@ -71,7 +70,6 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
   return (
     <section className="results">
       <div className="screen-head">
-        <Emoji symbol={overall >= attempt.goal ? '🎉' : '🍭'} size="xl" motion="bounce" />
         <h1>Your feedback</h1>
         <p>{attempt.taskTitle}</p>
       </div>
