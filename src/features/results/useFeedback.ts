@@ -200,6 +200,9 @@ function startJob(attempt: Attempt, deps: FeedbackDeps): Job {
       } finally {
         unsubscribe();
       }
+      // interrupt() can't stop a model that is still downloading, so a job cancelled
+      // during the load stops here instead of queueing ahead of the newer answer.
+      if (cancelled) throw new GenerationInterruptedError();
       update({
         perf: { model: engine.getStatus().model, loadMs: alreadyLoaded ? null : performance.now() - loadStartedAt, scoring: null, answer: null, scoresWaitMs: null, answerWaitMs: null },
       });
