@@ -91,7 +91,8 @@ export function planModels(signals: DeviceSignals, options: PlanOptions = {}): M
   return {
     tier,
     whisperModel: `Xenova/whisper-${whisper}`,
-    whisperDevice: signals.webgpu ? 'webgpu' : 'wasm',
+    // Follow the tier, not the device: stepping down to no-webgpu after a GPU failure must move Whisper to the CPU.
+    whisperDevice: tier === 'no-webgpu' ? 'wasm' : 'webgpu',
     feedbackModel: feedbackModelFor(tier, signals.shaderF16),
     keepWhisperLoaded: tier === 'high' || tier === 'mid',
     voice: tier === 'high' ? { device: 'webgpu', dtype: 'fp32' } : LIGHT_VOICE,
