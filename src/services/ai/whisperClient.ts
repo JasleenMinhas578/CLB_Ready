@@ -25,8 +25,20 @@ export class WhisperSpeechToText implements SpeechToText {
     if (!this.worker) {
       this.worker = new Worker(new URL('./whisper.worker.ts', import.meta.url), { type: 'module' });
       this.worker.addEventListener('message', (event: MessageEvent<WhisperResponse>) => this.handle(event.data));
+      // Fires if the worker script fails to load (e.g. a 404) or crashes. Without it the
+      // pending promises would never settle, and the caller's fallback would never run.
+      this.worker.addEventListener('error', () => this.fail(new Error('The speech model could not start in this browser.')));
     }
     return this.worker;
+  }
+
+  /** Rejects every waiting request and drops the broken worker, so the next call starts a fresh one. */
+  private fail(error: Error) {
+    const entries = [...this.pending.values()];
+    this.pending.clear();
+    this.worker?.terminate();
+    this.worker = null;
+    entries.forEach((entry) => entry.reject(error));
   }
 
   private handle(response: WhisperResponse) {
