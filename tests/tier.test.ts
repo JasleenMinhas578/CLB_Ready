@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { chooseTier, planModels, type DeviceSignals, type ModelPlan } from '../src/services/device/tier';
-import { SpeechEngineStore, cpuRetry } from '../src/services/ai/speechEngine';
+import { SpeechEngineStore } from '../src/services/ai/speechEngine';
 import type { SpeechToText } from '../src/services/ai/types';
 
 const GB = 1024 ** 3;
@@ -70,21 +70,22 @@ describe('planModels', () => {
     expect(store.getStatus().state).toBe('ready');
   });
 
-  it('retries the same Whisper model on the CPU when the GPU fails at a high tier', async () => {
-    const tried: string[] = [];
-    const whisper = cpuRetry((model, device): SpeechToText => ({
-      async load() {
-        tried.push(`${model} on ${device}`);
-        if (device === 'webgpu') throw new Error('GPUDevice was lost');
-        return { elapsedMs: 1 };
-      },
-      async transcribe() { return { text: '', words: [], elapsedMs: 1 }; },
-      async unload() {},
-    }));
-    const store = new SpeechEngineStore(async () => planModels(laptop), whisper.createEngine, whisper.fallBack);
-    await store.ensureLoaded();
-    expect(tried).toEqual(['Xenova/whisper-small.en on webgpu', 'Xenova/whisper-small.en on wasm']);
-    expect(store.getStatus().state).toBe('ready');
-    expect(await whisper.fallBack()).toBe(false);
+  it('runs speech as tiny.en on the CPU after a GPU failure, without touching feedback', () => {
+    const plan = planModels(laptop, { speechOnCpu: true });
+    expect(plan).toMatchObject({ tier: 'high', whisperModel: 'Xenova/whisper-tiny.en', whisperDevice: 'wasm' });
+    expect(plan.feedbackModel).toBe(planModels(laptop).feedbackModel);
+  });
+});
+
+vi.mock('../src/services/device/detectDevice', () => ({ detectDevice: async () => laptop }));
+
+describe('speech CPU fallback in the session plan', () => {
+  it('moves speech to the CPU once, and a tier picked in Settings tries the GPU again', async () => {
+    const { fallBackSpeechToCpu, getModelPlan, setTierChoice } = await import('../src/services/device/plan');
+    expect(await fallBackSpeechToCpu()).toBe(true);
+    expect(await getModelPlan()).toMatchObject({ tier: 'high', whisperDevice: 'wasm', whisperModel: 'Xenova/whisper-tiny.en' });
+    expect(await fallBackSpeechToCpu()).toBe(false);
+    setTierChoice('high');
+    expect(await getModelPlan()).toMatchObject({ whisperDevice: 'webgpu', whisperModel: 'Xenova/whisper-small.en' });
   });
 });
