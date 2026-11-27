@@ -42,6 +42,17 @@
 .exam-next:disabled { background: transparent; color: rgb(255 255 255 / 0.6); box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.35); cursor: not-allowed; }
 .exam-bar :focus-visible { outline-color: var(--lemon); }
 
+/* Exit confirm: plain like the rest of the exam, opened with showModal(). */
+.exam-dialog {
+  width: min(26rem, calc(100vw - 32px)); padding: 20px 22px;
+  color: var(--exam-ink); background: #fff; border: 1px solid var(--exam-line); border-radius: 10px;
+}
+.exam-dialog::backdrop { background: rgb(42 29 51 / 0.45); }
+.exam-dialog h2 { margin: 0 0 0.5rem; font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; }
+.exam-dialog p { margin: 0 0 1rem; max-width: none; }
+.exam-dialog-actions { display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+.exam-dialog .btn { box-shadow: none; border-width: 2px; border-radius: 8px; font-family: var(--font-body); font-weight: 800; }
+
 /* Body */
 .exam-body { flex: 1; display: grid; gap: 20px; width: 100%; margin: 0 auto; padding: 20px var(--gutter); align-items: start; }
 .exam-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
