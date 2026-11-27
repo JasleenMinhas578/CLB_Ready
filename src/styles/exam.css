@@ -107,16 +107,17 @@
 /* Speaking timers */
 .status-panel { min-height: 160px; }
 .phase-timers { display: grid; gap: 14px; }
-.phase-timer { padding: 12px 14px; border: 1px solid var(--exam-line); border-radius: 8px; background: #faf9fc; opacity: 0.6; }
-.phase-timer.is-active { opacity: 1; background: #fff; border-color: var(--grape); }
-.phase-timer.is-done { opacity: 0.75; }
+.phase-timer { padding: 12px 14px; border: 1px solid var(--exam-line); border-radius: 8px; background: #faf9fc; color: var(--exam-soft); }
+.phase-timer.is-active { color: var(--exam-ink); background: #fff; border-color: var(--grape); }
 .phase-timer.is-done .phase-timer-head strong { color: var(--mint-deep); }
 .phase-timer-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 8px; }
 .phase-timer-label { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 800; }
 .phase-timer-head strong { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
-.phase-timer.is-low .phase-timer-head strong { color: #b8285f; }
+.phase-timer.is-low .phase-timer-head strong { color: var(--bubblegum-ink); }
 .phase-bar { height: 12px; background: #e8e4ee; border-radius: 6px; overflow: hidden; }
-.phase-bar span { display: block; height: 100%; background: var(--blueberry); transition: width 0.2s linear; }
+.phase-bar span { display: block; height: 100%; background: var(--blueberry-deep); transition: width 0.2s linear; }
+/* Phases that are waiting or finished are dimmed with colour, not opacity, so their text stays readable. */
+.phase-timer:not(.is-active) .phase-bar span { background: #b9b0c6; }
 .kind-answer.is-active .phase-bar span { background: #e2486f; }
 .phase-timer .level-meter { margin-top: 10px; height: 28px; }
 .phase-timer .level-meter span { width: 9px; border-width: 1.5px; }

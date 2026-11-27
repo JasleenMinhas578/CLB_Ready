@@ -45,7 +45,7 @@ h3 { font-size: var(--step-1); }
 p { margin: 0 0 var(--gap-2); max-width: var(--text-width); }
 
 a { color: inherit; text-decoration-thickness: 2px; text-underline-offset: 3px; }
-a:hover { color: var(--bubblegum-deep); }
+a:hover { color: var(--bubblegum-ink); }
 
 button, textarea, input { font: inherit; color: inherit; }
 
@@ -57,7 +57,7 @@ code {
 }
 
 :focus-visible {
-  outline: 3px solid var(--bubblegum-deep);
+  outline: 3px solid var(--bubblegum-ink);
   outline-offset: 3px;
   border-radius: 8px;
 }

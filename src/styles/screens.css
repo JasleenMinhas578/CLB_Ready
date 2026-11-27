@@ -132,7 +132,6 @@ a.skill-card::after {
 .prompt-card {
   padding: var(--gap-3); background: var(--white); border: var(--line); border-radius: var(--radius-card); box-shadow: var(--sticker);
 }
-.prompt-kicker { font-weight: 800; color: var(--bubblegum-deep); margin-bottom: var(--gap-1); }
 .prompt-text { font-size: var(--step-1); line-height: 1.5; }
 .prompt-options { list-style: none; padding: 0; margin: 0 0 var(--gap-2); display: grid; gap: var(--gap-1); }
 .prompt-options li { display: flex; gap: 0.6rem; align-items: center; padding: 0.6rem 0.9rem; background: var(--milk-deep); border-radius: var(--radius-field); font-weight: 700; }
@@ -165,8 +164,6 @@ a.skill-card::after {
 .flow-done p { margin-left: auto; margin-right: auto; }
 
 .writing-bar { display: flex; justify-content: space-between; gap: var(--gap-2); flex-wrap: wrap; margin-bottom: var(--gap-1); font-weight: 700; }
-.word-count.is-good { color: var(--mint-deep); }
-.word-count.is-long { color: var(--bubblegum-deep); }
 .writing-clock { font-family: var(--font-display); }
 .writing-box {
   width: 100%; min-height: 320px; padding: var(--gap-2); resize: vertical; line-height: 1.6;
@@ -529,7 +526,7 @@ a.skill-card::after {
 }
 @keyframes demo-strike {
   from { color: inherit; background: transparent; text-decoration: none; }
-  to { color: var(--bubblegum-deep); background: #ffe3ee; text-decoration: line-through; }
+  to { color: var(--bubblegum-ink); background: #ffe3ee; text-decoration: line-through; }
 }
 /* Added words grow into place, so nothing jumps and no gaps show before they arrive. */
 @keyframes demo-pop { from { opacity: 0; max-width: 0; padding: 0; } to { opacity: 1; max-width: 8em; } }

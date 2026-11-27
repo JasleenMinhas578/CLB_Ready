@@ -11,11 +11,13 @@
 
   /* Candy flavours */
   --bubblegum: #ff6fa8;
-  --bubblegum-deep: #e0407f;
+  --bubblegum-deep: #e0407f;   /* borders and marks only: 3.8:1 on milk is too light for text */
+  --bubblegum-ink: #b8285f;    /* pink text and focus rings, 5.6:1 on milk */
   --lemon: #ffd84d;
   --mint: #5fdcc0;
   --mint-deep: #17806b;
   --blueberry: #8c9bff;
+  --blueberry-deep: #5b6cf0;   /* bar fills, 3.7:1 on milk-deep */
   --grape-candy: #bfa8ff;
 
   /* Type */
