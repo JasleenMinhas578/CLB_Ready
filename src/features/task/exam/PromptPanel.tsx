@@ -57,7 +57,8 @@ export function PromptPanel({ task, prompt, selected = null, onSelect, optionsLo
           </div>
         ))}
 
-      {prompt.draft && <p className="exam-note">Draft practice prompt.</p>}
+      {/* A note for whoever is writing content; learners do not need it. */}
+      {import.meta.env.DEV && prompt.draft && <p className="exam-note">Draft practice prompt.</p>}
     </section>
   );
 }
