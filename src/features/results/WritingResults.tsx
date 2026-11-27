@@ -127,7 +127,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             overall={overall}
             final={final}
             status={<AiStatus outcome={outcome} progress={progress} />}
-            notes={outlierNotes(checked?.ignored ?? [], getCriteria('writing'))}
+            notes={outlierNotes(checked?.ignored ?? [])}
           />
           <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, writingTips(attempt.metrics, attempt.goal, attempt.options), !!ai)} />
           <ChecklistCard items={attempt.checklist} results={checklist} final={final} />

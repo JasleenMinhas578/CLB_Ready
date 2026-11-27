@@ -46,11 +46,11 @@ interface LevelCardProps {
   overall: number;
   final: boolean;
   status: ReactNode;
-  /** Short notes under the bars, e.g. which AI score was ignored. */
-  notes?: string[];
+  /** A note per criterion, shown under that criterion's bar, e.g. when its AI score was ignored. */
+  notes?: Partial<Record<string, string>>;
 }
 
-export function LevelCard({ attempt, criteria, scores, overall, final, status, notes = [] }: LevelCardProps) {
+export function LevelCard({ attempt, criteria, scores, overall, final, status, notes = {} }: LevelCardProps) {
   const goal = attempt.goal;
   return (
     <div className="results-card level-card">
@@ -64,6 +64,8 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
           <strong>CLB {goal}</strong>
         </div>
       </div>
+      {/* Single scores can sit above or below the level, because the level is their average. */}
+      <p className="fine-print">Your level is the average of the {criteria.length} scores below, rounded.</p>
       {!attempt.goalChosen && (
         <p className="fine-print">
           No goal set, so we used CLB {goal}. <a href={href('/goal')}>Choose your goal</a>.
@@ -78,19 +80,17 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
             <li key={criterion.id}>
               <div className="criterion-head">
                 <span>{criterion.name}</span>
-                <strong>{score}{reached ? ' 🎉' : ` (goal ${goal})`}</strong>
+                <strong>{score} {reached ? '(goal met)' : `(goal ${goal})`}</strong>
               </div>
               <div className="bar" aria-label={`${criterion.name}: about ${score} of ${MAX_LEVEL}, goal ${goal}`}>
                 <span className={`bar-fill ${reached ? 'is-reached' : ''}`} style={{ width: `${(score / MAX_LEVEL) * 100}%` }} />
                 <span className="bar-goal" style={{ left: `${(goal / MAX_LEVEL) * 100}%` }} aria-hidden="true" />
               </div>
+              {notes[criterion.id] && <p className="fine-print score-note">{notes[criterion.id]}</p>}
             </li>
           );
         })}
       </ul>
-      {notes.map((note) => (
-        <p key={note} className="fine-print score-note">{note}</p>
-      ))}
       <p className="fine-print">{final ? 'Estimates' : 'First estimates from your measurements'} for practice only, not official CELPIP scores.</p>
     </div>
   );
@@ -310,10 +310,12 @@ export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: 
   );
 }
 
-/** Explains an ignored AI score in plain words. */
-export function outlierNotes(ignored: { id: string; modelScore: number }[], criteria: Criterion[]): string[] {
-  return ignored.map(({ id, modelScore }) => {
-    const name = criteria.find((criterion) => criterion.id === id)?.name ?? id;
-    return `The AI coach gave ${name} a ${modelScore}, which didn’t fit your other results, so that score uses your measurements instead.`;
-  });
+/** Explains an ignored AI score in plain words, keyed by the criterion it changed. */
+export function outlierNotes(ignored: { id: string; modelScore: number }[]): Record<string, string> {
+  return Object.fromEntries(
+    ignored.map(({ id, modelScore }) => [
+      id,
+      `The AI coach gave this a ${modelScore}, which didn’t fit your other results, so this score uses your measurements instead.`,
+    ]),
+  );
 }
