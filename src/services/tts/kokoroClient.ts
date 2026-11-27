@@ -49,7 +49,9 @@ export class KokoroTextToSpeech implements TextToSpeech {
 
   async load(onProgress?: (progress: LoadProgress) => void) {
     const started = performance.now();
-    await this.send({ type: 'load', device: this.plan.device, dtype: this.plan.dtype }, onProgress);
+    // The worker can't tell where the site lives (its own file sits in assets/), so the page resolves it.
+    const voicesUrl = new URL('voices/', document.baseURI).href;
+    await this.send({ type: 'load', device: this.plan.device, dtype: this.plan.dtype, voicesUrl }, onProgress);
     return { elapsedMs: performance.now() - started };
   }
 
