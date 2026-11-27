@@ -110,8 +110,8 @@ main:focus { outline: none; }
 
 /* Bars (results and lab) */
 .bar { position: relative; height: 18px; background: var(--milk-deep); border: 2px solid var(--grape); border-radius: var(--radius-pill); overflow: visible; }
-.bar-fill { display: block; height: 100%; background: var(--blueberry); border-radius: var(--radius-pill); }
-.bar-fill.is-reached { background: var(--mint); }
+.bar-fill { display: block; height: 100%; background: var(--blueberry-deep); border-radius: var(--radius-pill); }
+.bar-fill.is-reached { background: var(--mint-deep); }
 .bar-goal { position: absolute; top: -6px; bottom: -6px; width: 4px; margin-left: -2px; background: var(--grape); border-radius: 2px; }
 
 /* Small text */
