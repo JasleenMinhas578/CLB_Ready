@@ -1,14 +1,9 @@
+import { formatSeconds } from '@/domain/timer';
+
 interface TimerRingProps {
   secondsLeft: number;
   totalSeconds: number;
   label: string;
-}
-
-export function formatSeconds(total: number): string {
-  const safe = Math.max(0, Math.ceil(total));
-  const minutes = Math.floor(safe / 60);
-  const seconds = safe % 60;
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 /** Circular countdown. Turns lemon in the last 10 seconds. */
