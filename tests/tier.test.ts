@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { chooseTier, planModels, type DeviceSignals, type ModelPlan } from '../src/services/device/tier';
-import { SpeechEngineStore } from '../src/services/ai/speechEngine';
+import { SpeechEngineStore, cpuRetry } from '../src/services/ai/speechEngine';
 import type { SpeechToText } from '../src/services/ai/types';
 
 const GB = 1024 ** 3;
@@ -68,5 +68,23 @@ describe('planModels', () => {
     await store.ensureLoaded();
     expect(devices).toEqual(['webgpu', 'wasm']);
     expect(store.getStatus().state).toBe('ready');
+  });
+
+  it('retries the same Whisper model on the CPU when the GPU fails at a high tier', async () => {
+    const tried: string[] = [];
+    const whisper = cpuRetry((model, device): SpeechToText => ({
+      async load() {
+        tried.push(`${model} on ${device}`);
+        if (device === 'webgpu') throw new Error('GPUDevice was lost');
+        return { elapsedMs: 1 };
+      },
+      async transcribe() { return { text: '', words: [], elapsedMs: 1 }; },
+      async unload() {},
+    }));
+    const store = new SpeechEngineStore(async () => planModels(laptop), whisper.createEngine, whisper.fallBack);
+    await store.ensureLoaded();
+    expect(tried).toEqual(['Xenova/whisper-small.en on webgpu', 'Xenova/whisper-small.en on wasm']);
+    expect(store.getStatus().state).toBe('ready');
+    expect(await whisper.fallBack()).toBe(false);
   });
 });
