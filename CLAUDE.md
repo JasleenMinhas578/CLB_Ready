@@ -23,7 +23,7 @@ Free, private CELPIP-style practice coach. Static site; all AI runs in the visit
 ## Conventions
 - `@/` alias points to `src/`.
 - Worker protocols live in `*.protocol.ts` beside each worker.
-- Model choice per device tier lives in `src/services/device/tier.ts`.
+- Model choice per device tier lives in `src/services/device/tier.ts`; the exact commits each model downloads from live in `src/services/modelPins.ts`.
 - ONNX Runtime's wasm is bundled from node_modules (`src/services/ai/onnxRuntime.ts`), not jsDelivr. After upgrading transformers, check the build still emits `ort-wasm-*.wasm`.
 - Nothing the learner writes or says leaves the device. Don't add network calls apart from model downloads.
 - Comments explain why, in plain English.
