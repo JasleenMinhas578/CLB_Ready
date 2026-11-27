@@ -2,13 +2,13 @@ import type { RouteParams } from '@/app/router';
 import { href } from '@/app/router';
 import { useSession } from '@/app/session';
 import { getSkill, type SkillId } from '@/domain/skills';
+import { formatSeconds } from '@/domain/timer';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
 import { MODULES, getModule, moduleHasSkill, moduleTaskIds } from '@/content/modules';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
-import { formatSeconds } from '@/components/TimerRing';
 import { countDone, taskKey, useProgress } from '@/services/progress/progress';
 
 function timingText(task: TaskType): string {
