@@ -395,7 +395,7 @@ a.skill-card::after {
 
 /* Calibration notes */
 .checked-by { margin-left: auto; padding: 0 0.5em; font-size: 0.75rem; font-weight: 800; color: var(--mint-deep); border: 1.5px solid var(--mint-deep); border-radius: var(--radius-pill); white-space: nowrap; }
-.score-note { color: var(--grape); background: #fff8e0; padding: 0.4rem 0.7rem; border-radius: 10px; max-width: none; }
+.score-note { margin: 0.4rem 0 0; color: var(--grape); background: #fff8e0; padding: 0.4rem 0.7rem; border-radius: 10px; max-width: none; }
 
 /* Writing corrections, marked like a teacher would */
 .essay-head { display: flex; justify-content: space-between; align-items: center; gap: var(--gap-2); flex-wrap: wrap; margin-bottom: var(--gap-1); }

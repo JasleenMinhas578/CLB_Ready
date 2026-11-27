@@ -84,7 +84,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             overall={overall}
             final={final}
             status={<AiStatus outcome={outcome} progress={progress} />}
-            notes={outlierNotes(checked?.ignored ?? [], getCriteria('speaking'))}
+            notes={outlierNotes(checked?.ignored ?? [])}
           />
           <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
           <ChecklistCard items={attempt.checklist} results={ai ? ai.checklist.map((row) => ({ met: row.met })) : null} final={final} />
