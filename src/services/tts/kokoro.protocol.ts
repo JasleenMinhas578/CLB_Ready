@@ -1,6 +1,7 @@
 /** Messages between the main thread and the Kokoro worker. */
 export type KokoroRequest =
-  | { id: number; type: 'load'; device: 'webgpu' | 'wasm'; dtype: 'fp32' | 'q8' }
+  /** voicesUrl: where the site serves its voice files (public/voices/), resolved by the page. */
+  | { id: number; type: 'load'; device: 'webgpu' | 'wasm'; dtype: 'fp32' | 'q8'; voicesUrl: string }
   | { id: number; type: 'speak'; text: string; voice: string }
   | { id: number; type: 'unload' };
 

@@ -1,6 +1,7 @@
 import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
 import type { WhisperRequest, WhisperResponse } from './whisper.protocol';
 import { useLocalOnnxRuntime } from './onnxRuntime';
+import { WHISPER_SHAS } from '@/services/modelPins';
 
 useLocalOnnxRuntime();
 
@@ -33,8 +34,11 @@ interface ProgressEvent {
 
 async function load(id: number, model: string, device: 'webgpu' | 'wasm') {
   fileProgress.clear();
+  const revision = WHISPER_SHAS[model];
+  if (!revision) throw new Error(`No pinned version for speech model ${model}.`);
   asr = await createAsr('automatic-speech-recognition', model, {
     device,
+    revision,
     // fp32 is safest on WebGPU; 8-bit keeps the CPU fallback small and quick.
     dtype: device === 'webgpu' ? 'fp32' : 'q8',
     progress_callback: (event: ProgressEvent) => {
