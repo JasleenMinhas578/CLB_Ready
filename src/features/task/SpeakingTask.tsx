@@ -62,6 +62,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   const level = useMicLevel(recorder.stream);
   const recordingStarted = useRef(false);
   const statusPanel = useRef<HTMLElement>(null);
+  const firstRender = useRef(true);
   // Checking outlives the screen if the learner exits, so it checks this before showing results.
   const mounted = useRef(true);
 
@@ -76,6 +77,16 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   // 'nearest' leaves the page alone when the panel is already visible.
   useEffect(() => {
     if (state === 'transcribing') statusPanel.current?.scrollIntoView({ block: 'nearest' });
+  }, [state]);
+
+  // Start, Back and Try again live in this panel and vanish when the state changes.
+  // Without this, keyboard focus would fall back to the top of the page.
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    if (!document.activeElement || document.activeElement === document.body) statusPanel.current?.focus({ preventScroll: true });
   }, [state]);
 
   useEffect(() => {
@@ -181,8 +192,11 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     setState('ready');
   };
 
+  // A small label names the panel; it stays "Before you start" through the mic check.
+  let label = 'Timers';
   let panel: ReactNode;
   if (state === 'mic-check') {
+    label = 'Before you start';
     panel = (
       <MicCheck
         onReady={() => {
@@ -193,35 +207,43 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
       />
     );
   } else if (state === 'problem') {
+    label = 'Your answer';
     const text = problem ?? MIC_PROBLEM_TEXT[recorder.problem ?? 'unknown'];
     panel = (
       <div className="exam-message" role="alert">
-        <h2><WarnIcon /> {text.title}</h2>
+        <h3><WarnIcon /> {text.title}</h3>
         <p>{text.help}</p>
         <Button onClick={restart}>Try again</Button>
       </div>
     );
   } else if (state === 'transcribing') {
+    label = 'Your answer';
     panel = (
       <div className="exam-message" aria-live="polite">
-        <h2>
+        <h3>
           <span className="spinner" aria-hidden="true" />
           Checking your answer…
-        </h2>
+        </h3>
         <p>This device is turning your answer into text. This usually takes a few seconds. Your results then open by themselves.</p>
         {/* "Ready" would read as nothing happening; loading progress and errors still help. */}
         {speechStatus.state !== 'ready' && <SpeechModelBadge status={speechStatus} />}
       </div>
     );
   } else if (state === 'ready') {
+    label = 'Before you start';
     panel = (
       <div className="exam-message">
-        <h2>Press Start when you’re ready</h2>
         <p>
-          Read the task first. When you press Start at the top of the screen, {micReady ? '' : 'we check your microphone, then '}
-          {phases[0].id === 'select' ? 'the choosing time' : 'the preparation time'} begins.
-          Recording starts by itself after that. Keep speaking until the recording time ends.
+          Read the task, then press Start. {micReady ? 'The timers below' : 'We check your microphone, then the timers below'} run
+          one after another. Recording starts by itself. Keep speaking until the recording time ends.
         </p>
+        {/* The plan, before it starts: each phase with its full time, none of them running yet. */}
+        <div className="phase-timers is-preview">
+          {phases.map((item) => (
+            <PhaseTimer key={item.id} kind={item.id} totalSeconds={item.seconds} secondsLeft={item.seconds} active={false} />
+          ))}
+        </div>
+        <Button onClick={begin}>Start</Button>
         <SpeechModelBadge status={speechStatus} onRetry={() => void engine?.preload()} />
       </div>
     );
@@ -246,6 +268,8 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     );
   }
 
+  const actionLabel = speakingActionLabel(state, phase.id);
+
   return (
     <div className="exam-screen">
       <ExamBar
@@ -254,16 +278,18 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
         exitTo={`/practice/speaking/${moduleId}`}
         exitWarning={speakingExitWarning(state, recorder.stream !== null)}
         action={
-          <button
-            type="button"
-            className="exam-next exam-next-fixed exam-next-wide"
-            onClick={running ? advance : begin}
-            disabled={speakingActionDisabled(state, phase.id, recorder.stream !== null)}
-            aria-busy={state === 'transcribing'}
-          >
-            {state === 'transcribing' && <span className="spinner" aria-hidden="true" />}
-            {speakingActionLabel(state, phase.id)}
-          </button>
+          actionLabel && (
+            <button
+              type="button"
+              className="exam-next exam-next-fixed exam-next-wide"
+              onClick={advance}
+              disabled={speakingActionDisabled(state, phase.id, recorder.stream !== null)}
+              aria-busy={state === 'transcribing'}
+            >
+              {state === 'transcribing' && <span className="spinner" aria-hidden="true" />}
+              {actionLabel}
+            </button>
+          )
         }
       />
 
@@ -275,14 +301,15 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
           onSelect={setSelected}
           optionsLocked={running && phase.id !== 'select'}
         />
-        <section ref={statusPanel} className="exam-panel status-panel" aria-label="Timers">
+        <section ref={statusPanel} className="exam-panel status-panel" aria-labelledby="status-panel-label" tabIndex={-1}>
+          <h2 id="status-panel-label" className="exam-panel-label">{label}</h2>
           {panel}
           <TimeWarning secondsLeft={secondsLeft} totalSeconds={phase.seconds} muted={phase.id === 'answer'} />
         </section>
       </div>
 
       <div className="exam-meta">
-        <span>Find a quiet room. Your recording stays on this device.</span>
+        <p>Find a quiet room. Your recording stays on this device.</p>
         <ModelPlanBadge />
       </div>
     </div>

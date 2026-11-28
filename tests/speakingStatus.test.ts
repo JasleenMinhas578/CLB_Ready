@@ -8,15 +8,19 @@ describe('speaking exam bar', () => {
     expect(speakingActionLabel('transcribing', 'answer')).toBe('Checking…');
     expect(speakingActionLabel('running', 'answer')).toBe('Finish answer');
     expect(speakingActionLabel('running', 'prep')).toBe('Skip');
-    expect(speakingActionLabel('ready', 'prep')).toBe('Start');
-    expect(speakingActionLabel('mic-check', 'prep')).toBe('Next');
+  });
+
+  it('leaves the bar without a button before the timers, so the panel holds the one Start', () => {
+    expect(speakingActionLabel('ready', 'prep')).toBeNull();
+    expect(speakingActionLabel('mic-check', 'prep')).toBeNull();
+    expect(speakingActionLabel('problem', 'answer')).toBeNull();
   });
 
   it('keeps Finish off until the mic is recording', () => {
     expect(speakingActionDisabled('running', 'answer', false)).toBe(true);
     expect(speakingActionDisabled('running', 'answer', true)).toBe(false);
     expect(speakingActionDisabled('running', 'prep', false)).toBe(false);
-    expect(speakingActionDisabled('ready', 'prep', false)).toBe(false);
+    expect(speakingActionDisabled('ready', 'prep', false)).toBe(true);
     expect(speakingActionDisabled('transcribing', 'answer', false)).toBe(true);
   });
 
