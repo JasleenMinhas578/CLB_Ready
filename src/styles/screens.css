@@ -32,9 +32,9 @@
 .home-how .icon { color: var(--ink-soft); }
 .home-done {
   display: inline-flex; align-items: center; gap: var(--gap-1); margin: var(--gap-3) 0 0; padding: var(--gap-1) var(--gap-2);
-  background: var(--mint-tint); border-radius: var(--radius-md); font-weight: 800;
+  background: var(--sky-tint); border-radius: var(--radius-md); font-weight: 800;
 }
-.home-done .icon { color: var(--mint-ink); }
+.home-done .icon { color: var(--sky-ink); }
 
 .next-card {
   display: grid; gap: var(--gap-3); padding: var(--gap-3);
@@ -59,7 +59,7 @@
 /* Full width: the band reaches the window edges while its content keeps the page column. */
 .home-band {
   margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%);
-  background: var(--grain), var(--surface-sunk);
+  background: var(--grain), var(--sky-tint);
 }
 .home-rule { border-top: 1px solid var(--border-soft); }
 
@@ -127,7 +127,7 @@
   .skill-card .skill-badge { width: 48px; height: 48px; }
 }
 
-/* Goal picker: card-stock options, the chosen one in mint */
+/* Goal picker: card-stock options, the chosen one in blue */
 .goal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-3) var(--gap-2); }
 .goal-option {
   display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; text-align: left;
@@ -137,11 +137,11 @@
 }
 .goal-option:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
 .goal-option:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
-.goal-option.is-selected { background: var(--mint-tint); box-shadow: inset 0 0 0 2px var(--mint-ink), 0 var(--stock-edge) 0 0 var(--mint-ink); }
+.goal-option.is-selected { background: var(--sky-tint); box-shadow: inset 0 0 0 2px var(--sky-ink), 0 var(--stock-edge) 0 0 var(--sky-ink); }
 .goal-level { font-family: var(--font-display); font-size: var(--step-2); font-weight: 600; letter-spacing: var(--tracking-display); }
 .goal-label { font-weight: 800; }
 .goal-hint { font-size: var(--step--1); color: var(--ink-soft); }
-.goal-current { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: var(--gap-1); font-size: var(--step--1); font-weight: 800; color: var(--mint-ink); }
+.goal-current { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: var(--gap-1); font-size: var(--step--1); font-weight: 800; color: var(--sky-ink); }
 .narrow > .fine-print { margin-top: var(--gap-4); }
 
 /* Skill screen */
@@ -178,7 +178,7 @@
 .module-done > .icon { color: var(--mint-ink); }
 .module-done p { margin: 0; flex: 1 1 16rem; }
 
-/* Task rows: lighter paper with a hairline; the next task is pear card stock. */
+/* Task rows: lighter paper with a hairline; the next task is pink card stock. */
 .task-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-2); }
 .task-row {
   display: flex; align-items: center; gap: var(--gap-2); height: 100%; padding: var(--gap-2) var(--gap-3);
@@ -204,7 +204,7 @@
 }
 .task-done { color: var(--mint-ink); background: var(--mint-tint); }
 .task-row.is-done .task-number { background: var(--mint-tint); color: var(--mint-ink); }
-/* The next unfinished task is the clear next step: pear card stock, a Start label. */
+/* The next unfinished task is the clear next step: pink card stock, a Start label. */
 .task-row.is-next { background: var(--accent); box-shadow: 0 var(--stock-edge) 0 0 var(--accent-edge); }
 .task-row.is-next:hover { box-shadow: inset 0 0 0 2px var(--accent-edge), 0 var(--stock-edge) 0 0 var(--accent-edge); }
 .task-row.is-next .task-text > span { color: var(--ink); }
@@ -372,7 +372,7 @@
 }
 .tier-option:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
 .tier-option:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
-.tier-option.is-selected, .tier-option.is-selected:hover:not(:disabled) { background: var(--mint-tint); box-shadow: inset 0 0 0 2px var(--mint-ink), 0 var(--stock-edge) 0 0 var(--mint-ink); }
+.tier-option.is-selected, .tier-option.is-selected:hover:not(:disabled) { background: var(--sky-tint); box-shadow: inset 0 0 0 2px var(--sky-ink), 0 var(--stock-edge) 0 0 var(--sky-ink); }
 /* Unavailable here: flat and sunk into the paper, text still readable, and the card says why. */
 .tier-option:disabled { cursor: not-allowed; background: var(--surface-sunk); box-shadow: inset 0 0 0 1px var(--border-soft); }
 .tier-option strong { font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; }
@@ -408,7 +408,7 @@
 }
 .view-switch button:hover { background: var(--surface-sunk); }
 .view-switch button[aria-pressed='true'] { background: var(--ink); color: var(--bg); }
-/* Added words: mint with mint ink (5.6:1). Cut words: rose with rose ink (5.8:1), struck through so colour isn't the only sign. */
+/* Added words: mint with mint ink. Cut words: rose with rose ink (both 7:1 or more), struck through so colour isn't the only sign. */
 .diff-text { white-space: pre-line; line-height: 1.85; }
 .diff-added, .fix-new { color: var(--ok); background: var(--ok-bg); text-decoration: none; padding: 0.05em 0.2em; border-radius: 5px; }
 .diff-removed, .fix-old { color: var(--bad); background: var(--bad-bg); text-decoration: line-through; text-decoration-thickness: 2px; padding: 0.05em 0.2em; border-radius: 5px; }
