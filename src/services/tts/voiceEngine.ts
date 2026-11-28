@@ -2,6 +2,7 @@ import type { ModelPlan } from '@/services/device/tier';
 import { LIGHT_VOICE } from '@/services/device/tier';
 import { ModelStore } from '@/services/ai/modelStore';
 import type { SpokenLine, TextToSpeech } from './types';
+import type { VoiceId } from '@/content/objective';
 
 /**
  * One shared Kokoro voice model. Listening screens call speak() line by
@@ -18,7 +19,7 @@ export class VoiceEngineStore extends ModelStore<TextToSpeech> {
     });
   }
 
-  speak(text: string, voice: string): Promise<SpokenLine> {
+  speak(text: string, voice: VoiceId): Promise<SpokenLine> {
     const task = async () => (await this.ensureLoaded()).speak(text, voice);
     const result = this.queue.then(task, task);
     this.queue = result.catch(() => undefined);
