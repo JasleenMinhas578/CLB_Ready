@@ -10,7 +10,7 @@ interface PipProps {
 }
 
 const MOUTHS: Record<Mood, string> = {
-  happy: 'M52 71q8 7 16 0',
+  happy: 'M49 69q11 11 22 0',
   thinking: 'M55 73q5-2 10 0',
   oops: 'M53 75q7-6 14 0',
 };
@@ -40,10 +40,17 @@ export function Pip({ size = 96, mood = 'happy', label, className }: PipProps) {
       <path d="M60 26c0-6 1-10 3-13" fill="none" stroke="var(--mint-ink)" strokeWidth="3" strokeLinecap="round" />
       <path d="M63 14c4-6 12-7 16-3-3 6-10 8-16 3z" fill="var(--mint-tint)" stroke="var(--mint-ink)" strokeWidth="2" strokeLinejoin="round" />
       <path d="M61 19c-3-5-9-6-13-3 3 5 9 6 13 3z" fill="var(--mint-tint)" stroke="var(--mint-ink)" strokeWidth="2" strokeLinejoin="round" />
-      <ellipse cx="46" cy="60" rx="4.5" ry="5.5" fill="var(--ink)" />
-      <ellipse cx="74" cy="60" rx="4.5" ry="5.5" fill="var(--ink)" />
-      <circle cx={lookUp ? 48 : 47.5} cy={lookUp ? 57 : 58} r="1.6" fill="var(--surface)" />
-      <circle cx={lookUp ? 76 : 75.5} cy={lookUp ? 57 : 58} r="1.6" fill="var(--surface)" />
+      {/* Happy Pip smiles with its eyes too: round dot eyes alone read as unsure at small sizes. */}
+      {mood === 'happy' ? (
+        <path d="M40 62q6-8 12 0M68 62q6-8 12 0" fill="none" stroke="var(--ink)" strokeWidth="3.5" strokeLinecap="round" />
+      ) : (
+        <>
+          <ellipse cx="46" cy="60" rx="4.5" ry="5.5" fill="var(--ink)" />
+          <ellipse cx="74" cy="60" rx="4.5" ry="5.5" fill="var(--ink)" />
+          <circle cx={lookUp ? 48 : 47.5} cy={lookUp ? 57 : 58} r="1.6" fill="var(--surface)" />
+          <circle cx={lookUp ? 76 : 75.5} cy={lookUp ? 57 : 58} r="1.6" fill="var(--surface)" />
+        </>
+      )}
       {mood === 'oops' && <path d="M40 52l9-3M80 52l-9-3" fill="none" stroke="var(--ink)" strokeWidth="2.5" strokeLinecap="round" />}
       <ellipse cx="37" cy="70" rx="6" ry="3.5" fill="var(--rose-ink)" opacity="0.22" />
       <ellipse cx="83" cy="70" rx="6" ry="3.5" fill="var(--rose-ink)" opacity="0.22" />
