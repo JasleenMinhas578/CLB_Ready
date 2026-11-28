@@ -81,7 +81,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
           <p className="exam-instructions-inline">{part.instructions}</p>
           <p className="listening-intro">{clip.intro}</p>
           {player.state === 'preparing' && (
-            <p className="ai-voice-status" aria-live="polite">
+            <p className="busy-status" aria-live="polite">
               <span className="spinner" aria-hidden="true" />
               {player.voiceLoading !== null
                 ? `Downloading the AI voice${player.voiceLoading ? ` (${Math.round(player.voiceLoading * 100)}%)` : ''}. This happens once, then it’s saved in your browser.`
@@ -96,7 +96,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
           )}
           {player.state === 'playing' && (
             <div className="audio-progress" aria-live="polite">
-              <span className="rec-dot listening-dot" aria-hidden="true" /> Playing…
+              <Icon name="volume" /> <span>Playing…</span>
               <div className="phase-bar" role="progressbar" aria-label="Recording progress" aria-valuenow={Math.round(player.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
                 <span style={{ width: `${player.progress * 100}%` }} />
               </div>

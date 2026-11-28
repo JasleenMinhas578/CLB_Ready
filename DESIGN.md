@@ -197,7 +197,7 @@ Semantic aliases in `tokens.css` point at these: `--ok`, `--warn`, `--bad`, `--i
 - **Exam Line** (exam-line) for panel edges; **Exam Line Strong** (exam-line-strong, 3.3:1) for fields.
 - **Exam Ink** (exam-ink) and **Exam Grey Text** (exam-soft, 6.6:1) for text.
 - **Night Plum** (exam-accent): top bar, selected tab and primary exam button, with white text (11.5:1).
-- **Record Red** (exam-rec): the recording dot and the answer timer only.
+- **Record Red** (exam-rec): the recording dot, the answer timer, a low timer (as red text on a white tag, with the warning icon) and alerts that stop the task. Nothing else.
 
 ### Named Rules
 **The Tint Is Not Text Rule.** Pastel tints are fills. Text on a tint is ink, ink-soft or that tint's own -ink colour, never another tint.

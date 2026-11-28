@@ -164,15 +164,6 @@
   .task-go { display: none; }
 }
 
-/* Task screen */
-.option-letter { display: grid; place-items: center; width: 30px; height: 30px; flex: none; background: var(--lemon); border: 2px solid var(--grape); border-radius: 50%; font-weight: 800; }
-.image-placeholder {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gap-1);
-  aspect-ratio: 4 / 3; padding: var(--gap-3); text-align: center; color: var(--grape-soft); font-weight: 700;
-  background: repeating-linear-gradient(-45deg, var(--milk) 0 14px, var(--milk-deep) 14px 28px);
-  border: 3px dashed var(--grape); border-radius: var(--radius-field); margin-bottom: var(--gap-2);
-}
-
 /* Results */
 .results-card {
   padding: var(--gap-3); margin-bottom: var(--gap-3);
@@ -211,31 +202,7 @@
   background: var(--surface-sunk); border-radius: var(--radius-md); font-size: 0.95rem;
 }
 
-/* Week 2: microphone, recording and transcript */
-
-.level-meter { display: flex; align-items: flex-end; gap: 5px; height: 44px; }
-.level-meter span {
-  width: 12px; background: var(--white); border: 2px solid var(--grape); border-radius: 6px;
-  transition: background 0.08s linear;
-}
-.level-meter span.is-lit { background: var(--mint); }
-.level-meter span.is-lit:nth-child(n + 9) { background: var(--lemon); }
-.level-meter span.is-lit:nth-child(n + 12) { background: var(--bubblegum); }
-
-.mic-check { display: flex; flex-direction: column; align-items: center; gap: var(--gap-2); text-align: center; }
-.mic-check h2 { margin: 0; font-size: var(--step-1); }
-.mic-check p { margin: 0 auto; }
-.mic-verdict { font-weight: 800; color: var(--grape-soft); }
-.mic-verdict.is-good { color: var(--mint-deep); }
-
-.model-badge {
-  margin: 0; padding: 0.35rem 0.9rem; font-size: var(--step--1); font-weight: 800;
-  background: var(--white); border: 2px solid var(--grape); border-radius: var(--radius-pill);
-}
-.model-badge.is-ready { background: #e6fbf5; }
-.model-badge.is-error { background: #fff0f0; }
-.flow-done .model-badge { display: inline-block; }
-
+/* Week 2: transcript */
 .transcript {
   margin: var(--gap-2) 0; padding: var(--gap-2) var(--gap-3);
   background: var(--surface-sunk); border-radius: var(--radius-md);
@@ -326,9 +293,6 @@
 .kind-punctuation { background: var(--lilac-tint); }
 .kind-spacing { background: var(--surface); }
 
-.plan-badge {
-  max-width: none; margin: var(--gap-3) 0 0; font-size: var(--step--1); font-weight: 700; color: var(--ink-soft);
-}
 
 .model-rows { list-style: none; margin: 0 0 var(--gap-2); padding: 0; display: grid; gap: var(--gap-1); }
 .model-rows li {

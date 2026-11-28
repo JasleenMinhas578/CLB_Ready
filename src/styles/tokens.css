@@ -94,24 +94,4 @@
   --gutter: clamp(16px, 4vw, 64px);
   --text-width: 64ch;
 
-  /* Old names still used by screens that have not been rebuilt yet.
-     They point at the new palette; drop each once nothing uses it. */
-  --milk: var(--bg);
-  --milk-deep: var(--surface-sunk);
-  --white: var(--surface);
-  --grape: var(--ink);
-  --grape-soft: var(--ink-soft);
-  --blush: #ffc9d6;
-  --bubblegum: var(--accent);
-  --bubblegum-deep: #e0607e;   /* marks and borders only */
-  --bubblegum-ink: var(--accent-ink);
-  --lemon: #ffe9a8;
-  --mint: #a8e8cf;
-  --mint-deep: var(--mint-ink);
-  --blueberry: #b9c7ff;
-  --blueberry-deep: #4f63d9;   /* bar fills, 4.5:1 on --surface-sunk */
-  --grape-candy: #d6c8ff;
-  --line: 2px solid var(--border);
-  --radius-card: var(--radius-lg);
-  --radius-field: var(--radius-md);
 }
