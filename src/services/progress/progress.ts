@@ -79,6 +79,14 @@ export function countDone(progress: Progress, moduleId: string, taskTypeIds: str
   return taskTypeIds.filter((id) => progress[taskKey(moduleId, id)]).length;
 }
 
+/** How many tasks are finished in one skill (or in all of them) across every module, out of how many there are. */
+export function skillProgress(progress: Progress, skill?: SkillId): { done: number; total: number } {
+  const skills = skill ? [skill] : SKILLS.map((item) => item.id);
+  const ids = skills.flatMap((id) => getTaskTypesForSkill(id).map((task) => task.id));
+  const done = MODULE_CATALOG.reduce((sum, { id }) => sum + countDone(progress, id, ids), 0);
+  return { done, total: ids.length * MODULE_CATALOG.length };
+}
+
 export interface NextTask {
   moduleId: string;
   task: TaskType;
