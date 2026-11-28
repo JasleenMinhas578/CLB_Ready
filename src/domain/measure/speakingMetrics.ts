@@ -34,7 +34,7 @@ export interface SpeakingMetrics {
   /** First word to last word, so silence at the edges doesn't lower the pace. */
   speakingSeconds: number;
   answerSeconds: number;
-  /** Share of the answer time the learner used, 0 to 1. */
+  /** Share of the answer time the learner spent speaking, up to their last word, 0 to 1. */
   timeUsed: number;
   wordsPerMinute: number;
   longPauses: LongPause[];
@@ -86,7 +86,9 @@ export function measureSpeaking(input: {
     wordCount: spokenWords.length,
     speakingSeconds,
     answerSeconds: input.answerSeconds,
-    timeUsed: Math.min(1, input.recordedSeconds / input.answerSeconds),
+    // Up to the last word, so sitting silent until the timer ends doesn't count as using the time.
+    // Without word timings, the recording length is the best guess.
+    timeUsed: Math.min(1, (timed.length > 0 ? timed[timed.length - 1].end : input.recordedSeconds) / input.answerSeconds),
     wordsPerMinute: Math.round((spokenWords.length / speakingSeconds) * 60),
     longPauses,
     fillerCount: fillers.reduce((sum, filler) => sum + filler.count, 0),
