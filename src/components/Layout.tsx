@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { href } from '@/app/router';
+import { currentPath, href } from '@/app/router';
 import { useSession } from '@/app/session';
 import { Footer } from './Footer';
 import { Icon } from './Icon';
@@ -7,6 +7,8 @@ import { Pip } from './Pip';
 
 function Header() {
   const { goal } = useSession();
+  // Layout re-renders on every route change, so reading the path here stays current.
+  const current = (to: string) => (currentPath() === to ? 'page' : undefined);
   return (
     <header className="site-header">
       <a className="brand" href={href('/')}>
@@ -14,11 +16,11 @@ function Header() {
         <span>CLB Ready</span>
       </a>
       <nav aria-label="Main" className="header-nav">
-        <a className="nav-link" href={href('/settings')}>
+        <a className="nav-link" href={href('/settings')} aria-current={current('/settings')}>
           <Icon name="settings" />
           <span className="nav-label">Settings</span>
         </a>
-        <a className={`goal-chip${goal ? ' is-set' : ''}`} href={href('/goal')}>
+        <a className={`goal-chip${goal ? ' is-set' : ''}`} href={href('/goal')} aria-current={current('/goal')}>
           {goal ? `Goal: CLB ${goal}` : 'Set your goal'}
         </a>
       </nav>

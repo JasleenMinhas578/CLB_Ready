@@ -30,7 +30,7 @@ export function matchPath(pattern: string, path: string): RouteParams | null {
   return params;
 }
 
-function currentPath(): string {
+export function currentPath(): string {
   const hash = window.location.hash.replace(/^#/, '');
   return hash.startsWith('/') ? hash : '/';
 }
@@ -38,6 +38,16 @@ function currentPath(): string {
 // The screen shown before this one, so a detour (choosing a goal, settings) can send the learner back.
 let shown = '/';
 let previous: string | null = null;
+const DETOURS = ['/goal', '/settings'];
+
+/**
+ * Records a move to `path`. A detour is never kept as the previous screen, so
+ * Settings and Goal can't send the learner back and forth between each other.
+ */
+export function trackPath(path: string): void {
+  if (!DETOURS.includes(shown)) previous = shown;
+  shown = path;
+}
 
 /** Where a detour screen sends the learner back to: the screen before it, or home. Never back into a running task. */
 export function backPath(): string {
@@ -48,8 +58,7 @@ export function useHashPath(): string {
   const [path, setPath] = useState(() => (shown = currentPath()));
   useEffect(() => {
     const onChange = () => {
-      previous = shown;
-      shown = currentPath();
+      trackPath(currentPath());
       setPath(shown);
       window.scrollTo({ top: 0 });
     };
