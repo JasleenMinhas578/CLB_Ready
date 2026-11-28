@@ -3,6 +3,7 @@ import { CONTENT_COUNTS as counts, MODULE_CATALOG } from '@/content/modules/cata
 import { useSession } from '@/app/session';
 import { LinkButton } from '@/components/Button';
 import { Icon, type IconName } from '@/components/Icon';
+import { DISCLAIMER } from '@/components/Disclaimer';
 import { SkillCard } from './SkillCard';
 import { FeedbackDemo } from './FeedbackDemo';
 
@@ -38,7 +39,7 @@ const FAQ = [
   },
   {
     q: 'Are the scores official?',
-    a: 'No. They’re practice estimates to show your progress. CLB Ready is an independent study tool and isn’t connected to CELPIP or Paragon Testing.',
+    a: `No. ${DISCLAIMER}`,
   },
 ];
 

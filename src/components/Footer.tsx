@@ -1,5 +1,6 @@
 import { href } from '@/app/router';
 import { Icon } from './Icon';
+import { Disclaimer } from './Disclaimer';
 
 const PRACTICE_LINKS = [
   { label: 'Speaking practice', to: '/practice/speaking/module-1' },
@@ -51,11 +52,7 @@ export function Footer() {
       </div>
 
       <div className="footer-legal">
-        <p>
-          CLB Ready is an independent, AI-powered practice tool. It is not affiliated with, endorsed by or connected to
-          CELPIP, Prometric, the Centre for Canadian Language Benchmarks or the Government of Canada. CELPIP is a
-          trademark of its owner. Scores are estimates for practice only.
-        </p>
+        <Disclaimer />
         <p className="footer-copy">© {new Date().getFullYear()} CLB Ready</p>
       </div>
     </footer>
