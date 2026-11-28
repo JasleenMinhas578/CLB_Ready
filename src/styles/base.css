@@ -24,8 +24,8 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background: var(--milk);
-  color: var(--grape);
+  background: var(--bg);
+  color: var(--ink);
   font-family: var(--font-body);
   font-size: var(--step-0);
   line-height: 1.6;
@@ -37,29 +37,30 @@ h1, h2, h3 {
   line-height: 1.15;
   margin: 0 0 var(--gap-2);
   font-weight: 600;
+  text-wrap: balance;
 }
 h1 { font-size: var(--step-3); font-weight: 700; }
 h2 { font-size: var(--step-2); }
 h3 { font-size: var(--step-1); }
 
-p { margin: 0 0 var(--gap-2); max-width: var(--text-width); }
+p { margin: 0 0 var(--gap-2); max-width: var(--text-width); text-wrap: pretty; }
 
 a { color: inherit; text-decoration-thickness: 2px; text-underline-offset: 3px; }
-a:hover { color: var(--bubblegum-ink); }
+a:hover { color: var(--accent-ink); }
 
 button, textarea, input { font: inherit; color: inherit; }
 
 code {
   font-size: 0.9em;
-  background: var(--milk-deep);
+  background: var(--surface-sunk);
   border-radius: 6px;
   padding: 0.1em 0.35em;
 }
 
-::selection { background: var(--lemon); color: var(--grape); }
+::selection { background: var(--butter-tint); color: var(--ink); }
 
 :focus-visible {
-  outline: 3px solid var(--bubblegum-ink);
+  outline: 3px solid var(--focus);
   outline-offset: 3px;
   border-radius: 8px;
 }
@@ -71,7 +72,7 @@ code {
 
 .skip-link {
   position: absolute; left: var(--gap-2); top: -60px; z-index: 10;
-  background: var(--lemon); border: var(--line); border-radius: var(--radius-pill);
+  background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-pill); box-shadow: var(--shadow-2);
   padding: 0.4rem 1rem; font-weight: 800; text-decoration: none;
 }
 .skip-link:focus { top: var(--gap-2); }

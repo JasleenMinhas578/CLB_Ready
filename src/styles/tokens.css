@@ -112,8 +112,6 @@
   --blueberry-deep: #4f63d9;   /* bar fills, 4.5:1 on --surface-sunk */
   --grape-candy: #d6c8ff;
   --line: 2px solid var(--border);
-  --sticker: var(--shadow-2);
-  --sticker-small: var(--shadow-1);
   --radius-card: var(--radius-lg);
   --radius-field: var(--radius-md);
 }
