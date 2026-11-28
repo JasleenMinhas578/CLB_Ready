@@ -1,84 +1,54 @@
-import { CreateWebWorkerMLCEngine, prebuiltAppConfig, type AppConfig, type WebWorkerMLCEngine } from '@mlc-ai/web-llm';
-import { WEBLLM_LIBS_SHA, WEBLLM_MODEL_SHAS } from '@/services/modelPins';
 import type { CompleteOptions, FeedbackModel, GenerationStats, LoadProgress } from './types';
-
-const LIBS_MAIN = '/mlc-ai/binary-mlc-llm-libs/main/';
+import type { WebLlmRequest, WebLlmResponse } from './webllm.protocol';
+import { WorkerRpc } from '@/services/workerRpc';
 
 /**
- * WebLLM's built-in list downloads from each repo's moving `main` branch.
- * Keep only the models we use, pinned to exact commits.
+ * GPU memory WebLLM lists for each pinned model, in MB. Copied from WebLLM's
+ * prebuiltAppConfig so the page doesn't bundle the library just to read it;
+ * tests/modelPins.test.ts checks they still match.
  */
-export const pinnedAppConfig: AppConfig = {
-  ...prebuiltAppConfig,
-  model_list: prebuiltAppConfig.model_list
-    .filter((model) => model.model_id in WEBLLM_MODEL_SHAS)
-    .map((model) => {
-      if (!model.model_lib.includes(LIBS_MAIN)) throw new Error(`Can't pin the WebLLM library for ${model.model_id}.`);
-      return {
-        ...model,
-        // An explicit /resolve/<sha>/ is kept as is by WebLLM (it only adds /resolve/main/ when missing).
-        model: `https://huggingface.co/mlc-ai/${model.model_id}/resolve/${WEBLLM_MODEL_SHAS[model.model_id]}/`,
-        model_lib: model.model_lib.replace(LIBS_MAIN, `/mlc-ai/binary-mlc-llm-libs/${WEBLLM_LIBS_SHA}/`),
-      };
-    }),
+export const WEBLLM_VRAM_MB: Record<string, number> = {
+  'Qwen2.5-3B-Instruct-q4f16_1-MLC': 2504.76,
+  'Qwen2.5-3B-Instruct-q4f32_1-MLC': 2893.64,
+  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': 1629.75,
+  'Qwen2.5-1.5B-Instruct-q4f32_1-MLC': 1888.97,
+  'Llama-3.2-1B-Instruct-q4f16_1-MLC': 879.04,
+  'Llama-3.2-1B-Instruct-q4f32_1-MLC': 1128.82,
 };
 
 /** Approximate GPU memory WebLLM lists for a model, in MB. */
 export function estimatedGpuMb(modelId: string): number | null {
-  const record = pinnedAppConfig.model_list.find((model) => model.model_id === modelId);
-  return record?.vram_required_MB ?? null;
+  return WEBLLM_VRAM_MB[modelId] ?? null;
 }
 
+/** Main-thread wrapper for the WebLLM worker, which holds the whole library. */
 export class WebLlmFeedbackModel implements FeedbackModel {
-  private engine: WebWorkerMLCEngine | null = null;
+  private rpc = new WorkerRpc<WebLlmRequest, WebLlmResponse>(
+    () => new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' }),
+    'The feedback model could not start in this browser.',
+  );
 
   constructor(private readonly modelId: string) {}
 
   async load(onProgress?: (progress: LoadProgress) => void) {
     const started = performance.now();
-    const worker = new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' });
-    this.engine = await CreateWebWorkerMLCEngine(worker, this.modelId, {
-      appConfig: pinnedAppConfig,
-      initProgressCallback: (report) => onProgress?.({ fraction: report.progress, text: report.text }),
-    });
+    await this.rpc.send({ type: 'load', modelId: this.modelId }, onProgress);
     return { elapsedMs: performance.now() - started };
   }
 
   async complete(system: string, user: string, { schema, maxTokens, onText }: CompleteOptions) {
-    if (!this.engine) throw new Error('Feedback model is not loaded yet.');
     const started = performance.now();
     let firstTokenAt: number | null = null;
-    let text = '';
-    let promptTokens = 0;
-    let completionTokens = 0;
-    let truncated = false;
-
-    const stream = await this.engine.chat.completions.create({
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-      stream: true,
-      stream_options: { include_usage: true },
-      temperature: 0.3,
-      max_tokens: maxTokens,
-      // With a schema, WebLLM forces valid JSON that matches it, so the UI never gets mush.
-      ...(schema ? { response_format: { type: 'json_object' as const, schema: JSON.stringify(schema) } } : {}),
-    });
-
-    for await (const chunk of stream) {
-      const delta = chunk.choices[0]?.delta?.content ?? '';
-      if (delta) {
+    const reply = await this.rpc.send(
+      { type: 'complete', system, user, maxTokens, schema: schema ? JSON.stringify(schema) : undefined },
+      // While writing, the worker's progress text is the reply so far.
+      ({ text }) => {
         firstTokenAt ??= performance.now();
-        text += delta;
         onText?.(text);
-      }
-      if (chunk.choices[0]?.finish_reason === 'length') truncated = true;
-      if (chunk.usage) {
-        promptTokens = chunk.usage.prompt_tokens;
-        completionTokens = chunk.usage.completion_tokens;
-      }
-    }
+      },
+    );
+    if (reply.type !== 'completed') throw new Error('Unexpected reply from the feedback model.');
+    const { text, truncated, promptTokens, completionTokens } = reply;
 
     const totalMs = performance.now() - started;
     const decodeMs = firstTokenAt ? performance.now() - firstTokenAt : totalMs;
@@ -92,16 +62,16 @@ export class WebLlmFeedbackModel implements FeedbackModel {
     return { text, stats, truncated };
   }
 
+  // Both do nothing before load, so they never start a worker just to stop or clear it.
   interrupt() {
-    void this.engine?.interruptGenerate();
+    if (this.rpc.running) void this.rpc.send({ type: 'interrupt' });
   }
 
   async reset() {
-    await this.engine?.resetChat();
+    if (this.rpc.running) await this.rpc.send({ type: 'reset' });
   }
 
-  async unload() {
-    await this.engine?.unload();
-    this.engine = null;
+  unload() {
+    return this.rpc.unload();
   }
 }
