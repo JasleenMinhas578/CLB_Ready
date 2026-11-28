@@ -23,6 +23,8 @@ export class WorkerRpc<Req extends Message, Res extends Message> {
   constructor(
     private readonly create: () => Worker,
     private readonly startError: string,
+    /** Told when the worker fails to start or crashes, so whoever holds its model knows it is gone. */
+    private readonly onCrash?: (error: Error) => void,
   ) {}
 
   private getWorker(): Worker {
@@ -31,7 +33,11 @@ export class WorkerRpc<Req extends Message, Res extends Message> {
       this.worker.addEventListener('message', (event: MessageEvent<Res>) => this.handle(event.data));
       // Fires if the worker script fails to load (e.g. a 404) or crashes. Without it the
       // pending promises would never settle, and the caller's fallback would never run.
-      this.worker.addEventListener('error', () => this.fail(new Error(this.startError)));
+      this.worker.addEventListener('error', () => {
+        const error = new Error(this.startError);
+        this.fail(error);
+        this.onCrash?.(error);
+      });
     }
     return this.worker;
   }

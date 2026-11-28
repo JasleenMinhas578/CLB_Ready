@@ -23,9 +23,12 @@ export function estimatedGpuMb(modelId: string): number | null {
 
 /** Main-thread wrapper for the WebLLM worker, which holds the whole library. */
 export class WebLlmFeedbackModel implements FeedbackModel {
+  onCrash?: (error: Error) => void;
+
   private rpc = new WorkerRpc<WebLlmRequest, WebLlmResponse>(
     () => new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' }),
     'The feedback model could not start in this browser.',
+    (error) => this.onCrash?.(error),
   );
 
   constructor(private readonly modelId: string) {}

@@ -4,9 +4,12 @@ import { WorkerRpc } from '@/services/workerRpc';
 
 /** Main-thread wrapper that turns worker messages into promises. */
 export class WhisperSpeechToText implements SpeechToText {
+  onCrash?: (error: Error) => void;
+
   private rpc = new WorkerRpc<WhisperRequest, WhisperResponse>(
     () => new Worker(new URL('./whisper.worker.ts', import.meta.url), { type: 'module' }),
     'The speech model could not start in this browser.',
+    (error) => this.onCrash?.(error),
   );
 
   constructor(

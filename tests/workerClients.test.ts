@@ -5,9 +5,12 @@ import { SpeechEngineStore } from '../src/services/ai/speechEngine';
 import { VoiceEngineStore } from '../src/services/tts/voiceEngine';
 import { LIGHT_VOICE, planModels, type DeviceSignals } from '../src/services/device/tier';
 import { WorkerRpc } from '../src/services/workerRpc';
+import { fallBackSpeechToCpu, getModelPlan, setTierChoice } from '../src/services/device/plan';
 
 const GB = 1024 ** 3;
 const laptop: DeviceSignals = { ramGb: 8, cpuCores: 8, webgpu: true, shaderF16: true, maxBufferBytes: 4 * GB, isMobile: false };
+
+vi.mock('../src/services/device/detectDevice', () => ({ detectDevice: async () => ({ ...laptop, gpuVendor: null, gpuArchitecture: null }) }));
 
 /** Stands in for a browser Worker: either its script fails to load, or it answers every request. */
 class FakeWorker extends EventTarget {
@@ -48,6 +51,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  setTierChoice('auto'); // Clears the CPU fallback for the next test.
 });
 
 describe('worker clients when the worker fails to load', () => {
@@ -69,17 +73,18 @@ describe('worker clients when the worker fails to load', () => {
     expect(FakeWorker.created).toHaveLength(2);
   });
 
-  it('lets the speech store step down a tier and retry', async () => {
+  it('moves speech to the CPU and retries when Whisper fails on the GPU', async () => {
     FakeWorker.brokenCount = 1;
-    let steps = 0;
     const store = new SpeechEngineStore(
-      async () => planModels(laptop, { stepsDown: steps }),
+      getModelPlan,
       (plan) => new WhisperSpeechToText(plan.whisperModel, plan.whisperDevice),
-      async () => { steps += 1; return true; },
+      fallBackSpeechToCpu,
     );
+    expect((await getModelPlan()).whisperDevice).toBe('webgpu');
     await store.ensureLoaded();
-    expect(steps).toBe(1);
-    expect(store.getStatus()).toMatchObject({ state: 'ready', model: 'base.en' });
+    expect((await getModelPlan()).whisperDevice).toBe('wasm');
+    expect(FakeWorker.created).toHaveLength(2);
+    expect(store.getStatus()).toMatchObject({ state: 'ready', model: 'tiny.en' });
   });
 
   it('lets the voice store fail, so listening can use the browser voice', async () => {
@@ -87,6 +92,18 @@ describe('worker clients when the worker fails to load', () => {
     const store = new VoiceEngineStore(async () => planModels(laptop), (plan) => new KokoroTextToSpeech(plan.voice ?? LIGHT_VOICE));
     await expect(store.ensureLoaded()).rejects.toThrow('could not start');
     expect(store.getStatus().state).toBe('error');
+  });
+});
+
+describe('a worker that crashes after loading', () => {
+  it('leaves the speech store in error, then starts a fresh worker on next use', async () => {
+    const store = new SpeechEngineStore(async () => planModels(laptop), (plan) => new WhisperSpeechToText(plan.whisperModel, plan.whisperDevice));
+    await store.ensureLoaded();
+    FakeWorker.created[0].dispatchEvent(new Event('error'));
+    expect(store.getStatus()).toMatchObject({ state: 'error', error: 'The speech model could not start in this browser.' });
+    await store.ensureLoaded();
+    expect(FakeWorker.created).toHaveLength(2);
+    expect(store.getStatus().state).toBe('ready');
   });
 });
 
