@@ -92,7 +92,6 @@
   --stock-edge: 4px;
   --stock-edge-up: 6px;
   --stock-edge-down: 1px;
-  --shadow-1: 0 1px 2px oklch(25% 0.035 265 / 0.06);
   --shadow-card: 0 1px 2px oklch(25% 0.035 265 / 0.05), 0 12px 28px -16px oklch(25% 0.035 265 / 0.22);
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .2 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 

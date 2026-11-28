@@ -111,7 +111,6 @@ const PATHS = {
       <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
     </>
   ),
-  shield: <path d="M12 3.5l7 2.5v5.5c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V6z" />,
   download: <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" />,
   sparkle: (
     <>
@@ -120,10 +119,8 @@ const PATHS = {
     </>
   ),
   lab: <path d="M9.5 3.5h5M10.5 3.5V9l-5.3 9.2a1.5 1.5 0 0 0 1.3 2.3h11a1.5 1.5 0 0 0 1.3-2.3L13.5 9V3.5M7.5 15h9" />,
-  home: <path d="M4 11l8-6.5 8 6.5M6 9.5V19a1 1 0 0 0 1 1h3.5v-5h3v5H17a1 1 0 0 0 1-1V9.5" />,
   'arrow-right': <path d="M5 12h14M13 6l6 6-6 6" />,
   'arrow-left': <path d="M19 12H5M11 6l-6 6 6 6" />,
-  close: <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />,
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof PATHS;
