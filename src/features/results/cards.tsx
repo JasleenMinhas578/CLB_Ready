@@ -5,7 +5,7 @@ import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import type { AnyAttempt, Attempt } from '@/domain/attempt';
 import { href } from '@/app/router';
 import { LinkButton } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
 import { friendlyModelError } from '@/services/ai/errorText';
 import type { AiPerf, AnswerStream, FeedbackOutcome, FeedbackProgress, StepPerf } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
@@ -23,7 +23,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
         : `${friendlyModelError(outcome.message)} The feedback below uses your measurements only.`;
     return (
       <p className="ai-status is-code">
-        <Emoji symbol="🍬" /> <span>{why} <a href={href('/settings')}>Settings</a></span>
+        <Icon name="info" /> <span>{why} <a href={href('/settings')}>Settings</a></span>
       </p>
     );
   }
@@ -35,7 +35,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
         : 'Starting the AI coach…';
   return (
     <p className="ai-status" aria-live="polite">
-      <Emoji symbol="🤔" /> {text}
+      <Icon name="pending" /> {text}
     </p>
   );
 }
@@ -185,7 +185,7 @@ export function AnswerCard({ answer, goal, spoken, original, fromScratch = false
     <div className="results-card improved-card is-writing" aria-busy="true">
       <h2>{heading}</h2>
       <p className="ai-status" aria-live="polite">
-        <Emoji symbol="✍️" /> {answer.text ? 'Pip is writing it now…' : 'Pip is starting to write…'}
+        <Icon name="writing" /> {answer.text ? 'Pip is writing it now…' : 'Pip is starting to write…'}
         {!fromScratch && ' Changes will be marked when it’s done.'}
       </p>
       {answer.text && <blockquote className="transcript streaming-text">{answer.text}</blockquote>}
@@ -210,7 +210,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           const met = row?.met ?? null;
           return (
             <li key={item} className={met === true ? 'is-met' : met === false ? 'is-missed' : ''}>
-              <span aria-hidden="true">{met === true ? '✅' : met === false ? '⭕' : final ? '➖' : '⏳'}</span>
+              <Icon name={met === true ? 'check' : met === false ? 'missed' : final ? 'dash' : 'pending'} />
               <span className="checklist-text">{item}</span>
               {row?.byCode && <span className="checked-by">checked automatically</span>}
               <span className="sr-only">{met === true ? 'covered' : met === false ? 'not covered' : 'not checked'}</span>
@@ -218,7 +218,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           );
         })}
       </ul>
-      {final && anyUnchecked && <p className="fine-print">Items marked ➖ were not checked. Only the AI coach can check them.</p>}
+      {final && anyUnchecked && <p className="fine-print">Items marked <Icon name="dash" size="sm" label="with a dash" /> were not checked. Only the AI coach can check them.</p>}
     </div>
   );
 }

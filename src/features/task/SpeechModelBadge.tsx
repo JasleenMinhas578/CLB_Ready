@@ -1,5 +1,6 @@
 import type { ModelStatus } from '@/services/ai/modelStore';
 import { friendlyModelError } from '@/services/ai/errorText';
+import { Icon } from '@/components/Icon';
 
 /** Small status line so learners know the AI is getting ready. */
 export function SpeechModelBadge({ status }: { status: ModelStatus }) {
@@ -13,7 +14,7 @@ export function SpeechModelBadge({ status }: { status: ModelStatus }) {
 
   return (
     <p className={`model-badge is-${status.state}`} aria-live="polite">
-      <span aria-hidden="true">🧠</span> {text}
+      <Icon name={status.state === 'error' ? 'warning' : status.state === 'ready' ? 'check' : 'pending'} /> {text}
     </p>
   );
 }

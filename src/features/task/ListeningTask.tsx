@@ -10,6 +10,7 @@ import { useCountdown } from './useCountdown';
 import { ExamBar, TimeRemaining } from './exam/ExamBar';
 import { QuestionList, type Answers } from './objective/Questions';
 import { useClipPlayer } from './objective/useClipPlayer';
+import { Icon } from '@/components/Icon';
 
 /** Time to answer each question after a recording, close to test day. */
 export const SECONDS_PER_QUESTION = 30;
@@ -90,7 +91,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
           {player.state === 'ready' && (
             <div className="exam-message">
               <p>The recording plays once. You can’t pause or replay it, so take notes if that helps.</p>
-              <button type="button" className="exam-play" onClick={() => { unlockBeeps(); player.play(); }}>▶ Play recording</button>
+              <button type="button" className="exam-play" onClick={() => { unlockBeeps(); player.play(); }}><Icon name="play" /> Play recording</button>
             </div>
           )}
           {player.state === 'playing' && (

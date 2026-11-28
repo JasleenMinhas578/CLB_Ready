@@ -1,4 +1,5 @@
 import { Fragment, type CSSProperties } from 'react';
+import { Icon } from '@/components/Icon';
 
 /**
  * The home page's one moment of motion: a learner's sentence gets marked
@@ -55,9 +56,9 @@ export function FeedbackDemo() {
         </div>
       </div>
       <figcaption className="demo-tips">
-        <span>✓ 4 grammar fixes</span>
-        <span>✓ Sample answer you can hear</span>
-        <span>✓ Tips for your goal</span>
+        <span><Icon name="tick" size="sm" /> 4 grammar fixes</span>
+        <span><Icon name="tick" size="sm" /> Sample answer you can hear</span>
+        <span><Icon name="tick" size="sm" /> Tips for your goal</span>
       </figcaption>
     </figure>
   );

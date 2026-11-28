@@ -1,6 +1,5 @@
 import { Component, type ReactNode } from 'react';
 import { Button } from './Button';
-import { Emoji } from './Emoji';
 
 interface Props {
   children: ReactNode;
@@ -22,7 +21,6 @@ export class ErrorBoundary extends Component<Props, { failed: boolean }> {
     if (!this.state.failed) return this.props.children;
     return (
       <section className="empty-state">
-        <Emoji symbol="🍬" size="xl" />
         <h1>Something went wrong</h1>
         <p>This page didn’t load. Reload the page to try again.</p>
         <Button onClick={() => window.location.reload()}>Reload</Button>

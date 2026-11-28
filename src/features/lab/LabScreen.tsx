@@ -11,7 +11,7 @@ import { startRecording, toWhisperAudio } from '@/services/audio/recorder';
 import { getCriteria } from '@/domain/criteria';
 import { getPrompt, loadModule } from '@/content/modules';
 import { Button } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
 
 /**
  * Model lab: loads both models and measures them on this device.
@@ -217,7 +217,7 @@ export default function LabScreen() {
   return (
     <section className="lab">
       <div className="screen-head align-left">
-        <h1><Emoji symbol="🧪" size="lg" /> Model lab</h1>
+        <h1><Icon name="lab" size="lg" /> Model lab</h1>
         <p>Load the AI models on this device and measure how fast they run. Everything stays in your browser.</p>
       </div>
 
@@ -238,7 +238,7 @@ export default function LabScreen() {
               <Stat label="Tier" value={plan.tier} />
             </div>
             <p className="lab-plan">
-              <Emoji symbol="🧠" /> {plan.reason} Speech: <code>{plan.whisperModel}</code> on {plan.whisperDevice}.
+              <Icon name="sparkle" /> {plan.reason} Speech: <code>{plan.whisperModel}</code> on {plan.whisperDevice}.
               Feedback: <code>{plan.feedbackModel ?? 'light mode'}</code>.
             </p>
           </>

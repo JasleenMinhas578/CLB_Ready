@@ -1,4 +1,4 @@
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
 import { SAMPLE_ANSWER_NOTES } from '@/content/sampleNotes';
 import { useReadAloud } from './useReadAloud';
 
@@ -17,11 +17,11 @@ export function SampleAnswerCard({ text, taskTypeId, seconds }: { text: string; 
         <h2>Sample answer at CLB 10+</h2>
         {voice.state === 'idle' ? (
           <button type="button" className="btn btn-secondary btn-small" onClick={() => void voice.play()}>
-            <Emoji symbol="🔊" /> Listen
+            <Icon name="volume" /> Listen
           </button>
         ) : (
           <button type="button" className="btn btn-secondary btn-small" onClick={voice.stop}>
-            <Emoji symbol="⏹️" /> Stop
+            <Icon name="stop" /> Stop
           </button>
         )}
       </div>
@@ -31,7 +31,7 @@ export function SampleAnswerCard({ text, taskTypeId, seconds }: { text: string; 
       </p>
       {voice.state === 'loading' && (
         <p className="ai-status" aria-live="polite">
-          <Emoji symbol="🎧" />{' '}
+          <Icon name="listening" />{' '}
           {voice.loadProgress !== null
             ? `Downloading the AI voice (${Math.round(voice.loadProgress * 100)}%). This happens once.`
             : 'Getting the voice ready…'}

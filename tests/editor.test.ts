@@ -56,8 +56,8 @@ describe('targetText', () => {
   it('always shows the full 150–200 range', () => {
     expect(targetText(0, range)).toBe('Target: 150–200 words');
     expect(targetText(116, range)).toBe('Target: 150–200 words, 34 more needed');
-    expect(targetText(150, range)).toBe('Target: 150–200 words ✓');
-    expect(targetText(200, range)).toBe('Target: 150–200 words ✓');
+    expect(targetText(150, range)).toBe('Target: 150–200 words, on target');
+    expect(targetText(200, range)).toBe('Target: 150–200 words, on target');
     expect(targetText(212, range)).toBe('Target: 150–200 words, 12 over');
   });
 });

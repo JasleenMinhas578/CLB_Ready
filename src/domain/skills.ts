@@ -12,7 +12,6 @@ export type Flavour = 'bubblegum' | 'lemon' | 'blueberry' | 'grape';
 export interface Skill {
   id: SkillId;
   name: string;
-  emoji: string;
   flavour: Flavour;
   status: Availability;
   /** One plain sentence shown on the skill card. */
@@ -23,7 +22,6 @@ export const SKILLS: readonly Skill[] = [
   {
     id: 'speaking',
     name: 'Speaking',
-    emoji: '🎤',
     flavour: 'bubblegum',
     status: 'available',
     blurb: 'Answer 8 timed tasks out loud and get feedback on what you said.',
@@ -31,7 +29,6 @@ export const SKILLS: readonly Skill[] = [
   {
     id: 'writing',
     name: 'Writing',
-    emoji: '✏️',
     flavour: 'lemon',
     status: 'available',
     blurb: 'Write an email and a survey response, then see how to reach your goal.',
@@ -39,7 +36,6 @@ export const SKILLS: readonly Skill[] = [
   {
     id: 'reading',
     name: 'Reading',
-    emoji: '📖',
     flavour: 'blueberry',
     status: 'available',
     blurb: 'Read messages, charts and articles, then answer 38 questions in 4 parts.',
@@ -47,7 +43,6 @@ export const SKILLS: readonly Skill[] = [
   {
     id: 'listening',
     name: 'Listening',
-    emoji: '🎧',
     flavour: 'grape',
     status: 'available',
     blurb: 'Listen to conversations, news and talks, each played once, then answer 38 questions.',
