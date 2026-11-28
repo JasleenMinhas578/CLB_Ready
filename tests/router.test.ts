@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchPath } from '../src/app/router';
+import { backPath, matchPath, trackPath } from '../src/app/router';
 import { buildSpeakingPhases, countWords } from '../src/features/task/phases';
 
 describe('matchPath', () => {
@@ -18,6 +18,23 @@ describe('matchPath', () => {
 
   it('treats a malformed escape as no match instead of throwing', () => {
     expect(matchPath('/task/:moduleId', '/task/%E0')).toBeNull();
+  });
+});
+
+describe('backPath', () => {
+  it('skips other detours, so Settings and Goal never loop', () => {
+    trackPath('/practice/speaking/module-1');
+    trackPath('/settings');
+    trackPath('/goal');
+    expect(backPath()).toBe('/practice/speaking/module-1');
+    trackPath('/settings');
+    expect(backPath()).toBe('/practice/speaking/module-1');
+  });
+
+  it('never sends the learner back into a task', () => {
+    trackPath('/task/module-1/speaking-1');
+    trackPath('/goal');
+    expect(backPath()).toBe('/');
   });
 });
 

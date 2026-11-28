@@ -28,6 +28,9 @@ main:focus { outline: none; }
 .nav-link:active, .goal-chip:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
 /* The goal is a fact about the learner, so it takes the mint of growth once it is set. */
 .goal-chip.is-set { background: var(--mint-tint); color: var(--mint-ink); box-shadow: inset 0 0 0 1px var(--mint-ink), 0 var(--stock-edge) 0 0 var(--mint-ink); }
+/* The screen you are on: pressed in and inked, like the current module tab. */
+.nav-link[aria-current='page'], .nav-link[aria-current='page']:hover,
+.goal-chip[aria-current='page'], .goal-chip[aria-current='page']:hover { background: var(--ink); color: var(--bg); transform: translateY(3px); box-shadow: 0 var(--stock-edge-down) 0 0 var(--ink); }
 /* On phones the settings link keeps only its icon; the word stays for screen readers. */
 @media (max-width: 480px) {
   .nav-link { width: 44px; padding: 0; justify-content: center; }
