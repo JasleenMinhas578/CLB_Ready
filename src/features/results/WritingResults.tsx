@@ -1,6 +1,5 @@
 import type { WritingAttempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
-import { overallLevel } from '@/domain/scoring/estimate';
 import { finalScores } from '@/domain/scoring/finalScores';
 import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstimate';
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
@@ -92,11 +91,10 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
     );
   }
 
-  const { scores, ignored } = finalScores(
+  const { scores, level, ignored } = finalScores(
     'writing', codeEstimatesWriting(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, attempt.metrics.wordRange.min, ai?.onTask,
   );
   const checklist = mergeChecklist(attempt.checklist, ai?.checklist ?? null, attempt.text, attempt.metrics);
-  const overall = overallLevel(scores);
   const final = outcome !== null;
 
   return (
@@ -108,7 +106,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             attempt={attempt}
             criteria={getCriteria('writing')}
             scores={scores}
-            overall={overall}
+            overall={level}
             final={final}
             status={<AiStatus outcome={outcome} progress={progress} />}
             notes={outlierNotes(ignored)}

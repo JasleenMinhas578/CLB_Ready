@@ -61,7 +61,7 @@ export function HomeScreen() {
       <section className="home-section home-band" aria-labelledby="example-title">
         <div className="home-section-head">
           <h2 id="example-title">What you see after each task</h2>
-          <p>Your estimated level next to your goal, a score for each part of your answer, and tips for what to change.</p>
+          <p>Once Pip, your AI coach, has checked your answer: your estimated level next to your goal, a score for each part of your answer, and tips for what to change.</p>
         </div>
         <figure className="results-card example-card">
           <figcaption>Example: feedback on a speaking task</figcaption>

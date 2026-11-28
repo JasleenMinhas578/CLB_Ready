@@ -1,7 +1,7 @@
 import { use } from 'react';
 import type { SpeakingAttempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
-import { codeEstimates, overallLevel } from '@/domain/scoring/estimate';
+import { codeEstimates } from '@/domain/scoring/estimate';
 import { finalScores } from '@/domain/scoring/finalScores';
 import { codeTips } from '@/domain/scoring/codeTips';
 import { matchAiChecklist } from '@/domain/scoring/autoChecks';
@@ -56,10 +56,9 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
     );
   }
 
-  const { scores, ignored } = finalScores(
+  const { scores, level, ignored } = finalScores(
     'speaking', codeEstimates(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, expectedSpokenWords(attempt.metrics.answerSeconds), ai?.onTask,
   );
-  const overall = overallLevel(scores);
   const final = outcome !== null;
 
   return (
@@ -71,7 +70,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             attempt={attempt}
             criteria={getCriteria('speaking')}
             scores={scores}
-            overall={overall}
+            overall={level}
             final={final}
             status={<AiStatus outcome={outcome} progress={progress} />}
             notes={outlierNotes(ignored)}

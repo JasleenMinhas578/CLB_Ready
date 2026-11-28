@@ -282,6 +282,7 @@
   background: var(--surface-sunk); border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1px var(--border-soft);
 }
 .level-pair span { font-weight: 800; font-size: var(--step--1); text-align: center; color: var(--ink-soft); }
+.level-pending { margin: 0; font-size: var(--step--1); text-align: center; color: var(--ink-soft); }
 .level-pair strong { font-family: var(--font-display); font-size: var(--step-3); line-height: 1.1; font-variant-numeric: tabular-nums; }
 .results-speaking .level-pair .is-level { background: var(--speaking-tint); }
 .results-writing .level-pair .is-level { background: var(--writing-tint); }

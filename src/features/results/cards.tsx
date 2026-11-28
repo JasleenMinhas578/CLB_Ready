@@ -24,8 +24,8 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   if (outcome?.kind === 'code') {
     const why =
       outcome.reason === 'light-mode'
-        ? 'Pip, your AI coach, is off on this device, so feedback comes from word counts, timing and simple checks.'
-        : `${friendlyModelError(outcome.message)} These results use your measurements only.`;
+        ? 'A level needs Pip, your AI coach. Without Pip we can only measure vocabulary and how clear your answer is.'
+        : `${friendlyModelError(outcome.message)} Without Pip we can only measure vocabulary and how clear your answer is.`;
     return (
       <p className="ai-status is-code">
         <Icon name="info" /> <span>{why} <a href={href('/settings')}>Change this in Settings</a></span>
@@ -44,7 +44,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
         </p>
         <p className="ai-status-step">
           {scoring
-            ? 'Step 2 of 2. The scores below are first estimates. They update when Pip is done.'
+            ? 'Step 2 of 2.'
             : 'Step 1 of 2. Pip downloads the first time only. This can take a few minutes.'}
         </p>
         {percent !== null && (
@@ -62,7 +62,8 @@ interface LevelCardProps {
   criteria: Criterion[];
   /** A criterion without a score is one only Pip can judge, and Pip hasn't (yet). */
   scores: Partial<Record<string, number>>;
-  overall: number;
+  /** Null until Pip has judged the answer: code alone can't give an honest level. */
+  overall: number | null;
   final: boolean;
   status: ReactNode;
   /** A note per criterion, shown under that criterion's bar, e.g. when its AI score was ignored. */
@@ -71,27 +72,23 @@ interface LevelCardProps {
 
 export function LevelCard({ attempt, criteria, scores, overall, final, status, notes = {} }: LevelCardProps) {
   const goal = attempt.goal;
-  const scored = criteria.filter((criterion) => scores[criterion.id] !== undefined);
-  const partial = scored.length < criteria.length;
-  const measuredNames = scored.map((criterion) => criterion.name.toLowerCase()).join(' and ');
-  const note = !partial
-    ? 'Estimates for practice only, not official CELPIP scores.'
-    : final
-      ? `Partial estimate from ${measuredNames} only: content and task fulfillment can't be checked without Pip. For practice only, not an official CELPIP score.`
-      : `Partial estimate from ${measuredNames} only, until Pip checks content and task fulfillment. For practice only, not an official CELPIP score.`;
   return (
     <div className="results-card level-card" aria-busy={!final}>
       <div className="level-pair">
         <div className="is-level">
-          <span>{partial ? 'Partial estimate' : 'Estimated level'}</span>
-          <strong>CLB {overall}</strong>
+          <span>{overall === null ? 'Your level' : 'Estimated level'}</span>
+          {overall !== null ? (
+            <strong>CLB {overall}</strong>
+          ) : (
+            <p className="level-pending">{final ? 'Needs Pip' : 'Pip is checking your answer. Your level appears when Pip is done.'}</p>
+          )}
         </div>
         <div>
           <span>{attempt.goalChosen ? 'Your goal' : 'Practice goal'}</span>
           <strong>CLB {goal}</strong>
         </div>
       </div>
-      <EstimateNote>{note}</EstimateNote>
+      {overall !== null && <EstimateNote>Estimates for practice only, not official CELPIP scores.</EstimateNote>}
       {!attempt.goalChosen && (
         <p className="fine-print">
           No goal set, so we used CLB {goal}. <a href={href('/goal')}>Choose your goal</a>.
@@ -128,7 +125,7 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
         })}
       </ul>
       {/* Single scores can sit above or below the level, because the level is their average. */}
-      <p className="fine-print">Your level is the average of the {scored.length} scores above, rounded.</p>
+      {overall !== null && <p className="fine-print">Your level is the average of the {criteria.length} scores above, rounded.</p>}
     </div>
   );
 }

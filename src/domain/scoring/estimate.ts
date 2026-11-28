@@ -114,8 +114,8 @@ export function blendScores<K extends string = SpeakingCriterionId>(
   return result;
 }
 
-/** Overall estimate: CELPIP reports one level per skill, so use the rounded mean of the scores we have. */
-export function overallLevel<K extends string>(scores: Partial<Scores<K>>): number {
-  const values = (Object.values(scores) as (number | undefined)[]).filter((value): value is number => typeof value === 'number');
+/** Overall estimate: CELPIP reports one level per skill, so use the rounded mean. */
+export function overallLevel<K extends string>(scores: Scores<K>): number {
+  const values = Object.values(scores) as number[];
   return clampLevel(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
