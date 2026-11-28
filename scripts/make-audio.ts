@@ -18,13 +18,19 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join } from 'node:path';
 import { env } from '@huggingface/transformers';
 import { KokoroTTS } from 'kokoro-js';
-import { MODULES } from '../src/content/modules';
+import { module1 } from '../src/content/modules/module1';
+import { module2 } from '../src/content/modules/module2';
+import { module3 } from '../src/content/modules/module3';
+import { module4 } from '../src/content/modules/module4';
+import { module5 } from '../src/content/modules/module5';
 import { clipAudioPath, type ListeningClip } from '../src/content/objective';
 import { KOKORO_MODEL, KOKORO_SHA } from '../src/services/modelPins';
 
 // kokoro-js drops the `revision` option, so pin the commit in the download path instead.
 // On Node, kokoro-js reads voices from its own npm package, so they need no pin.
 env.remotePathTemplate = `{model}/resolve/${KOKORO_SHA}/`;
+// The app loads modules lazily; this script needs them all at once.
+const MODULES = [module1, module2, module3, module4, module5];
 const PUBLIC = join(import.meta.dirname, '..', 'public');
 const MANIFEST = join(PUBLIC, 'audio', 'manifest.json');
 /** Silence between two speakers, and between two lines by the same speaker, in seconds. */
