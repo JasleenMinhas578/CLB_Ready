@@ -45,7 +45,7 @@ main:focus { outline: none; }
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 .footer-inner {
-  display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-4);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: var(--gap-3) var(--gap-5);
   max-width: var(--page-width); margin: 0 auto;
 }
 .footer-tagline { margin: var(--gap-1) 0 var(--gap-2); color: var(--ink-soft); max-width: 40ch; }
@@ -54,10 +54,10 @@ main:focus { outline: none; }
   font-weight: 800; font-size: var(--step--1); color: var(--mint-ink); background: var(--mint-tint); border-radius: var(--radius-md);
 }
 .footer-col h2 { margin: var(--gap-1) 0; font-family: var(--font-body); font-size: var(--step--1); font-weight: 800; letter-spacing: 0; color: var(--ink-soft); }
-.footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
-.footer-col a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration-color: var(--border); }
-.footer-col a:hover { color: var(--link); text-decoration-color: currentColor; }
-.footer-col span { display: inline-flex; min-height: 44px; align-items: center; color: var(--ink-soft); }
+.footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; }
+/* Links in a labelled nav group: bold ink, underlined on hover, the blue focus ring from base.css. */
+.footer-col a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); font-weight: 700; text-decoration: none; }
+.footer-col a:hover { color: var(--link); text-decoration: underline; text-underline-offset: 0.2em; }
 .footer-legal {
   max-width: var(--page-width); margin: var(--gap-4) auto 0; padding-top: var(--gap-2);
   border-top: 1px solid var(--border-soft); font-size: var(--step--1); color: var(--ink-soft);
@@ -65,8 +65,10 @@ main:focus { outline: none; }
 .footer-legal p { margin-bottom: var(--gap-1); }
 .footer-copy { margin: 0; }
 @media (max-width: 720px) {
+  .site-footer { padding-top: var(--gap-4); }
   .footer-inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-3); }
   .footer-brand { grid-column: 1 / -1; }
+  .footer-legal { margin-top: var(--gap-3); }
 }
 
 /* Buttons: card stock. A solid edge below; hover raises it, a press flattens it.
