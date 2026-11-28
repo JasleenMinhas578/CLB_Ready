@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { planModels, TIER_ORDER, type DeviceSignals } from '../src/services/device/tier';
-import { pinnedAppConfig } from '../src/services/ai/webllmClient';
+import { prebuiltAppConfig } from '@mlc-ai/web-llm';
+import { pinnedAppConfig } from '../src/services/ai/webllmConfig';
+import { WEBLLM_VRAM_MB } from '../src/services/ai/webllmClient';
 import { WEBLLM_MODEL_SHAS, WHISPER_SHAS } from '../src/services/modelPins';
 
 const GB = 1024 ** 3;
@@ -16,6 +18,13 @@ describe('model pins', () => {
       expect(record, id).toBeDefined();
       expect(record!.model).toMatch(new RegExp(`^https://huggingface\\.co/mlc-ai/${id}/resolve/[0-9a-f]{40}/$`));
       expect(record!.model_lib).toMatch(/^https:\/\/raw\.githubusercontent\.com\/mlc-ai\/binary-mlc-llm-libs\/[0-9a-f]{40}\//);
+    }
+  });
+
+  it('keeps the copied GPU memory figures in step with WebLLM', () => {
+    expect(Object.keys(WEBLLM_VRAM_MB).sort()).toEqual(Object.keys(WEBLLM_MODEL_SHAS).sort());
+    for (const [id, mb] of Object.entries(WEBLLM_VRAM_MB)) {
+      expect(prebuiltAppConfig.model_list.find((model) => model.model_id === id)?.vram_required_MB, id).toBe(mb);
     }
   });
 

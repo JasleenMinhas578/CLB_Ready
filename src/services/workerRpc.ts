@@ -66,6 +66,11 @@ export class WorkerRpc<Req extends Message, Res extends Message> {
     });
   }
 
+  /** True once the worker has started, until it is unloaded or fails. */
+  get running() {
+    return this.worker !== null;
+  }
+
   /** Asks the worker to free its model, then stops it. Does nothing if it never started. */
   async unload() {
     if (!this.worker) return;
