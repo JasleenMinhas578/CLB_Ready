@@ -23,7 +23,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   if (outcome?.kind === 'code') {
     const why =
       outcome.reason === 'light-mode'
-        ? 'Light mode is on, so Pip, your AI coach, is off. These results use your measurements only.'
+        ? 'Pip, your AI coach, is off on this device, so feedback comes from word counts, timing and simple checks.'
         : `${friendlyModelError(outcome.message)} These results use your measurements only.`;
     return (
       <p className="ai-status is-code">
@@ -77,7 +77,7 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
           <strong>CLB {overall}</strong>
         </div>
         <div>
-          <span>Your goal</span>
+          <span>{attempt.goalChosen ? 'Your goal' : 'Practice goal'}</span>
           <strong>CLB {goal}</strong>
         </div>
       </div>
@@ -274,28 +274,25 @@ export function ResultsActions({ attempt, compact = false, retryFirst = false }:
   const unit = attempt.skill === 'reading' || attempt.skill === 'listening' ? 'part' : 'task';
   const where = next.moduleId === attempt.moduleId ? '' : `${getModuleSummary(next.moduleId)?.title ?? next.moduleId}, `;
   const nextFirst = hasNext && !retryFirst;
+  const nextLink = hasNext && (
+    <LinkButton to={taskPath(next)} variant={nextFirst ? 'primary' : 'secondary'}>
+      Next: {where}{skillName} {unit} {next.task.order} <Icon name="arrow-right" />
+    </LinkButton>
+  );
 
   return (
     <div className={`results-actions${compact ? ' is-compact' : ''}`}>
-      {nextFirst && <NextLink to={taskPath(next)} label={`Next: ${where}${skillName} ${unit} ${next.task.order}`} primary />}
+      {nextFirst && nextLink}
       <LinkButton to={`/task/${attempt.moduleId}/${attempt.taskTypeId}`} variant={nextFirst ? 'secondary' : 'primary'}>
         Try this {unit} again
       </LinkButton>
-      {hasNext && !nextFirst && <NextLink to={taskPath(next)} label={`Next: ${where}${skillName} ${unit} ${next.task.order}`} />}
+      {!nextFirst && nextLink}
       {!compact && (
         <LinkButton to={`/practice/${attempt.skill}/${attempt.moduleId}`} variant="quiet">
           All {skillName} {unit}s
         </LinkButton>
       )}
     </div>
-  );
-}
-
-function NextLink({ to, label, primary = false }: { to: string; label: string; primary?: boolean }) {
-  return (
-    <LinkButton to={to} variant={primary ? 'primary' : 'secondary'}>
-      {label} <Icon name="arrow-right" />
-    </LinkButton>
   );
 }
 

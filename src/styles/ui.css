@@ -93,7 +93,6 @@ main:focus { outline: none; }
 .btn-quiet:hover, .btn-quiet:active { background: var(--surface-sunk); box-shadow: none; transform: none; text-decoration-color: currentColor; }
 
 .row-actions { display: flex; flex-wrap: wrap; gap: var(--gap-2); align-items: center; }
-.row-actions.center { justify-content: center; }
 
 /* Icons: sized by class, coloured by the text around them. */
 .icon { display: inline-block; flex: none; width: var(--icon-md); height: var(--icon-md); vertical-align: -0.25em; }
