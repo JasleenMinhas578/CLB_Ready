@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { DISCLAIMER } from './Disclaimer';
 
 /**
- * Test-day frame for task screens: no site header, candy decoration or
+ * Test-day frame for task screens: no site header, decoration or
  * footer links, so the learner focuses on the task like the real test.
  * Each task draws its own exam bar (title, timer, Next).
  */
