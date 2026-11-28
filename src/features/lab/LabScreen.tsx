@@ -7,7 +7,7 @@ import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, buildFeedbackPrompt, parseFee
 import type { GenerationStats, LoadProgress } from '@/services/ai/types';
 import { startRecording, toWhisperAudio } from '@/services/audio/recorder';
 import { getCriteria } from '@/domain/criteria';
-import { getPrompt } from '@/content/modules';
+import { getPrompt, loadModule } from '@/content/modules';
 import { Button } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 
@@ -159,7 +159,7 @@ export default function LabScreen() {
   };
 
   const runFeedback = async () => {
-    const prompt = getPrompt('module-1', 'speaking-1');
+    const prompt = getPrompt(await loadModule('module-1'), 'speaking-1');
     if (!llm.current || !prompt) return;
     setError(null);
     setLlmState('working');
