@@ -7,16 +7,21 @@ import type { BeepKind } from '@/services/audio/beep';
  */
 export function timerRunBeeps(play: (kind: BeepKind) => void) {
   let state: 'waiting' | 'running' | 'ended' = 'waiting';
+  const end = () => {
+    if (state !== 'running') return;
+    state = 'ended';
+    play('end');
+  };
   return {
     start() {
       if (state !== 'waiting') return;
       state = 'running';
       play('start');
     },
-    end() {
-      if (state !== 'running') return;
-      state = 'ended';
-      play('end');
+    end,
+    /** The timer stopped: moving on early (Next, Skip, Finish) ends the run, but closing the screen stays silent. */
+    stop(closing: boolean) {
+      if (!closing) end();
     },
   };
 }

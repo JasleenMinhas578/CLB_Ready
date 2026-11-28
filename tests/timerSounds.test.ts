@@ -67,4 +67,16 @@ describe('timer run beeps', () => {
     beeps.end();
     expect(played).toEqual([]);
   });
+
+  it('beeps the end when the learner moves on early, but not when the screen closes', () => {
+    const early = run();
+    early.beeps.start();
+    early.beeps.stop(false);
+    expect(early.played).toEqual(['start', 'end']);
+
+    const closed = run();
+    closed.beeps.start();
+    closed.beeps.stop(true);
+    expect(closed.played).toEqual(['start']);
+  });
 });
