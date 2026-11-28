@@ -92,7 +92,7 @@ export function HomeScreen() {
       </section>
 
       <section className="home-section" aria-labelledby="skills-title">
-        <h2 id="skills-title">Practise one skill</h2>
+        <h2 id="skills-title">Pick a skill</h2>
         <ul className="skill-list">
           {SKILLS.map((skill) => (
             <li key={skill.id}>
