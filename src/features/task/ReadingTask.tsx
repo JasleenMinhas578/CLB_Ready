@@ -5,6 +5,7 @@ import { useSession } from '@/app/session';
 import { navigate } from '@/app/router';
 import { DEFAULT_GOAL, newAttemptId } from '@/domain/attempt';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
+import { playBeep } from '@/services/audio/beep';
 import { useCountdown } from './useCountdown';
 import { ExamBar, TimeRemaining } from './exam/ExamBar';
 import { PassageView, QuestionList, type Answers } from './objective/Questions';
@@ -79,6 +80,12 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
     navigate('/results');
   };
 
+  // Results open straight away, so the timer can't beep its own end.
+  const finishEarly = () => {
+    void playBeep('end');
+    finish();
+  };
+
   useEffect(() => {
     if (timeUp) finish();
     // finish only needs to run once when time runs out
@@ -92,7 +99,7 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
         title={task.title}
         exitTo={`/practice/reading/${moduleId}`}
         status={<TimeRemaining seconds={secondsLeft} totalSeconds={task.timing.minutes * 60} warnBelow={120} />}
-        action={<button type="button" className="exam-next" onClick={finish}>Next</button>}
+        action={<button type="button" className="exam-next" onClick={finishEarly}>Next</button>}
       />
       <p className="exam-instructions">{part.instructions}</p>
       {tabbed && (

@@ -131,6 +131,8 @@ a.skill-card::after {
   background: var(--white); border: var(--line); border-radius: var(--radius-card); box-shadow: var(--sticker-small);
 }
 .results-card h2 { font-size: var(--step-1); }
+.setting-toggle { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 700; cursor: pointer; }
+.setting-toggle input { width: 18px; height: 18px; accent-color: var(--grape); margin: 0; }
 .criteria-bars { list-style: none; margin: 0 0 var(--gap-2); padding: 0; display: grid; gap: var(--gap-2); }
 .criterion-head { display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 0.3rem; }
 .checklist, .tips { margin: 0; padding: 0; display: grid; gap: var(--gap-1); }
