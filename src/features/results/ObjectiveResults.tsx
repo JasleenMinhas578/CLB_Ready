@@ -35,7 +35,8 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
               </div>
               <div className="is-level">
                 <span>Estimated level</span>
-                <strong>{estimate.level === null ? 'Below CLB 3' : estimate.level >= 10 ? 'CLB 10+' : `CLB ${estimate.level}`}</strong>
+                {/* No-break spaces keep "CLB 3" on one line in the narrow level box. */}
+                <strong>{estimate.level === null ? 'Below CLB\u00a03' : estimate.level >= 10 ? 'CLB\u00a010+' : `CLB\u00a0${estimate.level}`}</strong>
               </div>
             </div>
             <EstimateNote>Estimate for practice only, not an official CELPIP score.</EstimateNote>
