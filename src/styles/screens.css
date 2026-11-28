@@ -15,26 +15,29 @@
   background: var(--skill-tint); color: var(--skill-ink);
 }
 
-/* Home: the headline on the left, the next task as a card-stock ticket on the right with Pip in its corner.
-   Every home section shares the page column, so the hero card and the sections below share both edges. */
-.home-hero {
-  display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--gap-5); align-items: center;
-  padding: var(--gap-4) 0 var(--gap-5);
+/* Home: two spreads on one two-column grid, so every left and right edge on the page lines up.
+   The first is the two ways in: the next task and the facts under the headline, the skills beside them.
+   The second is what you get: a short intro beside an example of feedback. Columns start at the top. */
+.home-spread {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-4) var(--gap-5); align-items: start;
 }
-.home-copy h1 {
-  font-size: var(--step-4); line-height: 1.06; max-width: 24ch; margin-bottom: var(--gap-2);
+/* The skills span both rows so the facts tuck under the next-task card. Source order stays
+   start, skills, facts, which is also the order on phones. */
+.home-top { grid-template-areas: 'start skills' 'facts skills'; grid-template-rows: auto 1fr; }
+.home-start { grid-area: start; }
+.home-skills { grid-area: skills; }
+.home-facts { grid-area: facts; }
+.home-top { padding: var(--gap-3) 0 var(--gap-5); }
+.home-more { padding-top: var(--gap-5); border-top: 1px solid var(--border-soft); }
+.home-spread h2 { font-size: var(--step-2); margin: 0 0 var(--gap-2); }
+.home-facts h2 { font-size: var(--step-1); }
+.home-start h1 {
+  font-size: var(--step-4); line-height: 1.06; margin-bottom: var(--gap-2);
   text-wrap: balance; overflow-wrap: break-word; min-width: 0;
 }
-.home-lede { font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 40ch; margin: 0; }
-/* How it works, for first visits: one line, not a block of numbered steps. */
-.home-how { list-style: none; display: flex; flex-wrap: wrap; gap: var(--gap-1) var(--gap-2); margin: var(--gap-3) 0 0; padding: 0; font-weight: 800; }
-.home-how li { display: inline-flex; align-items: center; gap: var(--gap-1); }
-.home-how .icon { color: var(--ink-soft); }
-.home-done {
-  display: inline-flex; align-items: center; gap: var(--gap-1); margin: var(--gap-3) 0 0; padding: var(--gap-1) var(--gap-2);
-  background: var(--lilac-tint); border-radius: var(--radius-md); font-weight: 800;
-}
-.home-done .icon { color: var(--lilac-ink); }
+.home-lede { font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 40ch; margin: 0 0 var(--gap-3); }
+/* "Pick a skill" sits a little lower than the headline, so the tiles start level with the next-task card. */
+.home-skills { padding-top: var(--gap-1); }
 
 .next-card {
   display: grid; gap: var(--gap-3); padding: var(--gap-3);
@@ -42,88 +45,79 @@
   box-shadow: inset 0 0 0 1px var(--border-soft), 0 6px 0 0 var(--edge), var(--shadow-card);
 }
 .next-head { display: flex; align-items: center; gap: var(--gap-2); }
-.next-pip { margin-left: auto; }
+.next-pip { flex: none; margin-left: auto; }
 .next-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.1; letter-spacing: var(--tracking-display); }
 .next-where { margin: 0.2rem 0 0; font-weight: 700; color: var(--ink-soft); }
 .next-start { width: 100%; min-height: 56px; padding-inline: var(--gap-3); font-size: 1.2rem; }
-.home-goal { margin: 0; padding-top: var(--gap-2); border-top: 1px solid var(--border-soft); font-size: var(--step--1); color: var(--ink-soft); }
-
-/* Home sections: each its own block, the same heading and the same space around it.
-   The example sits on a full-width band so it can't read as a second hero; Good to know starts at a hairline. */
-.home-section { padding-block: var(--gap-5); }
-.home-section:last-child { padding-bottom: 0; }
-.home-section h2 { font-size: var(--step-2); margin: 0 0 var(--gap-3); }
-.home-section-head { margin-bottom: var(--gap-3); }
-.home-section-head h2 { margin-bottom: var(--gap-1); }
-.home-section-head p { margin: 0; font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 60ch; }
-/* Full width: the band reaches the window edges while its content keeps the page column. */
-.home-band {
-  margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%);
-  background: var(--grain), var(--lilac-tint);
+.next-foot {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-1) var(--gap-2);
+  padding-top: var(--gap-2); border-top: 1px solid var(--border-soft);
 }
-.home-rule { border-top: 1px solid var(--border-soft); }
+.next-foot p { margin: 0; font-size: var(--step--1); }
+.home-goal { color: var(--ink-soft); }
+.home-done { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 800; color: var(--ink); }
+.home-done .icon { color: var(--mint-ink); }
 
-/* An example of the results screen, using its own card, level pair and bar */
-.example-card {
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--gap-4); align-items: start; margin: 0;
-}
-.example-card figcaption { grid-column: 1 / -1; }
-.example-card .level-pair { margin-bottom: 0; }
-.example-card figcaption { margin-bottom: var(--gap-2); font-size: var(--step--1); font-weight: 800; color: var(--ink-soft); }
-.example-card .level-pair .is-level { background: var(--speaking-tint); }
-.example-card .example-tip {
-  display: flex; gap: var(--gap-1); align-items: flex-start; max-width: none; margin-top: var(--gap-2); padding: var(--gap-2);
-  background: var(--surface-sunk); border-radius: var(--radius-sm); font-size: var(--step-0); color: var(--ink);
-}
-.example-tip .icon { flex: none; margin-top: 0.2rem; color: var(--speaking-ink); }
-
-/* Skill tiles: each skill on its own pastel card stock, the edge a shade deeper */
-.skill-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3); }
+/* Skill tiles: a column of pastel card stock, one per skill, the edge a shade deeper */
+.skill-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-2); }
 .skill-card {
   --tile-edge: color-mix(in oklab, var(--skill-ink) 40%, var(--skill-tint));
-  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-2); align-items: start; height: 100%;
-  padding: var(--gap-3);
-  background: var(--skill-tint); color: var(--ink); border-radius: var(--radius-lg); text-decoration: none;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-1) var(--gap-2); align-items: center;
+  padding: var(--gap-2) var(--gap-3);
+  background: var(--skill-tint); color: var(--ink); border-radius: var(--radius-md); text-decoration: none;
   box-shadow: 0 var(--stock-edge) 0 0 var(--tile-edge);
   transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 .skill-card:hover { color: var(--ink); transform: translateY(-1px); box-shadow: 0 var(--stock-edge-up) 0 0 var(--tile-edge); }
 .skill-card:active { transform: translateY(3px); box-shadow: 0 var(--stock-edge-down) 0 0 var(--tile-edge); }
-.skill-card .skill-badge { background: var(--surface); }
-.skill-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
-.skill-text strong { font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.15; letter-spacing: var(--tracking-display); }
+.skill-card .skill-badge { width: 48px; height: 48px; background: var(--surface); }
+.skill-text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.skill-text strong { font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.2; letter-spacing: var(--tracking-display); }
 .skill-text span { color: var(--ink); text-wrap: pretty; }
-.skill-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-1) var(--gap-3); }
-.skill-progress { flex: 1 1 12rem; max-width: 20rem; display: grid; gap: 0.35rem; }
+/* The foot lines up under the text, not under the badge. */
+.skill-foot { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-1) var(--gap-3); }
+.skill-progress { flex: 1 1 10rem; max-width: 16rem; display: grid; gap: 0.3rem; }
 .skill-progress .bar { height: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--skill-ink) 70%, var(--skill-tint)); }
 .skill-progress .bar-fill { background: var(--skill-ink); }
 .skill-progress small { font-size: var(--step--1); font-weight: 800; color: var(--skill-ink); }
 .skill-go { display: inline-flex; align-items: center; gap: var(--gap-1); font-weight: 800; color: var(--skill-ink); }
 
-/* Good to know: two short facts side by side, each heading led by a small icon */
-.fact-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3) var(--gap-4); }
-.fact-list li { padding-top: var(--gap-2); border-top: 2px solid var(--border-soft); }
-.fact-list h3 { display: flex; align-items: center; gap: var(--gap-1); margin: 0 0 var(--gap-1); }
-.fact-list h3 .icon { flex: none; }
-.fact-list h3 { font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.2; }
-.fact-list p { margin: 0; color: var(--ink-soft); max-width: var(--text-width); text-wrap: pretty; }
+/* What you see after each task: the intro on the left, the results card, level pair and bar at the size they have on results */
+.home-intro { font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 36ch; margin: 0; }
+.example-card { margin: 0; }
+.example-card figcaption { margin-bottom: var(--gap-2); font-size: var(--step--1); font-weight: 800; color: var(--ink-soft); }
+.example-card .level-pair { margin-bottom: var(--gap-3); }
+.example-card .level-pair .is-level { background: var(--speaking-tint); }
+.example-card .example-tip {
+  display: flex; gap: var(--gap-1); align-items: flex-start; max-width: none; margin: var(--gap-3) 0 0; padding: var(--gap-2);
+  background: var(--surface-sunk); border-radius: var(--radius-sm); color: var(--ink);
+}
+.example-tip .icon { flex: none; margin-top: 0.2rem; color: var(--speaking-ink); }
+
+/* Practise more, worry less: two short facts side by side under the next-task card, each led by a small icon */
+.fact-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3); }
+.fact-list h3 {
+  display: flex; align-items: flex-start; gap: var(--gap-1); margin: 0 0 0.25rem;
+  font-family: var(--font-body); font-weight: 800; font-size: var(--step-0); line-height: 1.3;
+}
+.fact-list h3 .icon { flex: none; margin-top: 0.2rem; }
+.fact-list p { margin: 0; color: var(--ink-soft); text-wrap: pretty; }
 
 @media (max-width: 900px) {
-  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-4); padding: var(--gap-3) 0 var(--gap-5); }
-  .example-card { grid-template-columns: minmax(0, 1fr); }
-  .example-card .level-pair { margin-bottom: var(--gap-2); }
-  .fact-list { grid-template-columns: minmax(0, 1fr); }
+  .home-spread { grid-template-columns: minmax(0, 1fr); }
+  .home-top { grid-template-areas: 'start' 'skills' 'facts'; grid-template-rows: none; }
+  .home-skills { padding-top: 0; }
 }
 @media (max-width: 640px) {
-  .home-hero { padding: var(--gap-2) 0 var(--gap-4); gap: var(--gap-4); }
-  .home-how, .home-done { margin-top: var(--gap-2); }
-  .home-lede, .home-section-head p { font-size: var(--step-0); }
-  .home-section { padding-block: var(--gap-4); }
+  .home-top { padding: var(--gap-2) 0 var(--gap-4); }
+  .home-more { padding-top: var(--gap-4); }
+  .home-lede, .home-intro { font-size: var(--step-0); }
+  .home-lede { margin-bottom: var(--gap-2); }
   .next-card { padding: var(--gap-2); gap: var(--gap-2); }
-  .next-pip { width: 48px; height: 48px; }
-  .skill-list { grid-template-columns: minmax(0, 1fr); gap: var(--gap-2); }
+  .next-head { gap: var(--gap-1) 0.75rem; }
+  .next-card .skill-badge, .next-pip { width: 44px; height: 44px; }
   .skill-card { padding: var(--gap-2); }
-  .skill-card .skill-badge { width: 48px; height: 48px; }
+  .fact-list { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Goal picker: card-stock options, the chosen one in lavender and violet */

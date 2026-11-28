@@ -2,6 +2,33 @@
  {
   "mode": "redesign",
   "depth": "full",
+  "scope": "page",
+  "shape": "two spreads on one two-column grid",
+  "theme": "hum",
+  "axes": "light/rounded-sans/chromatic-violet",
+  "hero": "two ways in: next-task ticket beside the skill column",
+  "nav": "edge-aligned wordmark and two pills",
+  "footer": "paper sheet, wordmark over two link columns",
+  "imagery": "none",
+  "photos": [],
+  "entry": "next-task ticket",
+  "fingerprint": "hum-two-spreads-ticket-skill-column-example-card",
+  "sections": [
+   "hero + facts",
+   "skill column",
+   "example beside intro",
+   "footer"
+  ],
+  "signature": "the next task as a card-stock ticket with Pip in its top row",
+  "waived": [
+   "80"
+  ],
+  "prompt": "CELPIP practice coach for adult learners, home page",
+  "date": "2026-11-28"
+ },
+ {
+  "mode": "redesign",
+  "depth": "full",
   "scope": "site",
   "shape": "app screens + Settled home",
   "theme": "hum",
