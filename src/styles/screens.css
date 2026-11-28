@@ -175,6 +175,8 @@
   background: var(--mint-tint); border-radius: var(--radius-lg); font-weight: 700;
 }
 .module-done > .icon { color: var(--mint-ink); }
+.module-reset { margin-top: var(--gap-4); }
+.module-reset p { margin: 0 0 var(--gap-2); max-width: var(--text-width); }
 .module-done p { margin: 0; flex: 1 1 16rem; }
 
 /* Task rows: lighter paper with a hairline; the next task is pink card stock. */

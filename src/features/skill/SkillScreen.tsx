@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { RouteParams } from '@/app/router';
 import { href } from '@/app/router';
 import { useSession } from '@/app/session';
@@ -7,10 +8,10 @@ import { formatSeconds } from '@/domain/timer';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
 import { MODULE_CATALOG, getModuleSummary } from '@/content/modules/catalog';
-import { LinkButton } from '@/components/Button';
+import { Button, LinkButton } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { NotFound } from '@/components/NotFound';
-import { countDone, nextTask, taskKey, useProgress } from '@/services/progress/progress';
+import { clearTasks, countDone, nextTask, taskKey, useProgress } from '@/services/progress/progress';
 
 function timingText(task: TaskType): string {
   if (isSpeakingTask(task)) {
@@ -39,6 +40,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
   const doneAt = (taskId: string) => progress[taskKey(practiceModule.id, taskId)];
   const next = tasks.find((task) => !doneAt(task.id));
   const laterModule = next ? null : nextTask(progress, skill.id);
+  const doneHere = countDone(progress, practiceModule.id, taskIds);
 
   return (
     <section>
@@ -112,7 +114,30 @@ export function SkillScreen({ params }: { params: RouteParams }) {
           );
         })}
       </ol>
+
+      {doneHere > 0 && <ResetModule key={practiceModule.id} label={`${skill.name.toLowerCase()} in ${practiceModule.title}`} onReset={() => clearTasks(practiceModule.id, taskIds)} />}
     </section>
+  );
+}
+
+/** Lets a learner clear the ticks for one skill in one module, after a confirm step. */
+function ResetModule({ label, onReset }: { label: string; onReset: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  if (!confirming) {
+    return (
+      <div className="module-reset">
+        <Button variant="secondary" onClick={() => setConfirming(true)}>Reset progress</Button>
+      </div>
+    );
+  }
+  return (
+    <div className="module-reset" role="group" aria-label="Reset progress">
+      <p>Clear the ticks for {label}? Your answers were never saved, so only the ticks go.</p>
+      <div className="row-actions">
+        <Button onClick={() => { onReset(); setConfirming(false); }}>Yes, reset</Button>
+        <Button variant="secondary" onClick={() => setConfirming(false)}>Keep them</Button>
+      </div>
+    </div>
   );
 }
 
