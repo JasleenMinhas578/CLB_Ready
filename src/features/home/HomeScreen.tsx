@@ -104,16 +104,20 @@ export function HomeScreen() {
 
       <section className="home-section home-rule home-facts" aria-labelledby="facts-title">
         <h2 id="facts-title">Good to know</h2>
-        <dl>
-          <div>
-            <dt>Free, with no account</dt>
-            <dd>There is nothing to sign up for or pay. Teachers and settlement programs can share the link with a class.</dd>
-          </div>
-          <div>
-            <dt>Best on a laptop</dt>
-            <dd>Use Chrome or Edge. Your first task downloads the AI models once. Phones use smaller models.</dd>
-          </div>
-        </dl>
+        <ul className="fact-list">
+          <li>
+            <div>
+              <h3><Icon name="tick" />Free, with no account</h3>
+              <p>There is nothing to sign up for or pay. Teachers and settlement programs can share the link with a class.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3><Icon name="download" />Best on a laptop</h3>
+              <p>Use Chrome or Edge. Your first task downloads the AI models once. Phones use smaller models.</p>
+            </div>
+          </li>
+        </ul>
       </section>
     </>
   );
