@@ -36,6 +36,9 @@ Spacing is `--gap-1` to `--gap-6` (8, 16, 24, 40, 64, 96px). Type is `--step--1`
 - Selected: ink fill with paper text (module tab), or mint fill with a 2px mint-ink ring (goal, model choice).
 - Containers: `.results-card`/`.lab-card` = `--surface`, 1px `--border-soft`, `--radius-lg`, no shadow. Never a card in a card; wells inside cards are `--surface-sunk` at `--radius-sm`.
 
+## Footer
+- One `--surface-sunk` sheet with grain and rounded top corners, shared by every non-exam page. Brand, one line and the privacy chip on the left; "Practise" and "About" link groups on the right (bold ink, underline on hover, 44px rows). No links that repeat the header. Disclaimer (the `DISCLAIMER` constant) and © in a quiet bottom row at `--ink-soft`.
+
 ## Exam screens
 - `--exam-*` only: grey ground, near-white panels, `--exam-accent` bar and primary. No card stock, no grain, no tints, no Pip, no motion. Override `.btn` there to a flat fill with no edge or transform.
 
