@@ -16,7 +16,7 @@ const MOUTHS: Record<Mood, string> = {
 };
 
 /**
- * Pip, your AI coach: a round little seed with a sprout, because practice
+ * Pip, your AI coach: a round little pear-coloured seed with a sprout, because practice
  * helps a level grow. Drawn from the palette tokens, never animated, and used
  * sparingly (home intro, AI status on results, empty and error states).
  */
@@ -33,9 +33,10 @@ export function Pip({ size = 96, mood = 'happy', label, className }: PipProps) {
       aria-label={label}
       aria-hidden={label ? undefined : true}
     >
-      <ellipse cx="60" cy="111" rx="30" ry="4" fill="var(--ink)" opacity="0.08" />
+      {/* Cut from card stock like the buttons: a deeper pear edge shows below the body. */}
+      <path d="M60 29c24 0 40 18 40 42s-16 40-40 40-40-16-40-40 16-42 40-42z" fill="var(--accent-edge)" />
       <path d="M60 25c24 0 40 18 40 42s-16 40-40 40-40-16-40-40 16-42 40-42z" fill="var(--accent)" />
-      <ellipse cx="60" cy="84" rx="24" ry="18" fill="var(--rose-tint)" />
+      <ellipse cx="60" cy="84" rx="24" ry="18" fill="var(--surface)" opacity="0.55" />
       <path d="M60 26c0-6 1-10 3-13" fill="none" stroke="var(--mint-ink)" strokeWidth="3" strokeLinecap="round" />
       <path d="M63 14c4-6 12-7 16-3-3 6-10 8-16 3z" fill="var(--mint-tint)" stroke="var(--mint-ink)" strokeWidth="2" strokeLinejoin="round" />
       <path d="M61 19c-3-5-9-6-13-3 3 5 9 6 13 3z" fill="var(--mint-tint)" stroke="var(--mint-ink)" strokeWidth="2" strokeLinejoin="round" />
@@ -44,8 +45,8 @@ export function Pip({ size = 96, mood = 'happy', label, className }: PipProps) {
       <circle cx={lookUp ? 48 : 47.5} cy={lookUp ? 57 : 58} r="1.6" fill="var(--surface)" />
       <circle cx={lookUp ? 76 : 75.5} cy={lookUp ? 57 : 58} r="1.6" fill="var(--surface)" />
       {mood === 'oops' && <path d="M40 52l9-3M80 52l-9-3" fill="none" stroke="var(--ink)" strokeWidth="2.5" strokeLinecap="round" />}
-      <ellipse cx="37" cy="70" rx="6" ry="3.5" fill="var(--accent-hover)" opacity="0.7" />
-      <ellipse cx="83" cy="70" rx="6" ry="3.5" fill="var(--accent-hover)" opacity="0.7" />
+      <ellipse cx="37" cy="70" rx="6" ry="3.5" fill="var(--rose-ink)" opacity="0.22" />
+      <ellipse cx="83" cy="70" rx="6" ry="3.5" fill="var(--rose-ink)" opacity="0.22" />
       <path d={MOUTHS[mood]} fill="none" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );

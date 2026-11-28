@@ -18,7 +18,7 @@ function Header() {
           <Icon name="settings" />
           <span className="nav-label">Settings</span>
         </a>
-        <a className="goal-chip" href={href('/goal')}>
+        <a className={`goal-chip${goal ? ' is-set' : ''}`} href={href('/goal')}>
           {goal ? `Goal: CLB ${goal}` : 'Set your goal'}
         </a>
       </nav>
