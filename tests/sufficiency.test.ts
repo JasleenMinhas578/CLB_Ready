@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isScorable, lengthCeiling, plural } from '../src/domain/scoring/sufficiency';
+import { expectedSpokenWords, isScorable, lengthCeiling, plural } from '../src/domain/scoring/sufficiency';
 import { measureWriting } from '../src/domain/measure/writingMetrics';
 import { codeEstimatesWriting, writingTips } from '../src/domain/scoring/writingEstimate';
 import { blendScores } from '../src/domain/scoring/estimate';
@@ -23,6 +23,11 @@ describe('too short to score', () => {
     expect(lengthCeiling(60, 150)).toBe(5);
     expect(lengthCeiling(100, 150)).toBe(7);
     expect(lengthCeiling(150, 150)).toBe(12);
+  });
+
+  it('expects about 2 spoken words a second', () => {
+    expect(expectedSpokenWords(60)).toBe(120);
+    expect(expectedSpokenWords(90)).toBe(180);
   });
 
   it('no longer gives a one-word answer high vocabulary', () => {

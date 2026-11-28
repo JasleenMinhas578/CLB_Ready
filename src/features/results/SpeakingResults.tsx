@@ -7,7 +7,7 @@ import { codeTips } from '@/domain/scoring/codeTips';
 import { matchAiChecklist } from '@/domain/scoring/autoChecks';
 import { useFeedback } from './useFeedback';
 import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
-import { MIN_SCORABLE_SPEAKING_WORDS, isScorable } from '@/domain/scoring/sufficiency';
+import { MIN_SCORABLE_SPEAKING_WORDS, expectedSpokenWords, isScorable } from '@/domain/scoring/sufficiency';
 import { TranscriptView } from './TranscriptView';
 import { MeasureTiles } from './MeasureTiles';
 import { SampleAnswerCard } from './SampleAnswerCard';
@@ -60,7 +60,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
   }
 
   const { scores, ignored } = finalScores(
-    'speaking', codeEstimates(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, attempt.metrics.answerSeconds * 2,
+    'speaking', codeEstimates(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, expectedSpokenWords(attempt.metrics.answerSeconds),
   );
   const overall = overallLevel(scores);
   const final = outcome !== null;

@@ -1,24 +1,11 @@
 import type { CompleteOptions, FeedbackModel, GenerationStats, LoadProgress } from './types';
 import type { WebLlmRequest, WebLlmResponse } from './webllm.protocol';
 import { WorkerRpc } from '@/services/workerRpc';
-
-/**
- * GPU memory WebLLM lists for each pinned model, in MB. Copied from WebLLM's
- * prebuiltAppConfig so the page doesn't bundle the library just to read it;
- * tests/modelPins.test.ts checks they still match.
- */
-export const WEBLLM_VRAM_MB: Record<string, number> = {
-  'Qwen2.5-3B-Instruct-q4f16_1-MLC': 2504.76,
-  'Qwen2.5-3B-Instruct-q4f32_1-MLC': 2893.64,
-  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': 1629.75,
-  'Qwen2.5-1.5B-Instruct-q4f32_1-MLC': 1888.97,
-  'Llama-3.2-1B-Instruct-q4f16_1-MLC': 879.04,
-  'Llama-3.2-1B-Instruct-q4f32_1-MLC': 1128.82,
-};
+import { WEBLLM_MODELS } from '@/services/modelPins';
 
 /** Approximate GPU memory WebLLM lists for a model, in MB. */
 export function estimatedGpuMb(modelId: string): number | null {
-  return WEBLLM_VRAM_MB[modelId] ?? null;
+  return WEBLLM_MODELS[modelId]?.vramMb ?? null;
 }
 
 /** Main-thread wrapper for the WebLLM worker, which holds the whole library. */

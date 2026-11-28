@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { planModels, TIER_ORDER, type DeviceSignals } from '../src/services/device/tier';
 import { prebuiltAppConfig } from '@mlc-ai/web-llm';
 import { pinnedAppConfig } from '../src/services/ai/webllmConfig';
-import { WEBLLM_VRAM_MB } from '../src/services/ai/webllmClient';
-import { WEBLLM_MODEL_SHAS, WHISPER_SHAS } from '../src/services/modelPins';
+import { WEBLLM_MODELS, WHISPER_SHAS } from '../src/services/modelPins';
 
 const GB = 1024 ** 3;
 const base: DeviceSignals = { ramGb: 8, cpuCores: 8, webgpu: true, shaderF16: true, maxBufferBytes: 4 * GB, isMobile: false };
@@ -12,7 +11,7 @@ const plans = [true, false].flatMap((shaderF16) => TIER_ORDER.map((tier) => plan
 describe('model pins', () => {
   it('pins every WebLLM model a tier can pick to a commit', () => {
     // A typo in a pinned id would drop that model from the list.
-    expect(pinnedAppConfig.model_list).toHaveLength(Object.keys(WEBLLM_MODEL_SHAS).length);
+    expect(pinnedAppConfig.model_list).toHaveLength(Object.keys(WEBLLM_MODELS).length);
     for (const id of new Set(plans.map((plan) => plan.feedbackModel).filter((id) => id !== null))) {
       const record = pinnedAppConfig.model_list.find((model) => model.model_id === id);
       expect(record, id).toBeDefined();
@@ -22,9 +21,8 @@ describe('model pins', () => {
   });
 
   it('keeps the copied GPU memory figures in step with WebLLM', () => {
-    expect(Object.keys(WEBLLM_VRAM_MB).sort()).toEqual(Object.keys(WEBLLM_MODEL_SHAS).sort());
-    for (const [id, mb] of Object.entries(WEBLLM_VRAM_MB)) {
-      expect(prebuiltAppConfig.model_list.find((model) => model.model_id === id)?.vram_required_MB, id).toBe(mb);
+    for (const [id, { vramMb }] of Object.entries(WEBLLM_MODELS)) {
+      expect(prebuiltAppConfig.model_list.find((model) => model.model_id === id)?.vram_required_MB, id).toBe(vramMb);
     }
   });
 

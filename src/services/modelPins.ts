@@ -8,14 +8,19 @@
  * src/services/device/tier.ts has a pin.
  */
 
-/** Hugging Face commits of the mlc-ai WebLLM repos, keyed by WebLLM model id. */
-export const WEBLLM_MODEL_SHAS: Record<string, string> = {
-  'Qwen2.5-3B-Instruct-q4f16_1-MLC': '7690aaaa46df36b1be0fe93b9c9abac0497eff6c',
-  'Qwen2.5-3B-Instruct-q4f32_1-MLC': 'dfa91e859b714acfa489a1464297080656c3460d',
-  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': '9bd564b064631febf14deadcac492efb761d60c3',
-  'Qwen2.5-1.5B-Instruct-q4f32_1-MLC': 'a822ee410075710c9673005eafa017b90136b85d',
-  'Llama-3.2-1B-Instruct-q4f16_1-MLC': '2a37b0a5ecb622d51ddc2fac74de0b95872affd7',
-  'Llama-3.2-1B-Instruct-q4f32_1-MLC': 'a949835e0f9a65335bd834db02a44cf8fae34020',
+/**
+ * WebLLM models, keyed by WebLLM model id: the Hugging Face commit of each mlc-ai
+ * repo, and the GPU memory WebLLM lists for it in MB. The memory figure is copied
+ * from WebLLM's prebuiltAppConfig so the page doesn't bundle the library just to
+ * read it; tests/modelPins.test.ts checks it still matches.
+ */
+export const WEBLLM_MODELS: Record<string, { sha: string; vramMb: number }> = {
+  'Qwen2.5-3B-Instruct-q4f16_1-MLC': { sha: '7690aaaa46df36b1be0fe93b9c9abac0497eff6c', vramMb: 2504.76 },
+  'Qwen2.5-3B-Instruct-q4f32_1-MLC': { sha: 'dfa91e859b714acfa489a1464297080656c3460d', vramMb: 2893.64 },
+  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': { sha: '9bd564b064631febf14deadcac492efb761d60c3', vramMb: 1629.75 },
+  'Qwen2.5-1.5B-Instruct-q4f32_1-MLC': { sha: 'a822ee410075710c9673005eafa017b90136b85d', vramMb: 1888.97 },
+  'Llama-3.2-1B-Instruct-q4f16_1-MLC': { sha: '2a37b0a5ecb622d51ddc2fac74de0b95872affd7', vramMb: 879.04 },
+  'Llama-3.2-1B-Instruct-q4f32_1-MLC': { sha: 'a949835e0f9a65335bd834db02a44cf8fae34020', vramMb: 1128.82 },
 };
 
 /** GitHub commit of mlc-ai/binary-mlc-llm-libs, which holds the compiled WebGPU model code. */

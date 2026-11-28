@@ -1,5 +1,5 @@
 import type { SpeakingMetrics } from '../measure/speakingMetrics';
-import { MIN_WORDS_FOR_VARIETY, lengthCeiling } from './sufficiency';
+import { MIN_WORDS_FOR_VARIETY, expectedSpokenWords, lengthCeiling } from './sufficiency';
 
 /**
  * Turns measurements into rough CLB-style levels, then blends them with the
@@ -77,8 +77,8 @@ export function codeEstimates(metrics: SpeakingMetrics): Scores {
   // Task fulfillment (code side): did they use the time?
   const task = metrics.timeUsed >= 0.85 ? 9 : metrics.timeUsed >= 0.65 ? 8 : metrics.timeUsed >= 0.45 ? 7 : 5;
 
-  // About 2 words a second is a full answer; much less can't score high.
-  const ceiling = Math.min(CODE_LEVEL_CEILING, lengthCeiling(metrics.wordCount, metrics.answerSeconds * 2));
+  // Much less than a full answer can't score high.
+  const ceiling = Math.min(CODE_LEVEL_CEILING, lengthCeiling(metrics.wordCount, expectedSpokenWords(metrics.answerSeconds)));
   return {
     content: clampLevel(content, ceiling),
     vocabulary: clampLevel(vocabulary, ceiling),

@@ -4,15 +4,12 @@ import { getCriteria } from '@/domain/criteria';
 import { GOAL_OPTIONS } from '@/domain/goals';
 import { getTaskType } from '@/domain/tasks/catalog';
 import { isWritingTask } from '@/domain/tasks/types';
-import { isScorable } from '@/domain/scoring/sufficiency';
+import { expectedSpokenWords, isScorable } from '@/domain/scoring/sufficiency';
 import { getPrompt, loadModule } from '@/content/modules';
 import { GenerationInterruptedError, getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
 import { answerTokenBudget, buildFeedbackPrompt, buildModelAnswerPrompt, buildRewritePrompt } from '@/services/ai/feedbackPrompt';
 import { ModelUnavailableError } from '@/services/ai/modelStore';
 import type { GenerationStats } from '@/services/ai/types';
-
-/** A clear, natural speaking pace for model answers. */
-const SPEAKING_WORDS_PER_MINUTE = 140;
 
 /** Timing for one AI step. */
 export interface StepPerf {
@@ -118,9 +115,9 @@ function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string
   const spoken = attempt.skill === 'speaking';
   const task = getTaskType(attempt.taskTypeId);
   if (tips) {
-    // Speaking: fill the speaking time (about 140 words a minute). Writing: at least the minimum word count.
+    // Speaking: fill the speaking time. Writing: at least the minimum word count.
     const targetWords = attempt.skill === 'speaking'
-      ? Math.round((attempt.metrics.answerSeconds * SPEAKING_WORDS_PER_MINUTE) / 60)
+      ? expectedSpokenWords(attempt.metrics.answerSeconds)
       : task && isWritingTask(task) && attempt.metrics.wordCount < task.wordRange.min ? task.wordRange.min : undefined;
     const prompt = buildRewritePrompt({
       taskTitle: attempt.taskTitle, promptText: attempt.promptText, goal: attempt.goal, goalLabel: goalLabel(attempt.goal),
@@ -130,7 +127,7 @@ function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string
   }
   const targetWords = task && isWritingTask(task)
     ? task.wordRange.max
-    : attempt.skill === 'speaking' ? Math.round(attempt.metrics.answerSeconds * 2) : 180;
+    : attempt.skill === 'speaking' ? expectedSpokenWords(attempt.metrics.answerSeconds) : 180;
   const length = task && isWritingTask(task)
     ? `${task.wordRange.min} to ${task.wordRange.max} words`
     : `about ${targetWords} words, enough to fill the speaking time`;

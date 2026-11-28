@@ -19,6 +19,14 @@ export function plural(count: number, one: string, many = `${one}s`): string {
 }
 
 /**
+ * Words a full spoken answer has: about 2 a second, a clear and natural pace.
+ * Used to cap short answers and to size AI rewrites and model answers.
+ */
+export function expectedSpokenWords(answerSeconds: number): number {
+  return Math.round(answerSeconds * 2);
+}
+
+/**
  * Highest level a short answer can reach, however good its words are.
  * Length is part of task fulfillment and development on the real test.
  */
