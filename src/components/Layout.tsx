@@ -3,18 +3,20 @@ import { href } from '@/app/router';
 import { useSession } from '@/app/session';
 import { Footer } from './Footer';
 import { Icon } from './Icon';
+import { Pip } from './Pip';
 
 function Header() {
   const { goal } = useSession();
   return (
     <header className="site-header">
       <a className="brand" href={href('/')}>
-        <img src="./favicon.svg" alt="" width={34} height={34} />
+        <Pip size={36} />
         <span>CLB Ready</span>
       </a>
       <nav aria-label="Main" className="header-nav">
-        <a className="icon-link" href={href('/settings')} aria-label="AI models and privacy settings" title="AI models and privacy">
+        <a className="nav-link" href={href('/settings')}>
           <Icon name="settings" />
+          <span className="nav-label">Settings</span>
         </a>
         <a className="goal-chip" href={href('/goal')}>
           {goal ? `Goal: CLB ${goal}` : 'Set your goal'}
