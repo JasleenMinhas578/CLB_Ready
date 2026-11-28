@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getVoiceEngine } from '@/services/tts/voiceEngine';
 import { playBuffer, sentences, sleep } from '@/services/tts/playback';
 import type { SpokenLine } from '@/services/tts/types';
+import type { VoiceId } from '@/content/objective';
 
 export type ReadAloudState = 'idle' | 'loading' | 'playing';
 
@@ -9,7 +10,7 @@ export type ReadAloudState = 'idle' | 'loading' | 'playing';
  * Reads a text aloud with Kokoro in the browser. Sentences are made one at
  * a time, staying ahead of playback, so speech starts after the first one.
  */
-export function useReadAloud(text: string, voice = 'af_heart') {
+export function useReadAloud(text: string, voice: VoiceId = 'af_heart') {
   const [state, setState] = useState<ReadAloudState>('idle');
   const [loadProgress, setLoadProgress] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);

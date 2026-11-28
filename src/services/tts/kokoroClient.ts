@@ -1,4 +1,5 @@
 import type { LoadProgress } from '@/services/ai/types';
+import type { VoiceId } from '@/content/objective';
 import type { VoicePlan } from '@/services/device/tier';
 import type { KokoroRequest, KokoroResponse } from './kokoro.protocol';
 import type { SpokenLine, TextToSpeech } from './types';
@@ -24,7 +25,7 @@ export class KokoroTextToSpeech implements TextToSpeech {
     return { elapsedMs: performance.now() - started };
   }
 
-  async speak(text: string, voice: string): Promise<SpokenLine> {
+  async speak(text: string, voice: VoiceId): Promise<SpokenLine> {
     const response = await this.rpc.send({ type: 'speak', text, voice });
     if (response.type !== 'audio') throw new Error('Unexpected reply from the voice model.');
     return { audio: response.audio, sampleRate: response.sampleRate };
