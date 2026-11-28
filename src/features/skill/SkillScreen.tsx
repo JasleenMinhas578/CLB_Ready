@@ -1,11 +1,11 @@
 import type { RouteParams } from '@/app/router';
 import { href } from '@/app/router';
 import { useSession } from '@/app/session';
-import { getSkill, type SkillId } from '@/domain/skills';
+import { getSkill } from '@/domain/skills';
 import { formatSeconds } from '@/domain/timer';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
-import { MODULES, getModule, moduleHasSkill, moduleTaskIds } from '@/content/modules';
+import { MODULE_CATALOG, getModuleSummary, moduleHasSkill, skillTaskIds } from '@/content/modules/catalog';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
@@ -29,7 +29,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
   const { goal } = useSession();
   const progress = useProgress();
   const skill = getSkill(params.skillId);
-  const practiceModule = getModule(params.moduleId);
+  const practiceModule = getModuleSummary(params.moduleId);
   if (!skill || !practiceModule) return <NotFound />;
 
   if (skill.status !== 'available') {
@@ -43,7 +43,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
     );
   }
 
-  const available = new Set(moduleTaskIds(practiceModule));
+  const available = new Set(skillTaskIds(practiceModule, skill.id));
   const tasks = getTaskTypesForSkill(skill.id).filter((task) => available.has(task.id));
 
   return (
@@ -60,7 +60,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
       )}
 
       <nav className="module-tabs" aria-label="Practice modules">
-        {MODULES.map((item) =>
+        {MODULE_CATALOG.map((item) =>
           moduleHasSkill(item, skill.id) ? (
             <a
               key={item.id}
@@ -69,7 +69,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
               aria-current={item.id === practiceModule.id ? 'page' : undefined}
             >
               {item.title}
-              <ModuleCount done={countDone(progress, item.id, skillTaskIds(item.id, skill.id))} total={skillTaskIds(item.id, skill.id).length} />
+              <ModuleCount done={countDone(progress, item.id, skillTaskIds(item, skill.id))} total={skillTaskIds(item, skill.id).length} />
             </a>
           ) : (
             <span key={item.id} className="module-tab is-soon" aria-disabled="true">
@@ -105,14 +105,6 @@ export function SkillScreen({ params }: { params: RouteParams }) {
       </ol>
     </section>
   );
-}
-
-/** Task ids of one skill that a module has content for. */
-function skillTaskIds(moduleId: string, skillId: SkillId): string[] {
-  const practiceModule = getModule(moduleId);
-  if (!practiceModule) return [];
-  const available = new Set(moduleTaskIds(practiceModule));
-  return getTaskTypesForSkill(skillId).map((task) => task.id).filter((id) => available.has(id));
 }
 
 /** "3/8" beside a module name, or a tick when every task is done. */

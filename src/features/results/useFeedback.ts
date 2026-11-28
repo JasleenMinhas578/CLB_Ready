@@ -5,7 +5,7 @@ import { GOAL_OPTIONS } from '@/domain/goals';
 import { getTaskType } from '@/domain/tasks/catalog';
 import { isWritingTask } from '@/domain/tasks/types';
 import { isScorable } from '@/domain/scoring/sufficiency';
-import { getPrompt } from '@/content/modules';
+import { getPrompt, loadModule } from '@/content/modules';
 import { GenerationInterruptedError, getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
 import { answerTokenBudget, buildFeedbackPrompt, buildModelAnswerPrompt, buildRewritePrompt } from '@/services/ai/feedbackPrompt';
 import { ModelUnavailableError } from '@/services/ai/modelStore';
@@ -182,7 +182,7 @@ function startJob(attempt: Attempt, deps: FeedbackDeps): Job {
 
   job.promise = (async (): Promise<FeedbackOutcome> => {
     // Too short to score, and a hand-written sample answer exists: nothing for the AI to do.
-    if (!isScorable(attempt.skill, attempt.metrics.wordCount) && getPrompt(attempt.moduleId, attempt.taskTypeId)?.modelAnswer) {
+    if (!isScorable(attempt.skill, attempt.metrics.wordCount) && getPrompt(await loadModule(attempt.moduleId), attempt.taskTypeId)?.modelAnswer) {
       update({ phase: 'done' });
       return { kind: 'sample' };
     }

@@ -1,5 +1,6 @@
 import type { ObjectiveAttempt } from '@/domain/attempt';
-import { getObjectivePart } from '@/content/modules';
+import { use } from 'react';
+import { getObjectivePart, loadModule } from '@/content/modules';
 import { partQuestions, type ChoiceQuestion, type ListeningClip } from '@/content/objective';
 import { correctForGoal, estimateObjective } from '@/domain/scoring/objective';
 import { href } from '@/app/router';
@@ -9,7 +10,7 @@ import { ResultsActions } from './cards';
 
 /** Results for a reading or listening part: the score, an estimated level and every answer explained. */
 export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
-  const part = getObjectivePart(attempt.moduleId, attempt.taskTypeId);
+  const part = getObjectivePart(use(loadModule(attempt.moduleId)), attempt.taskTypeId);
   if (!part) return <NotFound />;
   const questions = partQuestions(part);
   const numbers = 'blocks' in part ? numberQuestions(part.blocks, part.questions).numbers : new Map(questions.map((question, index) => [question.id, index + 1]));

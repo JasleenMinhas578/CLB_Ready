@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { MODULES, moduleHasSkill, moduleTaskIds } from '../src/content/modules';
+import { loadModule, moduleTaskIds } from '../src/content/modules';
+import { CONTENT_COUNTS, MODULE_CATALOG } from '../src/content/modules/catalog';
+import { partQuestions } from '../src/content/objective';
+import { MODULES, moduleHasSkill } from './fixtures/modules';
 import { TASK_TYPES, getTaskType, getTaskTypesForSkill } from '../src/domain/tasks/catalog';
 import { SKILLS } from '../src/domain/skills';
 import { checkGrammar } from '../src/services/grammar/ruleChecker';
@@ -28,6 +31,30 @@ describe('content integrity', () => {
       expect(covered.filter((skill) => skill === 'speaking').length, practiceModule.id).toBe(8);
       expect(covered.filter((skill) => skill === 'writing').length, practiceModule.id).toBe(2);
     }
+  });
+
+  it('lists every module in the catalogue as its content describes it', async () => {
+    expect(MODULE_CATALOG.map((item) => item.id)).toEqual(MODULES.map((item) => item.id));
+    for (const practiceModule of MODULES) {
+      const { id, number, title, status } = practiceModule;
+      const skills = SKILLS.filter((skill) => moduleHasSkill(practiceModule, skill.id)).map((skill) => skill.id);
+      expect(MODULE_CATALOG.find((item) => item.id === id)).toEqual({ id, number, title, status, skills });
+      expect(await loadModule(id)).toBe(practiceModule);
+    }
+    expect(await loadModule('module-99')).toBeUndefined();
+  });
+
+  it('has home page totals that match the content', () => {
+    const prompts = MODULES.flatMap((item) => item.prompts);
+    const speaking = prompts.filter((prompt) => getTaskType(prompt.taskTypeId)?.skill === 'speaking');
+    expect(CONTENT_COUNTS).toEqual({
+      modules: MODULES.filter((item) => item.reading?.length && item.listening?.length).length,
+      speaking: speaking.length,
+      samples: speaking.filter((prompt) => prompt.modelAnswer).length,
+      writing: prompts.filter((prompt) => getTaskType(prompt.taskTypeId)?.skill === 'writing').length,
+      reading: MODULES.flatMap((item) => item.reading ?? []).flatMap(partQuestions).length,
+      listening: MODULES.flatMap((item) => item.listening ?? []).flatMap(partQuestions).length,
+    });
   });
 
   it('has a complete module 1 for practice', () => {

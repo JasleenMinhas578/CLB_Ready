@@ -1,28 +1,12 @@
 import { SKILLS } from '@/domain/skills';
-import { MODULES } from '@/content/modules';
-import { partQuestions } from '@/content/objective';
-import { getTaskType } from '@/domain/tasks/catalog';
+import { CONTENT_COUNTS as counts, MODULE_CATALOG } from '@/content/modules/catalog';
 import { useSession } from '@/app/session';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { SkillCard } from './SkillCard';
 import { FeedbackDemo } from './FeedbackDemo';
 
-const firstModuleId = MODULES.find((module) => module.status === 'available')?.id ?? 'module-1';
-
-/** Counted from the real content, so the page never overstates what's inside. */
-const counts = (() => {
-  const prompts = MODULES.flatMap((module) => module.prompts);
-  const speaking = prompts.filter((prompt) => getTaskType(prompt.taskTypeId)?.skill === 'speaking');
-  return {
-    modules: MODULES.filter((module) => module.reading?.length && module.listening?.length).length,
-    speaking: speaking.length,
-    samples: speaking.filter((prompt) => prompt.modelAnswer).length,
-    writing: prompts.filter((prompt) => getTaskType(prompt.taskTypeId)?.skill === 'writing').length,
-    reading: MODULES.flatMap((module) => module.reading ?? []).flatMap(partQuestions).length,
-    listening: MODULES.flatMap((module) => module.listening ?? []).flatMap(partQuestions).length,
-  };
-})();
+const firstModuleId = MODULE_CATALOG.find((module) => module.status === 'available')?.id ?? 'module-1';
 
 const INSIDE = [
   { emoji: '🎤', title: 'Speaking with a coach', text: `${counts.speaking} timed tasks. Your answer is turned into text, you see your pace, pauses and filler words, and you get a better version at your goal level.` },
