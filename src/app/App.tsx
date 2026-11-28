@@ -5,6 +5,7 @@ import { ROUTES, type RouteDef } from './routes';
 import { Layout } from '@/components/Layout';
 import { ExamLayout } from '@/components/ExamLayout';
 import { NotFound } from '@/components/NotFound';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function findRoute(path: string): { route: RouteDef; params: RouteParams } | null {
   for (const route of ROUTES) {
@@ -23,9 +24,11 @@ export function App() {
   return (
     <SessionProvider>
       <Frame>
-        <Suspense fallback={<p className="loading-line">Loading…</p>}>
-          {Screen && match ? <Screen params={match.params} /> : <NotFound />}
-        </Suspense>
+        <ErrorBoundary key={path}>
+          <Suspense fallback={<p className="loading-line">Loading…</p>}>
+            {Screen && match ? <Screen params={match.params} /> : <NotFound />}
+          </Suspense>
+        </ErrorBoundary>
       </Frame>
     </SessionProvider>
   );
