@@ -1,6 +1,8 @@
 import { clearProgress, useProgress } from '@/services/progress/progress';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/Button';
+import { Button, LinkButton } from '@/components/Button';
+import { Icon } from '@/components/Icon';
+import { backPath } from '@/app/router';
 import type { DeviceReport } from '@/services/device/detectDevice';
 import {
   getDetectedTier,
@@ -107,7 +109,8 @@ export function SettingsScreen() {
     <section className="narrow">
       <div className="screen-head">
         <h1>AI models and privacy</h1>
-        <p>Everything runs on this device. These settings reset when you close the tab.</p>
+        <p>Everything runs on this device. Model choices reset when you close the tab.</p>
+        <LinkButton to={backPath()} variant="secondary"><Icon name="arrow-left" /> Back to practice</LinkButton>
       </div>
 
       <div className="results-card">
@@ -142,7 +145,7 @@ export function SettingsScreen() {
                 className={`tier-option ${choice === option.value ? 'is-selected' : ''}`}
                 onClick={() => void choose(option.value)}
               >
-                <strong>{option.title}{option.value === 'auto' && detected ? ` (${CHOICES.find((item) => item.value === detected)?.title ?? detected})` : ''}</strong>
+                <strong>{choice === option.value && <Icon name="check" size="sm" />} {option.title}{option.value === 'auto' && detected ? ` (${CHOICES.find((item) => item.value === detected)?.title ?? detected})` : ''}</strong>
                 <span>{option.text}</span>
                 {preview && <small>Coach: {shortModel(preview.feedbackModel)}</small>}
                 {disabled && <small>Needs WebGPU, which this browser doesn’t offer.</small>}
