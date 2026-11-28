@@ -23,7 +23,7 @@ import { MicCheck } from './MicCheck';
 import { SpeechModelBadge } from './SpeechModelBadge';
 import { ModelPlanBadge } from './ModelPlanBadge';
 import { ExamBar, TimeWarning, WarnIcon } from './exam/ExamBar';
-import { speakingActionLabel, speakingExitWarning, type SpeakingFlow } from './exam/speakingStatus';
+import { afterMicOpened, speakingActionDisabled, speakingActionLabel, speakingExitWarning, type SpeakingFlow } from './exam/speakingStatus';
 import { PromptPanel } from './exam/PromptPanel';
 import { PhaseTimer } from './exam/PhaseTimer';
 
@@ -62,7 +62,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   const level = useMicLevel(recorder.stream);
   const recordingStarted = useRef(false);
   const statusPanel = useRef<HTMLElement>(null);
-  // Saving outlives the screen if the learner exits, so it checks this before showing results.
+  // Checking outlives the screen if the learner exits, so it checks this before showing results.
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     };
   }, []);
 
-  // On narrow screens the status panel sits below the task text, so bring "Saving…" into view.
+  // On narrow screens the status panel sits below the task text, so bring "Checking…" into view.
   // 'nearest' leaves the page alone when the panel is already visible.
   useEffect(() => {
     if (state === 'transcribing') statusPanel.current?.scrollIntoView({ block: 'nearest' });
@@ -101,7 +101,10 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     void playBeep('start').then(async () => {
       // The learner may have left or pressed Finish during the beep.
       if (!mounted.current || stateRef.current !== 'running') return;
-      if (!(await recorder.start(phase.seconds))) setState('problem');
+      const next = afterMicOpened(await recorder.start(phase.seconds), stateRef.current);
+      if (next === 'problem') setState('problem');
+      // The answer ended (or the task restarted) while the browser was opening the mic: turn it off.
+      else if (next === 'stop') void recorder.stop();
     });
   }, [state, phase.id, phase.seconds, recorder.start]);
 
@@ -203,7 +206,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
       <div className="exam-message" aria-live="polite">
         <h2>
           <span className="spinner" aria-hidden="true" />
-          Saving your answer…
+          Checking your answer…
         </h2>
         <p>This device is turning your answer into text. This usually takes a few seconds. Your results then open by themselves.</p>
         {/* "Ready" would read as nothing happening; loading progress and errors still help. */}
@@ -215,12 +218,11 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
       <div className="exam-message">
         <h2>Press Start when you’re ready</h2>
         <p>
-          Read the task first. When you press Start, {micReady ? '' : 'we check your microphone, then '}
+          Read the task first. When you press Start at the top of the screen, {micReady ? '' : 'we check your microphone, then '}
           {phases[0].id === 'select' ? 'the choosing time' : 'the preparation time'} begins.
           Recording starts by itself after that. Keep speaking until the recording time ends.
         </p>
-        <Button onClick={begin}>Start</Button>
-        <SpeechModelBadge status={speechStatus} />
+        <SpeechModelBadge status={speechStatus} onRetry={() => void engine?.preload()} />
       </div>
     );
   } else {
@@ -247,7 +249,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   return (
     <div className="exam-screen">
       <ExamBar
-        position={`Speaking Task ${task.order} of ${total}`}
+        position={`Speaking task ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/speaking/${moduleId}`}
         exitWarning={speakingExitWarning(state, recorder.stream !== null)}
@@ -256,7 +258,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
             type="button"
             className="exam-next exam-next-fixed exam-next-wide"
             onClick={running ? advance : begin}
-            disabled={state === 'transcribing' || state === 'mic-check' || state === 'problem'}
+            disabled={speakingActionDisabled(state, phase.id, recorder.stream !== null)}
             aria-busy={state === 'transcribing'}
           >
             {state === 'transcribing' && <span className="spinner" aria-hidden="true" />}
