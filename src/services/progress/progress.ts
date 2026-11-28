@@ -1,4 +1,8 @@
 import { useSyncExternalStore } from 'react';
+import { SKILLS, type SkillId } from '@/domain/skills';
+import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
+import type { TaskType } from '@/domain/tasks/types';
+import { MODULE_CATALOG } from '@/content/modules/catalog';
 
 /**
  * Which tasks the learner has finished, saved in this browser only
@@ -73,4 +77,28 @@ export function useProgress(): Progress {
 /** How many of these task ids are finished in a module. */
 export function countDone(progress: Progress, moduleId: string, taskTypeIds: string[]): number {
   return taskTypeIds.filter((id) => progress[taskKey(moduleId, id)]).length;
+}
+
+export interface NextTask {
+  moduleId: string;
+  task: TaskType;
+}
+
+/**
+ * The first unfinished task, going module by module and, inside a module,
+ * skill by skill in test order. Pass a skill to stay inside it. When every
+ * task is finished it starts again from the first one.
+ */
+export function nextTask(progress: Progress, skill?: SkillId): NextTask {
+  const skills = skill ? [skill] : SKILLS.map((item) => item.id);
+  const tasks = skills.flatMap((id) => getTaskTypesForSkill(id));
+  for (const { id: moduleId } of MODULE_CATALOG) {
+    const task = tasks.find((item) => !progress[taskKey(moduleId, item.id)]);
+    if (task) return { moduleId, task };
+  }
+  return { moduleId: MODULE_CATALOG[0].id, task: tasks[0] };
+}
+
+export function taskPath({ moduleId, task }: NextTask): string {
+  return `/task/${moduleId}/${task.id}`;
 }
