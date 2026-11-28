@@ -21,8 +21,13 @@ env.remotePathTemplate = `{model}/resolve/${KOKORO_SHA}/`;
 const HF_VOICES = `https://huggingface.co/${KOKORO_MODEL}/resolve/main/voices/`;
 let voicesUrl = '';
 const realFetch = globalThis.fetch.bind(globalThis);
-globalThis.fetch = (input, init) =>
-  realFetch(typeof input === 'string' && input.startsWith(HF_VOICES) ? voicesUrl + input.slice(HF_VOICES.length) : input, init);
+globalThis.fetch = async (input, init) => {
+  if (typeof input !== 'string' || !input.startsWith(HF_VOICES)) return realFetch(input, init);
+  const response = await realFetch(voicesUrl + input.slice(HF_VOICES.length), init);
+  // kokoro-js caches whatever comes back, so never hand it a 404 page as a voice.
+  if (!response.ok) throw new Error(`Voice file missing (${response.status}).`);
+  return response;
+};
 
 // Typed loosely: the DOM and WebWorker type libraries can't be mixed in one project.
 const worker = self as unknown as {
