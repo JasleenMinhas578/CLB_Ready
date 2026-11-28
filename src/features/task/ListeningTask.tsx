@@ -66,7 +66,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
   return (
     <div className="exam-screen">
       <ExamBar
-        position={`Listening Part ${task.order} of ${total}${part.clips.length > 1 ? `, recording ${clipIndex + 1} of ${part.clips.length}` : ''}`}
+        position={`Listening part ${task.order} of ${total}${part.clips.length > 1 ? `, recording ${clipIndex + 1} of ${part.clips.length}` : ''}`}
         title={task.title}
         exitTo={`/practice/listening/${moduleId}`}
         status={answering ? <TimeRemaining seconds={secondsLeft} totalSeconds={clip.questions.length * SECONDS_PER_QUESTION} warnBelow={20} label="Time to answer" /> : undefined}
@@ -90,7 +90,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
           )}
           {player.state === 'ready' && (
             <div className="exam-message">
-              <p>The recording plays once. You cannot pause or replay it. Take notes if that helps.</p>
+              <p>Each recording plays once. You cannot pause or replay it.</p>
               <button type="button" className="exam-play" onClick={() => { unlockBeeps(); player.play(); }}><Icon name="play" /> Play recording</button>
             </div>
           )}

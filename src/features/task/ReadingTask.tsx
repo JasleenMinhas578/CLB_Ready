@@ -95,7 +95,7 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
   return (
     <div className="exam-screen">
       <ExamBar
-        position={`Reading Part ${task.order} of ${total}`}
+        position={`Reading part ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/reading/${moduleId}`}
         status={<TimeRemaining seconds={secondsLeft} totalSeconds={task.timing.minutes * 60} warnBelow={120} />}

@@ -3,7 +3,7 @@ import { href, navigate } from '@/app/router';
 import { formatSeconds, passedWarning, warningText } from '@/domain/timer';
 
 interface ExamBarProps {
-  /** e.g. "Writing Task 1 of 2" */
+  /** e.g. "Writing task 1 of 2" */
   position: string;
   title: string;
   /** Where "Exit" goes. */

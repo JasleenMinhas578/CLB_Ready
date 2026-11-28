@@ -41,7 +41,7 @@ Spacing is `--gap-1` to `--gap-6` (8, 16, 24, 40, 64, 96px). Type is `--step--1`
 - State only: `transform`, `box-shadow`, `background-color` at `--dur-fast`. No reveals, no loops near scores or timers. Reduced motion ends everything at once (base.css).
 
 ## Pip
-- Pip (`src/components/Pip.tsx`) is the only illustration: a pear seed cut from card stock with a mint sprout, drawn from tokens. Home ticket, home intro, results AI status, empty and error states. Never on exam screens.
+- Pip (`src/components/Pip.tsx`) is the only illustration: a pear seed cut from card stock with a mint sprout, drawn from tokens. Home intro, results AI status, empty and error states. Never on exam screens.
 
 ## Exports
 `src/styles/tokens.css` in this project.

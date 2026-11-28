@@ -110,7 +110,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
   return (
     <div className="exam-screen">
       <ExamBar
-        position={`Writing Task ${task.order} of ${total}`}
+        position={`Writing task ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/writing/${moduleId}`}
         exitWarning={unsaved ? 'Your writing is kept in this tab. It comes back when you open this task again, but the timer starts over.' : undefined}

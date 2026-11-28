@@ -12,7 +12,7 @@ const PRACTICE_LINKS = [
 ];
 
 const ABOUT_LINKS = [
-  { label: 'Settings, models and privacy', to: '/settings' },
+  { label: 'Settings and privacy', to: '/settings' },
   { label: 'Model lab', to: '/lab' },
 ];
 

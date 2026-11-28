@@ -5,6 +5,7 @@ import { href } from '@/app/router';
 import { LinkButton } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Pip } from '@/components/Pip';
+import { DEFAULT_GOAL } from '@/domain/attempt';
 import { nextTask, taskPath, useProgress } from '@/services/progress/progress';
 import { SkillCard } from './SkillCard';
 
@@ -27,7 +28,6 @@ export function HomeScreen() {
 
         {/* The one-click start, shown as the task it opens. */}
         <div className={`next-card skill-${next.task.skill}`}>
-          <Pip size={84} className="next-pip" />
           <span className="skill-badge"><Icon name={next.task.skill} size="lg" /></span>
           <p className="next-title">{next.task.title}</p>
           <p className="next-where">
@@ -40,7 +40,7 @@ export function HomeScreen() {
             {goal ? (
               <>Feedback is aimed at CLB {goal}. <a href={href('/goal')}>Change goal</a></>
             ) : (
-              <>No goal yet, so feedback aims at CLB 7. <a href={href('/goal')}>Choose your CLB goal</a></>
+              <>No goal yet, so feedback aims at CLB {DEFAULT_GOAL}. <a href={href('/goal')}>Choose your CLB goal</a></>
             )}
           </p>
         </div>
@@ -51,7 +51,6 @@ export function HomeScreen() {
         <h2>Pip, your AI coach</h2>
         <p>
           Pip turns your spoken answers into text, checks your writing and shows a stronger version at your goal level.
-          Pip runs inside this browser, so nobody else hears or reads your answers.
         </p>
       </aside>
 

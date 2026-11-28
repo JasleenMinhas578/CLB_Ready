@@ -29,8 +29,6 @@
   background: var(--surface); border-radius: var(--radius-lg);
   box-shadow: inset 0 0 0 1px var(--border-soft), 0 6px 0 0 var(--edge), var(--shadow-card);
 }
-/* Pip sits on the card's top edge, looking over it. */
-.next-pip { position: absolute; top: -56px; right: var(--gap-4); }
 .next-card .skill-badge { margin-bottom: var(--gap-1); }
 .next-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-3); line-height: 1.05; letter-spacing: var(--tracking-display); }
 .next-where { margin: 0 0 var(--gap-2); font-weight: 700; color: var(--ink-soft); }
@@ -79,14 +77,12 @@
 .home-facts dd { margin: 0; color: var(--ink-soft); max-width: var(--text-width); text-wrap: pretty; font-size: 1.125rem; }
 
 @media (max-width: 900px) {
-  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-6); padding: var(--gap-3) 0 var(--gap-5); }
+  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-4); padding: var(--gap-3) 0 var(--gap-5); }
   .pip-intro { padding: var(--gap-4) var(--gap-3); column-gap: var(--gap-3); }
   .home-facts dl > div { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
-  .home-hero { gap: var(--gap-5); }
   .next-card { padding: var(--gap-3); }
-  .next-pip { width: 64px; height: 64px; top: -44px; right: var(--gap-3); }
   .next-start { width: 100%; }
   .pip-intro { grid-template-columns: minmax(0, 1fr); padding: var(--gap-3); }
   .pip-intro .pip { grid-row: auto; width: 88px; height: 88px; margin-bottom: var(--gap-1); }

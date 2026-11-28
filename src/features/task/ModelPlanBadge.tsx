@@ -15,7 +15,7 @@ export function ModelPlanBadge() {
 
   if (!plan) return null;
   const text = !plan.feedbackModel
-    ? 'Light mode: feedback uses your measurements only.'
+    ? 'Pip, your AI coach, is off on this device, so feedback comes from word counts, timing and simple checks.'
     : getTierChoice() === 'auto'
       ? 'AI setup: best for this device.'
       : 'AI setup: your choice in Settings.';
