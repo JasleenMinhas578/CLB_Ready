@@ -237,7 +237,7 @@
 /* Week 2: transcript */
 .transcript {
   margin: var(--gap-2) 0; padding: var(--gap-2) var(--gap-3);
-  background: var(--surface-sunk); border-radius: var(--radius-md);
+  background: var(--surface-sunk); border-radius: var(--radius-sm);
   font-size: 1.05rem; line-height: 1.65;
 }
 
@@ -252,7 +252,7 @@
 .level-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-1); margin-bottom: var(--gap-1); }
 .level-pair > div {
   display: flex; flex-direction: column; align-items: center; gap: 0.15rem; padding: var(--gap-2);
-  background: var(--surface-sunk); border-radius: var(--radius-md);
+  background: var(--surface-sunk); border-radius: var(--radius-sm);
 }
 .level-pair span { font-weight: 800; font-size: var(--step--1); text-align: center; color: var(--ink-soft); }
 .level-pair strong { font-family: var(--font-display); font-size: var(--step-3); line-height: 1.1; font-variant-numeric: tabular-nums; }
@@ -267,7 +267,7 @@
 .ai-status {
   display: flex; gap: 0.6rem; align-items: center; max-width: none;
   padding: 0.75rem 1rem; margin-bottom: var(--gap-2);
-  background: var(--info-bg); border-radius: var(--radius-md); font-weight: 700;
+  background: var(--info-bg); border-radius: var(--radius-sm); font-weight: 700;
 }
 .ai-status > .icon { color: var(--info); }
 .ai-status.is-checking { align-items: flex-start; }
@@ -283,7 +283,7 @@
 .measure-tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-1); }
 .measure-tiles li {
   display: flex; flex-direction: column; gap: 0.1rem; padding: 0.75rem 0.9rem;
-  border-radius: var(--radius-md); background: var(--surface-sunk);
+  border-radius: var(--radius-sm); background: var(--surface-sunk);
 }
 .measure-tiles li.tone-good { background: var(--ok-bg); }
 .measure-tiles li.tone-ok { background: var(--warn-bg); }
@@ -301,7 +301,7 @@
 .mark-vague { background: var(--butter-tint); }
 .pause-chip {
   display: inline-block; padding: 0 0.5em; font-size: 0.8em; font-weight: 800; white-space: nowrap;
-  color: var(--lilac-ink); background: var(--lilac-tint); border-radius: var(--radius-pill);
+  color: var(--lilac-ink); background: var(--lilac-tint); border-radius: var(--radius-sm);
 }
 .transcript-key { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; font-size: var(--step--1); color: var(--ink-soft); max-width: none; }
 .transcript-key mark { padding: 0 0.4em; border-radius: 6px; color: var(--ink); }
@@ -318,7 +318,7 @@
 
 /* Week 4: writing results, settings, plan badge */
 .essay { white-space: pre-wrap; }
-.issue-kind { display: inline-block; padding: 0.1em 0.6em; font-size: 0.85rem; font-weight: 800; color: var(--ink); border-radius: var(--radius-pill); }
+.issue-kind { display: inline-block; padding: 0.1em 0.6em; font-size: 0.85rem; font-weight: 800; color: var(--ink); border-radius: var(--radius-sm); }
 .kind-spelling { background: var(--rose-tint); }
 .kind-grammar { background: var(--butter-tint); }
 .kind-capitals { background: var(--sky-tint); }
@@ -372,7 +372,7 @@
 /* Improved answer: changes view */
 .improved-head { display: flex; justify-content: space-between; align-items: center; gap: var(--gap-2); flex-wrap: wrap; margin-bottom: var(--gap-1); }
 .improved-head h2 { margin: 0; }
-.view-switch { display: inline-flex; padding: 3px; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-pill); }
+.view-switch { display: inline-flex; padding: 4px; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-pill); }
 .view-switch button {
   min-height: 44px; padding: 0.3rem 0.9rem; border: 0; border-radius: var(--radius-pill); background: transparent;
   font: 800 0.9rem var(--font-body); color: var(--ink); cursor: pointer;
@@ -385,14 +385,14 @@
 .diff-removed, .fix-old { color: var(--bad); background: var(--bad-bg); text-decoration: line-through; text-decoration-thickness: 2px; padding: 0.05em 0.2em; border-radius: 5px; }
 .diff-summary { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; margin: 0 0 var(--gap-1); max-width: none; font-size: var(--step--1); font-weight: 700; }
 .diff-summary span { color: var(--ink-soft); }
-.diff-summary .diff-key { padding: 0.1em 0.55em; border-radius: var(--radius-pill); }
+.diff-summary .diff-key { padding: 0.1em 0.55em; border-radius: var(--radius-sm); }
 .diff-summary .key-added { background: var(--ok-bg); color: var(--ok); }
 .diff-summary .key-removed { background: var(--bad-bg); color: var(--bad); }
 
 /* Calibration notes */
 /* Grows to take the row, so the tag drops below the text on narrow cards instead of squeezing it. */
 .checklist-text { flex: 1 1 12rem; }
-.checked-by { margin-left: auto; padding: 0 0.5em; font-size: 0.75rem; font-weight: 800; color: var(--ok); background: var(--surface); border-radius: var(--radius-pill); white-space: nowrap; }
+.checked-by { margin-left: auto; padding: 0 0.5em; font-size: 0.75rem; font-weight: 800; color: var(--ok); background: var(--surface); border-radius: var(--radius-sm); white-space: nowrap; }
 .score-note { margin: 0.4rem 0 0; color: var(--ink); background: var(--warn-bg); padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); max-width: none; }
 
 /* Writing corrections, marked like a teacher would */
@@ -437,7 +437,7 @@
 .goal-line { margin: var(--gap-2) 0 var(--gap-1); font-weight: 800; }
 .goal-line.is-reached { color: var(--ok); }
 .answer-review { margin: 0; padding-left: 1.6rem; display: grid; gap: var(--gap-2); }
-.answer-row { padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--surface-sunk); }
+.answer-row { padding: 0.75rem 1rem; border-radius: var(--radius-sm); background: var(--surface-sunk); }
 .answer-row.is-right .answer-question > .icon { color: var(--ok); }
 .answer-row.is-wrong .answer-question > .icon { color: var(--bad); }
 .answer-row p { margin: 0 0 0.3rem; max-width: none; }
@@ -446,7 +446,7 @@
 /* "No answer" is not a wrong choice, so it is not struck through. */
 .answer-yours span.is-blank { text-decoration: none; font-style: italic; }
 .answer-why { font-size: var(--step--1); color: var(--ink-soft); }
-.clip-transcript { margin-top: var(--gap-2); border: 2px solid var(--border-soft); border-radius: var(--radius-md); padding: 0.6rem 1rem; }
+.clip-transcript { margin-top: var(--gap-2); padding: var(--gap-1) var(--gap-2); background: var(--surface-sunk); border-radius: var(--radius-sm); }
 .clip-transcript summary { font-weight: 800; cursor: pointer; min-height: 44px; display: flex; align-items: center; }
 .clip-transcript dl { margin: var(--gap-1) 0 0; display: grid; gap: 0.5rem; }
 .clip-transcript dl div { display: grid; grid-template-columns: 7.5rem 1fr; gap: 0.75rem; }
