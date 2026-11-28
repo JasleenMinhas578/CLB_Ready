@@ -20,12 +20,6 @@ export function checkRecording(samples: Float32Array, sampleRate: number): Recor
   return null;
 }
 
-/** Speaking pace. Uses time spent speaking, not the full answer window. */
-export function wordsPerMinute(wordCount: number, seconds: number): number {
-  if (seconds <= 0) return 0;
-  return Math.round((wordCount / seconds) * 60);
-}
-
 export type MicProblem = 'denied' | 'no-mic' | 'busy' | 'unsupported' | 'unknown';
 
 /** Turns getUserMedia errors into something we can explain to the learner. */

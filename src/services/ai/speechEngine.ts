@@ -1,8 +1,6 @@
 import type { ModelPlan } from '@/services/device/tier';
-import { ModelStore, useModelStatus, type ModelStatus } from './modelStore';
+import { ModelStore } from './modelStore';
 import type { SpeechToText, Transcript } from './types';
-
-export type SpeechStatus = ModelStatus;
 
 /**
  * One shared speech model for the whole app.
@@ -45,8 +43,4 @@ export async function getSpeechEngine(): Promise<SpeechEngineStore> {
     );
   }
   return shared;
-}
-
-export function useSpeechStatus(store: SpeechEngineStore | null): SpeechStatus {
-  return useModelStatus(store);
 }

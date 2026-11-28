@@ -1,9 +1,7 @@
 import type { ModelPlan } from '@/services/device/tier';
-import { ModelStore, useModelStatus, type ModelStatus } from './modelStore';
+import { ModelStore } from './modelStore';
 import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, cleanAnswerText, parseFeedback, type FeedbackReply } from './feedbackPrompt';
 import type { FeedbackModel, GenerationStats } from './types';
-
-export type FeedbackStatus = ModelStatus;
 
 export interface FeedbackRun {
   reply: FeedbackReply;
@@ -113,8 +111,4 @@ export async function getFeedbackEngine(): Promise<FeedbackEngineStore> {
     );
   }
   return shared;
-}
-
-export function useFeedbackStatus(store: FeedbackEngineStore | null): FeedbackStatus {
-  return useModelStatus(store);
 }

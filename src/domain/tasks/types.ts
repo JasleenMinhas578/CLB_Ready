@@ -56,7 +56,6 @@ export interface ListeningTaskType extends BaseTaskType {
 
 /** Discriminated union on `skill`. */
 export type TaskType = SpeakingTaskType | WritingTaskType | ReadingTaskType | ListeningTaskType;
-export type ObjectiveTaskType = ReadingTaskType | ListeningTaskType;
 
 export function isSpeakingTask(task: TaskType): task is SpeakingTaskType {
   return task.skill === 'speaking';
@@ -72,9 +71,4 @@ export function isReadingTask(task: TaskType): task is ReadingTaskType {
 
 export function isListeningTask(task: TaskType): task is ListeningTaskType {
   return task.skill === 'listening';
-}
-
-/** Reading and listening: multiple-choice questions marked against an answer key. */
-export function isObjectiveTask(task: TaskType): task is ObjectiveTaskType {
-  return task.skill === 'reading' || task.skill === 'listening';
 }

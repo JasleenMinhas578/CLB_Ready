@@ -1,5 +1,3 @@
-import type { SkillId } from '../skills';
-
 /**
  * Reading and listening are marked against an answer key. CELPIP publishes an
  * approximate chart from correct answers (out of 38) to a level; the ranges
@@ -35,8 +33,4 @@ export function estimateObjective(skill: 'reading' | 'listening', correct: numbe
 export function correctForGoal(skill: 'reading' | 'listening', goal: number, total: number): number {
   const target = MIN_RAW_FOR_LEVEL[skill].find(([level]) => level === Math.min(goal, 10))?.[1] ?? FULL_SECTION_QUESTIONS;
   return Math.ceil((target / FULL_SECTION_QUESTIONS) * total);
-}
-
-export function isObjectiveSkill(skill: SkillId): skill is 'reading' | 'listening' {
-  return skill === 'reading' || skill === 'listening';
 }

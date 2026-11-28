@@ -19,7 +19,3 @@ export const GOAL_OPTIONS: readonly GoalOption[] = [
   { level: 11, label: 'Advanced', hint: 'Rich vocabulary and very few errors' },
   { level: 12, label: 'Advanced', hint: 'The top level: near-expert control' },
 ];
-
-export function isClbGoal(value: number): value is ClbGoal {
-  return GOAL_OPTIONS.some((option) => option.level === value);
-}

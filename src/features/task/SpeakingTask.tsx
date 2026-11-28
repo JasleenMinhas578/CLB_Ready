@@ -8,7 +8,8 @@ import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import type { PracticePrompt } from '@/content/types';
 import { promptForModel } from '@/content/promptText';
 import { Button } from '@/components/Button';
-import { getSpeechEngine, useSpeechStatus, type SpeechEngineStore } from '@/services/ai/speechEngine';
+import { getSpeechEngine, type SpeechEngineStore } from '@/services/ai/speechEngine';
+import { useModelStatus } from '@/services/ai/modelStore';
 import { getFeedbackEngine } from '@/services/ai/feedbackEngine';
 import { friendlyModelError } from '@/services/ai/errorText';
 import { WHISPER_SAMPLE_RATE, toWhisperAudio } from '@/services/audio/recorder';
@@ -55,7 +56,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   const total = getTaskTypesForSkill('speaking').length;
 
   const [engine, setEngine] = useState<SpeechEngineStore | null>(null);
-  const speechStatus = useSpeechStatus(engine);
+  const speechStatus = useModelStatus(engine);
   const recorder = useAnswerRecorder();
   const level = useMicLevel(recorder.stream);
   const recordingStarted = useRef(false);
