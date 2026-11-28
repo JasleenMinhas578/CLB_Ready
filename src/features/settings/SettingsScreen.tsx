@@ -29,7 +29,7 @@ const CHOICES: { value: TierChoice; title: string; text: string }[] = [
 ];
 
 function shortModel(id: string | null): string {
-  if (!id) return 'none (light mode)';
+  if (!id) return 'off on this device';
   return id.replace(/^Xenova\//, '').replace(/-q4f(16|32)_1-MLC$/, '');
 }
 
