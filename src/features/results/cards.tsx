@@ -6,6 +6,7 @@ import type { AnyAttempt, Attempt } from '@/domain/attempt';
 import { href } from '@/app/router';
 import { LinkButton } from '@/components/Button';
 import { Icon } from '@/components/Icon';
+import { Pip } from '@/components/Pip';
 import { friendlyModelError } from '@/services/ai/errorText';
 import type { AiPerf, AnswerStream, FeedbackOutcome, FeedbackProgress, StepPerf } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
@@ -19,7 +20,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   if (outcome?.kind === 'code') {
     const why =
       outcome.reason === 'light-mode'
-        ? 'Light mode is on, so there is no AI coach. This feedback uses your measurements only.'
+        ? 'Light mode is on, so Pip, your AI coach, is switched off. This feedback uses your measurements only.'
         : `${friendlyModelError(outcome.message)} The feedback below uses your measurements only.`;
     return (
       <p className="ai-status is-code">
@@ -29,13 +30,13 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   }
   const text =
     progress?.phase === 'loading-model'
-      ? `Getting the AI coach ready${progress.modelProgress != null ? ` (${Math.round(progress.modelProgress * 100)}%)` : ''}. The first time can take a few minutes.`
+      ? `Getting Pip, your AI coach, ready${progress.modelProgress != null ? ` (${Math.round(progress.modelProgress * 100)}%)` : ''}. The first time can take a few minutes.`
       : progress?.phase === 'scoring'
-        ? `Pip is checking your answer${progress.written ? ` (${progress.written} characters so far)` : ''}…`
-        : 'Starting the AI coach…';
+        ? `Pip, your AI coach, is checking your answer${progress.written ? ` (${progress.written} characters so far)` : ''}…`
+        : 'Starting Pip, your AI coach…';
   return (
     <p className="ai-status" aria-live="polite">
-      <Icon name="pending" /> {text}
+      <Pip mood="thinking" size={44} /> {text}
     </p>
   );
 }
@@ -177,7 +178,7 @@ export function AnswerCard({ answer, goal, spoken, original, fromScratch = false
     return (
       <div className="results-card improved-card">
         <h2>{heading}</h2>
-        <p className="fine-print">Pip couldn’t write this answer this time. Your scores and tips above are complete. Try the task again for a new one.</p>
+        <p className="fine-print">Pip, your AI coach, couldn’t write this answer this time. Your scores and tips above are complete. Try the task again for a new one.</p>
       </div>
     );
   }

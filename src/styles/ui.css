@@ -89,6 +89,10 @@ main:focus { outline: none; }
 .icon-lg { width: var(--icon-lg); height: var(--icon-lg); }
 .icon-xl { width: var(--icon-xl); height: var(--icon-xl); }
 
+/* Pip, the AI coach illustration */
+.pip { display: block; flex: none; }
+.empty-state .pip { margin: 0 auto var(--gap-2); }
+
 /* Bars (results and lab) */
 .bar { position: relative; height: 18px; background: var(--milk-deep); border: 2px solid var(--grape); border-radius: var(--radius-pill); overflow: visible; }
 .bar-fill { display: block; height: 100%; background: var(--blueberry-deep); border-radius: var(--radius-pill); }
