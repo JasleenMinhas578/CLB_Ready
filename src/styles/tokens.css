@@ -1,6 +1,6 @@
-/* Hallmark · shape: app screens with a Settled home hero · genre: playful · theme: Hum (deal 1/3, seed free-celpip-english-test-b600·f88bffc3·2026-11-28·r0), softened to gentle pastels · redesign: full
+/* Hallmark · shape: app screens with a Settled home hero · genre: playful · theme: Hum (deal 1/3, seed free-celpip-english-test-b600·f88bffc3·2026-11-28·r0), softened to lavender and violet · redesign: full
  * hero: Settled (/) · nav: edge-aligned, the wordmark and two card-stock pills · footer: a paper sheet, the wordmark over two link columns and the disclaimer · imagery: none, Pip and the product's own cards · signature: the next task as a card-stock ticket with Pip in its corner
- * axes: light/rounded-sans/chromatic-pink · posture: full-palette (pink the action, blue links, focus and selection, mint done, one pastel per skill) · contrast: pass · fold: pass · v2.0.0 */
+ * axes: light/rounded-sans/chromatic-violet · posture: full-palette (violet the action, deep violet links, focus and selection, mint done, one pastel per skill) · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H5 E4 S4 R4 V4 · weakest: S and E, the skill tiles could be any course site; each tile takes its skill's own pastel card stock and the home leads with the learner's real next task */
 /* Hallmark · waive 80 · Pip, the coach drawn in tokens, sits in the corner of the next-task card · Pip is the owner's named coach character, kept by the product brief */
 /* Hallmark · dismissed 11 · the raise and press is the card-stock material on controls and tiles that are links or buttons, one signal each, never on static cards */
@@ -15,46 +15,47 @@
 :root {
   color-scheme: light;
 
-  /* Paper: a blush page and near-white cards, with a faint grain (see body in base.css) */
-  --bg: oklch(96.5% 0.014 350);        /* page */
-  --surface: oklch(99.6% 0.004 350);   /* cards and fields */
-  --surface-sunk: oklch(93.5% 0.02 350); /* wells, tracks, the footer sheet */
-  --edge: oklch(80% 0.04 350);         /* the card-stock edge under secondary controls */
+  /* Paper: a lavender-white page and white cards, with a faint grain (see body in base.css) */
+  --bg: #F8F6FC;           /* page */
+  --surface: #FEFDFF;      /* cards and fields: white with a breath of lavender */
+  --surface-sunk: #F0ECF8; /* wells, tracks, the footer sheet */
+  --edge: #CFC6E6;         /* the card-stock edge under secondary controls */
 
-  /* Ink: blue-black */
-  --ink: oklch(25% 0.035 265);         /* text, 13:1 or more on every surface */
-  --ink-soft: oklch(38% 0.03 265);     /* secondary text, 7:1 or more on every tint and the pink */
-  --border: oklch(52% 0.025 265);      /* control outlines and bar tracks, 4.3:1 or more */
-  --border-soft: oklch(85% 0.025 350); /* card edges, wells and dividers that only separate surfaces */
+  /* Ink: violet-black */
+  --ink: #1F1B2E;          /* text, 13:1 or more on every surface */
+  --ink-soft: #4A4560;     /* secondary text, 7:1 or more on every tint */
+  --border: #7A7392;       /* control outlines and bar tracks, 3.6:1 or more */
+  --border-soft: #E2DCEF;  /* card edges, wells and dividers that only separate surfaces */
 
-  /* Primary action: pastel pink card stock with ink text */
-  --accent: oklch(89% 0.06 355);
-  --accent-hover: oklch(85.5% 0.08 355);
-  --accent-edge: oklch(69% 0.12 355);  /* the pressed edge under the pink button */
-  --accent-ink: var(--ink);            /* text on the accent */
-  /* Blue owns links, the focus ring and the selected state: 7:1 or more on paper and wells */
-  --link: oklch(42% 0.17 258);
+  /* Primary action: violet card stock with white text (6.8:1, 7.7:1 on hover) */
+  --accent: #6345BC;
+  --accent-hover: #5A3DB0;
+  --accent-edge: #3E2A85;  /* the pressed edge under the violet button */
+  --accent-ink: #FEFDFF;   /* text on the accent */
+  /* Deep violet owns links, the focus ring and the selected state: 7:1 or more on paper, wells and tints */
+  --link: var(--lilac-ink);
   --focus: var(--link);
 
-  /* Pastel tints and their text colours (text is 7:1 or more on its tint, the paper and the wells) */
-  --rose-tint: oklch(93% 0.045 355);   --rose-ink: oklch(40% 0.14 355);
-  --peach-tint: oklch(93% 0.045 55);   --peach-ink: oklch(40% 0.11 50);
-  --butter-tint: oklch(94% 0.065 90);  --butter-ink: oklch(39% 0.085 80);
-  --mint-tint: oklch(93.5% 0.045 165); --mint-ink: oklch(39% 0.09 160);
-  --sky-tint: oklch(93% 0.04 235);     --sky-ink: oklch(40% 0.13 250);
-  --lilac-tint: oklch(92.5% 0.045 315); --lilac-ink: oklch(40% 0.15 315);
+  /* Pastel tints and their text colours (text is 7:1 or more on its tint, the paper and the wells).
+     Lilac is the lavender family: the home band, chips, pills and the selected state. Peach is Pip's. */
+  --rose-tint: #F6E3EE;    --rose-ink: #7A2456;
+  --peach-tint: #FFD3B5;   --peach-ink: #7A360F;
+  --butter-tint: #F8EDC9;  --butter-ink: #634700;
+  --mint-tint: #E2F3E9;    --mint-ink: #1A5436;
+  --sky-tint: #E2ECF8;     --sky-ink: #1F4A7A;
+  --lilac-tint: #EEE9FA;   --lilac-ink: #4B3A9A;
 
-  /* Meaning. Always pair with an icon or words, never colour alone. Bad is its own red, apart from the pink. */
+  /* Meaning. Always pair with an icon or words, never colour alone. Bad is its own red, apart from the rose. */
   --ok: var(--mint-ink);     --ok-bg: var(--mint-tint);
   --warn: var(--butter-ink); --warn-bg: var(--butter-tint);
-  --bad: oklch(41% 0.15 25); --bad-bg: oklch(94% 0.035 25);
+  --bad: #8C1C2A;            --bad-bg: #FBE5E7;
   --info: var(--sky-ink);    --info-bg: var(--sky-tint);
 
-  /* One tint per skill, used for its tile, badge and results level: rose, lilac, sky and periwinkle */
-  --speaking-tint: var(--rose-tint);   --speaking-ink: var(--rose-ink);
-  --writing-tint: var(--lilac-tint);   --writing-ink: var(--lilac-ink);
-  --reading-tint: var(--sky-tint);     --reading-ink: var(--sky-ink);
-  --listening-tint: oklch(91.5% 0.05 278); --listening-ink: oklch(39% 0.16 275);
+  /* One tint per skill, used for its tile, badge and results level: rose, sand, sky and lavender */
+  --speaking-tint: var(--rose-tint);  --speaking-ink: var(--rose-ink);
+  --writing-tint: #F3EBD8;            --writing-ink: #5C4512;
+  --reading-tint: var(--sky-tint);    --reading-ink: var(--sky-ink);
+  --listening-tint: #ECE6FA;          --listening-ink: #4A2E94;
 
   /* Exam screens: neutral grey, like test day. No tints, no card stock, no motion. */
   --exam-bg: oklch(95.5% 0.006 295);
@@ -94,10 +95,10 @@
   --stock-edge: 4px;
   --stock-edge-up: 6px;
   --stock-edge-down: 1px;
-  --shadow-card: 0 1px 2px oklch(25% 0.035 265 / 0.05), 0 12px 28px -16px oklch(25% 0.035 265 / 0.22);
+  --shadow-card: 0 1px 2px oklch(22% 0.03 290 / 0.05), 0 12px 28px -16px oklch(22% 0.03 290 / 0.22);
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .2 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 
-  /* Motion: state only. Snap for everything; the spring is the pink button's alone. */
+  /* Motion: state only. Snap for everything; the spring is the violet button's alone. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --dur-fast: 120ms;

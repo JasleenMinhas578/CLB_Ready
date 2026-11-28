@@ -32,9 +32,9 @@
 .home-how .icon { color: var(--ink-soft); }
 .home-done {
   display: inline-flex; align-items: center; gap: var(--gap-1); margin: var(--gap-3) 0 0; padding: var(--gap-1) var(--gap-2);
-  background: var(--sky-tint); border-radius: var(--radius-md); font-weight: 800;
+  background: var(--lilac-tint); border-radius: var(--radius-md); font-weight: 800;
 }
-.home-done .icon { color: var(--sky-ink); }
+.home-done .icon { color: var(--lilac-ink); }
 
 .next-card {
   display: grid; gap: var(--gap-3); padding: var(--gap-3);
@@ -59,7 +59,7 @@
 /* Full width: the band reaches the window edges while its content keeps the page column. */
 .home-band {
   margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%);
-  background: var(--grain), var(--sky-tint);
+  background: var(--grain), var(--lilac-tint);
 }
 .home-rule { border-top: 1px solid var(--border-soft); }
 
@@ -126,7 +126,7 @@
   .skill-card .skill-badge { width: 48px; height: 48px; }
 }
 
-/* Goal picker: card-stock options, the chosen one in blue */
+/* Goal picker: card-stock options, the chosen one in lavender and violet */
 .goal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-3) var(--gap-2); }
 .goal-option {
   display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; text-align: left;
@@ -136,11 +136,11 @@
 }
 .goal-option:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
 .goal-option:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
-.goal-option.is-selected { background: var(--sky-tint); box-shadow: inset 0 0 0 2px var(--sky-ink), 0 var(--stock-edge) 0 0 var(--sky-ink); }
+.goal-option.is-selected { background: var(--lilac-tint); box-shadow: inset 0 0 0 2px var(--lilac-ink), 0 var(--stock-edge) 0 0 var(--lilac-ink); }
 .goal-level { font-family: var(--font-display); font-size: var(--step-2); font-weight: 600; letter-spacing: var(--tracking-display); }
 .goal-label { font-weight: 800; }
 .goal-hint { font-size: var(--step--1); color: var(--ink-soft); }
-.goal-current { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: var(--gap-1); font-size: var(--step--1); font-weight: 800; color: var(--sky-ink); }
+.goal-current { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: var(--gap-1); font-size: var(--step--1); font-weight: 800; color: var(--lilac-ink); }
 .narrow > .fine-print { margin-top: var(--gap-4); }
 
 /* Skill screen */
@@ -179,7 +179,7 @@
 .module-reset p { margin: 0 0 var(--gap-2); max-width: var(--text-width); }
 .module-done p { margin: 0; flex: 1 1 16rem; }
 
-/* Task rows: lighter paper with a hairline; the next task is pink card stock. */
+/* Task rows: lighter paper with a hairline; the next task is lavender card stock. */
 .task-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-2); }
 .task-row {
   display: flex; align-items: center; gap: var(--gap-2); height: 100%; padding: var(--gap-2) var(--gap-3);
@@ -205,8 +205,8 @@
 }
 .task-done { color: var(--mint-ink); background: var(--mint-tint); }
 .task-row.is-done .task-number { background: var(--mint-tint); color: var(--mint-ink); }
-/* The next unfinished task is the clear next step: pink card stock, a Start label. */
-.task-row.is-next { background: var(--accent); box-shadow: 0 var(--stock-edge) 0 0 var(--accent-edge); }
+/* The next unfinished task is the clear next step: lavender card stock on the violet edge, a Start label. */
+.task-row.is-next { background: var(--lilac-tint); box-shadow: 0 var(--stock-edge) 0 0 var(--accent-edge); }
 .task-row.is-next:hover { box-shadow: inset 0 0 0 2px var(--accent-edge), 0 var(--stock-edge) 0 0 var(--accent-edge); }
 .task-row.is-next .task-text > span { color: var(--ink); }
 .task-row.is-next .task-number, .task-start { background: var(--surface); color: var(--ink); }
@@ -374,7 +374,7 @@
 }
 .tier-option:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
 .tier-option:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
-.tier-option.is-selected, .tier-option.is-selected:hover:not(:disabled) { background: var(--sky-tint); box-shadow: inset 0 0 0 2px var(--sky-ink), 0 var(--stock-edge) 0 0 var(--sky-ink); }
+.tier-option.is-selected, .tier-option.is-selected:hover:not(:disabled) { background: var(--lilac-tint); box-shadow: inset 0 0 0 2px var(--lilac-ink), 0 var(--stock-edge) 0 0 var(--lilac-ink); }
 /* Unavailable here: flat and sunk into the paper, text still readable, and the card says why. */
 .tier-option:disabled { cursor: not-allowed; background: var(--surface-sunk); box-shadow: inset 0 0 0 1px var(--border-soft); }
 .tier-option strong { font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; }
@@ -453,8 +453,11 @@
 @media (min-width: 1100px) {
   /* Score card on the left, so the level is the first thing read. */
   .results-grid { grid-template-columns: minmax(380px, 1fr) minmax(0, 1.6fr); }
-  .results-side .measure-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .results-side .perf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The detail cards run full width under the columns, so their tiles can sit in one or two rows. */
+  /* Even rows: speaking always has 6 tiles, writing 7 or 8. */
+  .results > .results-card .measure-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .results-speaking > .results-card .measure-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .results > .perf-card .perf-grid { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
   .task-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .narrow { max-width: 960px; }
@@ -462,7 +465,7 @@
 /* The improved answer as it's written: a blinking caret marks where Pip is. */
 .improved-card.is-writing .ai-status { margin: 0 0 var(--gap-2); }
 .streaming-text { white-space: pre-wrap; }
-.streaming-text::after { content: ''; display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; vertical-align: -0.2em; background: var(--accent-ink); }
+.streaming-text::after { content: ''; display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; vertical-align: -0.2em; background: var(--ink); }
 
 /* Reading and listening results */
 .goal-line { margin: var(--gap-2) 0 var(--gap-1); font-weight: 800; }
