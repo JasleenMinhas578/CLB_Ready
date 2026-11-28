@@ -1,7 +1,5 @@
 # Product
 
-<!-- impeccable:product-schema 1 -->
-
 <!-- Written by an agent from the repository and the owner's brief, without a live interview.
      Facts marked (inferred) came from the code and README, not from the owner directly. -->
 
@@ -43,10 +41,12 @@ No account, no payment, and nothing the learner writes or says leaves the device
 ## Brand Commitments
 - Name: CLB Ready. Coach: Pip, introduced as "Pip, your AI coach" the first time it appears on a screen.
 - Direction, binding (owner, replaces the old candy-shop identity):
-  - Home, practice lists and results: soft, cute and friendly. Rounded shapes, gentle pastels, soft shadows,
-    simple friendly illustrations used sparingly.
+  - Home, practice lists and results: soft, cute and friendly, built as cut card stock on grained cream paper
+    (Hallmark, Hum theme). Rounded shapes, gentle pastels (one per skill), pear for the main action, blue for
+    links and focus, mint for growth and privacy. Pip is the one illustration, used sparingly.
   - Exam screens (timers, recording, questions): calm and focused, like test day. Neutral greys, no pastels,
-    no illustrations, no motion.
+    no illustrations, no card stock, no motion.
+  - The system is locked in `DESIGN.md`; tokens live in `src/styles/tokens.css`.
   - Clarity beats charm whenever they conflict. Learners are adults, many reading English as an additional language.
 - One icon set (`src/components/Icon.tsx`), drawn in one stroke style. No emoji anywhere in the UI.
 - One legal disclaimer, worded once. Never call the product "AI-powered".
