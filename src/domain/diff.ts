@@ -115,6 +115,6 @@ export function summarizeDiff(parts: DiffPart[]): DiffSummary {
 export const MOSTLY_REWRITTEN_BELOW = 0.5;
 
 /** True when less than half of the improved answer is the learner's own words. */
-export function isMostlyRewritten(before: string, after: string): boolean {
-  return summarizeDiff(diffWords(before, after)).keptShare < MOSTLY_REWRITTEN_BELOW;
+export function isMostlyRewritten(summary: DiffSummary): boolean {
+  return summary.keptShare < MOSTLY_REWRITTEN_BELOW;
 }

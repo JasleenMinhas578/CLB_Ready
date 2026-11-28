@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WhisperSpeechToText } from '../src/services/ai/whisperClient';
+import { WebLlmFeedbackModel } from '../src/services/ai/webllmClient';
 import { KokoroTextToSpeech } from '../src/services/tts/kokoroClient';
 import { SpeechEngineStore } from '../src/services/ai/speechEngine';
 import { VoiceEngineStore } from '../src/services/tts/voiceEngine';
@@ -35,8 +36,16 @@ class FakeWorker extends EventTarget {
   postMessage(request: { id: number; type: string }) {
     // 'hang' stands in for long work, like scoring, that never replies during the test.
     if (this.broken || request.type === 'hang') return;
+    const send = (data: object) => setTimeout(() => this.dispatchEvent(new MessageEvent('message', { data: { id: request.id, ...data } })), 0);
+    if (request.type === 'complete') {
+      // Like the WebLLM worker: each new part of the reply, then the whole reply.
+      send({ type: 'progress', fraction: null, text: 'Hel' });
+      send({ type: 'progress', fraction: null, text: 'lo' });
+      send({ type: 'completed', text: 'Hello', truncated: false, promptTokens: 1, completionTokens: 2 });
+      return;
+    }
     const reply = { load: 'loaded', unload: 'unloaded' }[request.type] ?? 'error';
-    setTimeout(() => this.dispatchEvent(new MessageEvent('message', { data: { id: request.id, type: reply, message: 'unexpected' } })), 0);
+    send({ type: reply, message: 'unexpected' });
   }
 
   terminate() {
@@ -106,6 +115,15 @@ describe('a worker that crashes after loading', () => {
     await store.ensureLoaded();
     expect(FakeWorker.created).toHaveLength(2);
     expect(store.getStatus().state).toBe('ready');
+  });
+});
+
+describe('the WebLLM client', () => {
+  it('joins the streamed parts into the reply so far', async () => {
+    const seen: string[] = [];
+    const reply = await new WebLlmFeedbackModel('m').complete('s', 'u', { maxTokens: 10, onText: (text) => seen.push(text) });
+    expect(seen).toEqual(['Hel', 'Hello']);
+    expect(reply.text).toBe('Hello');
   });
 });
 

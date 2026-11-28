@@ -33,7 +33,8 @@ async function complete(request: Extract<WebLlmRequest, { type: 'complete' }>) {
     const delta = chunk.choices[0]?.delta?.content ?? '';
     if (delta) {
       text += delta;
-      worker.postMessage({ id: request.id, type: 'progress', fraction: null, text });
+      // Only the new words: sending the whole reply each time copies it over and over.
+      worker.postMessage({ id: request.id, type: 'progress', fraction: null, text: delta });
     }
     if (chunk.choices[0]?.finish_reason === 'length') truncated = true;
     if (chunk.usage) {

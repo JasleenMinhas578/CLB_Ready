@@ -53,16 +53,18 @@ describe('summarizeDiff', () => {
 });
 
 describe('isMostlyRewritten', () => {
+  const mostlyRewritten = (before: string, after: string) => isMostlyRewritten(summarizeDiff(diffWords(before, after)));
+
   it('is false when most of the improved answer is the learner’s words', () => {
-    expect(isMostlyRewritten('I think it was a good day for us.', 'I think it was a wonderful day for us.')).toBe(false);
+    expect(mostlyRewritten('I think it was a good day for us.', 'I think it was a wonderful day for us.')).toBe(false);
   });
 
   it('is true when most of the improved answer is new', () => {
-    expect(isMostlyRewritten('Good day.', 'In my opinion, yesterday was an excellent and memorable day.')).toBe(true);
+    expect(mostlyRewritten('Good day.', 'In my opinion, yesterday was an excellent and memorable day.')).toBe(true);
   });
 
   it('is false at exactly half', () => {
     // Kept: "a b", added: "c d", so half the improved words are the learner's own.
-    expect(isMostlyRewritten('a b', 'a b c d')).toBe(false);
+    expect(mostlyRewritten('a b', 'a b c d')).toBe(false);
   });
 });
