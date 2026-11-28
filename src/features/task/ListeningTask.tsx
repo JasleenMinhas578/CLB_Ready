@@ -5,6 +5,7 @@ import { useSession } from '@/app/session';
 import { navigate } from '@/app/router';
 import { DEFAULT_GOAL, newAttemptId } from '@/domain/attempt';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
+import { playBeep, unlockBeeps } from '@/services/audio/beep';
 import { useCountdown } from './useCountdown';
 import { ExamBar, TimeRemaining } from './exam/ExamBar';
 import { QuestionList, type Answers } from './objective/Questions';
@@ -50,6 +51,11 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
 
   const next = () => (lastClip ? finish() : setClipIndex((index) => index + 1));
   const secondsLeft = useCountdown(clip.questions.length * SECONDS_PER_QUESTION, answering, next, clip.id);
+  // Finish opens results straight away, so the timer can't beep its own end.
+  const nextEarly = () => {
+    if (lastClip) void playBeep('end');
+    next();
+  };
 
   // Move to the top of the screen for each new recording.
   useEffect(() => {
@@ -64,7 +70,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
         exitTo={`/practice/listening/${moduleId}`}
         status={answering ? <TimeRemaining seconds={secondsLeft} totalSeconds={clip.questions.length * SECONDS_PER_QUESTION} warnBelow={20} label="Time to answer" /> : undefined}
         action={
-          <button type="button" className="exam-next" onClick={next} disabled={!answering}>
+          <button type="button" className="exam-next" onClick={nextEarly} disabled={!answering}>
             {lastClip ? 'Finish' : 'Next'}
           </button>
         }
@@ -84,7 +90,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
           {player.state === 'ready' && (
             <div className="exam-message">
               <p>The recording plays once. You can’t pause or replay it, so take notes if that helps.</p>
-              <button type="button" className="exam-play" onClick={player.play}>▶ Play recording</button>
+              <button type="button" className="exam-play" onClick={() => { unlockBeeps(); player.play(); }}>▶ Play recording</button>
             </div>
           )}
           {player.state === 'playing' && (

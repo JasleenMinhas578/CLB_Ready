@@ -17,6 +17,7 @@ import { getSpeechEngine, type SpeechEngineStore } from '@/services/ai/speechEng
 import { getFeedbackEngine, type FeedbackEngineStore } from '@/services/ai/feedbackEngine';
 import { useModelStatus, type ModelStatus } from '@/services/ai/modelStore';
 import { unloadAllModels } from '@/services/unloadModels';
+import { setTimerSounds, useTimerSounds } from '@/services/audio/timerSounds';
 
 const CHOICES: { value: TierChoice; title: string; text: string }[] = [
   { value: 'auto', title: 'Best for this device', text: 'Picked from your memory, processor and graphics chip.' },
@@ -168,6 +169,8 @@ export function SettingsScreen() {
         <p className="fine-print">These details stay in your browser. They are never sent anywhere.</p>
       </div>
 
+      <TimerSoundsCard />
+
       <ProgressCard />
 
       <div className="results-card">
@@ -186,6 +189,21 @@ export function SettingsScreen() {
         )}
       </div>
     </section>
+  );
+}
+
+/** Turns the timer start and end beeps on or off. */
+function TimerSoundsCard() {
+  const on = useTimerSounds();
+  return (
+    <div className="results-card">
+      <h2>Sounds</h2>
+      <label className="setting-toggle">
+        <input type="checkbox" checked={on} onChange={(event) => setTimerSounds(event.target.checked)} aria-describedby="timer-sounds-hint" />
+        Timer sounds
+      </label>
+      <p id="timer-sounds-hint" className="fine-print">A soft beep when each timer starts and ends. Saved on this device.</p>
+    </div>
   );
 }
 

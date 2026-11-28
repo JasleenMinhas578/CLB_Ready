@@ -14,6 +14,7 @@ import { getFeedbackEngine } from '@/services/ai/feedbackEngine';
 import { friendlyModelError } from '@/services/ai/errorText';
 import { WHISPER_SAMPLE_RATE, toWhisperAudio } from '@/services/audio/recorder';
 import { useMicLevel } from '@/services/audio/useMicLevel';
+import { playBeep, unlockBeeps } from '@/services/audio/beep';
 import { MIC_PROBLEM_TEXT, checkRecording, type RecordingProblem } from '@/services/audio/analysis';
 import { buildSpeakingPhases } from './phases';
 import { useCountdown } from './useCountdown';
@@ -47,6 +48,8 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   const { goal, micReady, setMicReady, setLastAttempt } = useSession();
   const phases = buildSpeakingPhases(task.timing);
   const [state, setState] = useState<SpeakingFlow>('ready');
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [problem, setProblem] = useState<{ title: string; help: string } | null>(null);
   const [selected, setSelected] = useState<0 | 1 | null>(null);
@@ -90,12 +93,15 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     };
   }, []);
 
-  // Turn the microphone on exactly when the recording phase begins.
+  // Turn the microphone on exactly when the recording phase begins,
+  // after its start beep has finished so the beep isn't in the recording.
   useEffect(() => {
     if (state !== 'running' || phase.id !== 'answer' || recordingStarted.current) return;
     recordingStarted.current = true;
-    void recorder.start(phase.seconds).then((ok) => {
-      if (!ok) setState('problem');
+    void playBeep('start').then(async () => {
+      // The learner may have left or pressed Finish during the beep.
+      if (!mounted.current || stateRef.current !== 'running') return;
+      if (!(await recorder.start(phase.seconds))) setState('problem');
     });
   }, [state, phase.id, phase.seconds, recorder.start]);
 
@@ -104,6 +110,8 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     try {
       const recording = await recorder.stop();
       if (!recording) throw new Error('No recording was made.');
+      // Only now, with the recorder stopped, so the end beep isn't recorded.
+      if (mounted.current) void playBeep('end');
       const audio = await toWhisperAudio(recording.blob);
       const issue = checkRecording(audio, WHISPER_SAMPLE_RATE);
       if (issue) {
@@ -153,7 +161,13 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   };
 
   const running = state === 'running';
-  const secondsLeft = useCountdown(phase.seconds, running, advance, phase.id);
+  // The answer's beeps are played above, around the recording.
+  const secondsLeft = useCountdown(phase.seconds, running, advance, phase.id, phase.id !== 'answer');
+
+  const begin = () => {
+    unlockBeeps();
+    setState(micReady ? 'running' : 'mic-check');
+  };
 
   const restart = () => {
     void recorder.stop();
@@ -204,7 +218,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
           Read the task first. When you press Start, {phases[0].id === 'select' ? 'the choosing time' : 'the preparation time'} begins.
           Recording starts by itself after that. Keep speaking until the recording time ends.
         </p>
-        <Button onClick={() => setState(micReady ? 'running' : 'mic-check')}>Start</Button>
+        <Button onClick={begin}>Start</Button>
         <SpeechModelBadge status={speechStatus} />
       </div>
     );
@@ -240,7 +254,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
           <button
             type="button"
             className="exam-next"
-            onClick={running ? advance : () => setState(micReady ? 'running' : 'mic-check')}
+            onClick={running ? advance : begin}
             disabled={state === 'transcribing' || state === 'mic-check' || state === 'problem'}
             aria-busy={state === 'transcribing'}
           >
