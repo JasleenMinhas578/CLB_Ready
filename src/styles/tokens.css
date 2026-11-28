@@ -79,7 +79,7 @@
   --step-1: 1.3125rem;                                /* card and item titles */
   --step-2: clamp(1.625rem, 1vw + 1.25rem, 2rem);     /* screen sections */
   --step-3: clamp(2rem, 2vw + 1.25rem, 2.75rem);      /* screen titles and home sections */
-  --step-4: clamp(2.5rem, 4vw + 0.75rem, 4.25rem);    /* the home headline */
+  --step-4: clamp(2.25rem, 2.2vw + 1.25rem, 3.5rem);  /* the home headline, sized to sit on two lines at desktop */
   --tracking-display: -0.02em;
 
   /* Shape: round everywhere, one radius per level */

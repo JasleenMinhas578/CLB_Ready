@@ -15,45 +15,62 @@
   background: var(--skill-tint); color: var(--skill-ink);
 }
 
-/* Home: the headline on the left, the next task as a card-stock ticket on the right */
+/* Home: the headline on the left, the next task as a card-stock ticket on the right, Pip peeking over it */
 .home-hero {
-  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--gap-5); align-items: center;
-  padding: var(--gap-5) 0 var(--gap-6);
+  display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--gap-5); align-items: center;
+  padding: var(--gap-4) 0 var(--gap-2);
 }
-.home-copy h1 { font-size: var(--step-4); line-height: 1.04; max-width: 14ch; margin-bottom: var(--gap-3); }
-.home-lede { font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 36ch; margin: 0; }
+.home-copy h1 {
+  font-size: var(--step-4); line-height: 1.06; max-width: 24ch; margin-bottom: var(--gap-2);
+  text-wrap: balance; overflow-wrap: break-word; min-width: 0;
+}
+.home-lede { font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 40ch; margin: 0; }
+/* How it works, for first visits: one line, not a block of numbered steps. */
+.home-how { list-style: none; display: flex; flex-wrap: wrap; gap: var(--gap-1) var(--gap-2); margin: var(--gap-3) 0 0; padding: 0; font-weight: 800; }
+.home-how li { display: inline-flex; align-items: center; gap: var(--gap-1); }
+.home-how .icon { color: var(--ink-soft); }
+.home-done {
+  display: inline-flex; align-items: center; gap: var(--gap-1); margin: var(--gap-3) 0 0; padding: var(--gap-1) var(--gap-2);
+  background: var(--mint-tint); border-radius: var(--radius-md); font-weight: 800;
+}
+.home-done .icon { color: var(--mint-ink); }
 
 .next-card {
-  position: relative; display: grid; justify-items: start; gap: var(--gap-1);
-  padding: var(--gap-4) var(--gap-4) var(--gap-3);
+  position: relative; display: grid; gap: var(--gap-3);
+  padding: var(--gap-4) var(--gap-3) var(--gap-3);
   background: var(--surface); border-radius: var(--radius-lg);
   box-shadow: inset 0 0 0 1px var(--border-soft), 0 6px 0 0 var(--edge), var(--shadow-card);
 }
-.next-card .skill-badge { margin-bottom: var(--gap-1); }
-.next-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-3); line-height: 1.05; letter-spacing: var(--tracking-display); }
-.next-where { margin: 0 0 var(--gap-2); font-weight: 700; color: var(--ink-soft); }
-.next-start { min-height: 56px; padding-inline: var(--gap-4); font-size: 1.2rem; }
-.home-goal { margin: var(--gap-2) 0 0; padding-top: var(--gap-2); border-top: 1px solid var(--border-soft); justify-self: stretch; font-size: var(--step--1); color: var(--ink-soft); }
+.next-pip { position: absolute; top: -52px; right: var(--gap-3); }
+.next-head { display: flex; align-items: center; gap: var(--gap-2); }
+.next-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.1; letter-spacing: var(--tracking-display); }
+.next-where { margin: 0.2rem 0 0; font-weight: 700; color: var(--ink-soft); }
+.next-actions { display: flex; flex-wrap: wrap; gap: var(--gap-2); }
+.next-start { min-height: 56px; padding-inline: var(--gap-3); font-size: 1.2rem; }
+.home-goal { margin: 0; padding-top: var(--gap-2); border-top: 1px solid var(--border-soft); font-size: var(--step--1); color: var(--ink-soft); }
 
-/* Pip, your AI coach: one mint sheet, Pip beside the words */
-.pip-intro {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--gap-4); align-items: center;
-  padding: var(--gap-4) var(--gap-5);
-  background: var(--grain), var(--mint-tint); border-radius: var(--radius-lg);
+.home-section { margin-top: var(--gap-5); }
+.home-section > h2, .home-example h2 { font-size: var(--step-3); margin-bottom: var(--gap-3); }
+
+/* An example of the results screen, using its own card, level pair and bar */
+.home-example { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--gap-3) var(--gap-5); align-items: center; }
+.home-example p { margin: 0; font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 45ch; }
+.example-card { margin: 0; }
+.example-card figcaption { margin-bottom: var(--gap-2); font-size: var(--step--1); font-weight: 800; color: var(--ink-soft); }
+.example-card .level-pair { margin-bottom: var(--gap-2); }
+.example-card .level-pair .is-level { background: var(--speaking-tint); }
+.example-card .example-tip {
+  display: flex; gap: var(--gap-1); align-items: flex-start; max-width: none; margin-top: var(--gap-3); padding: var(--gap-2);
+  background: var(--surface-sunk); border-radius: var(--radius-sm); font-size: var(--step-0); color: var(--ink);
 }
-.pip-intro .pip { grid-row: span 2; }
-.pip-intro h2 { font-size: var(--step-3); margin: 0 0 var(--gap-1); align-self: end; }
-.pip-intro p { margin: 0; color: var(--ink); align-self: start; font-size: var(--step-1); line-height: 1.5; max-width: 52ch; }
-
-.home-section { margin-top: var(--gap-6); }
-.home-section > h2 { font-size: var(--step-3); margin-bottom: var(--gap-4); }
+.example-tip .icon { flex: none; margin-top: 0.2rem; color: var(--speaking-ink); }
 
 /* Skill tiles: each skill on its own pastel card stock, the edge a shade deeper */
 .skill-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3); }
 .skill-card {
   --tile-edge: color-mix(in oklab, var(--skill-ink) 28%, var(--skill-tint));
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--gap-1) var(--gap-2); align-items: center; height: 100%;
-  padding: var(--gap-3) var(--gap-4) var(--gap-3) var(--gap-3);
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-2); align-items: start; height: 100%;
+  padding: var(--gap-3);
   background: var(--skill-tint); color: var(--ink); border-radius: var(--radius-lg); text-decoration: none;
   box-shadow: 0 var(--stock-edge) 0 0 var(--tile-edge);
   transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
@@ -64,8 +81,12 @@
 .skill-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
 .skill-text strong { font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.15; letter-spacing: var(--tracking-display); }
 .skill-text span { color: var(--ink); text-wrap: pretty; }
-.skill-text small { margin-top: var(--gap-1); font-size: var(--step--1); font-weight: 800; color: var(--skill-ink); }
-.skill-card > .icon { color: var(--skill-ink); width: var(--icon-lg); height: var(--icon-lg); }
+.skill-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-1) var(--gap-3); }
+.skill-progress { flex: 1 1 12rem; max-width: 20rem; display: grid; gap: 0.35rem; }
+.skill-progress .bar { height: 8px; background: var(--surface); box-shadow: none; }
+.skill-progress .bar-fill { background: var(--skill-ink); }
+.skill-progress small { font-size: var(--step--1); font-weight: 800; color: var(--skill-ink); }
+.skill-go { display: inline-flex; align-items: center; gap: var(--gap-1); font-weight: 800; color: var(--skill-ink); }
 
 /* Good to know: a ruled list, the point on the left and the detail on the right */
 .home-facts dl { margin: 0; max-width: 1080px; border-top: 1px solid var(--border-soft); }
@@ -77,22 +98,23 @@
 .home-facts dd { margin: 0; color: var(--ink-soft); max-width: var(--text-width); text-wrap: pretty; font-size: 1.125rem; }
 
 @media (max-width: 900px) {
-  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-4); padding: var(--gap-3) 0 var(--gap-5); }
-  .pip-intro { padding: var(--gap-4) var(--gap-3); column-gap: var(--gap-3); }
+  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-5); padding: var(--gap-3) 0 var(--gap-2); }
+  .home-example { grid-template-columns: minmax(0, 1fr); }
   .home-facts dl > div { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
-  .next-card { padding: var(--gap-3); }
+  .home-hero { padding-top: var(--gap-2); gap: var(--gap-4); }
+  .home-how, .home-done { margin-top: var(--gap-2); }
+  .home-lede, .home-example p { font-size: var(--step-0); }
+  .next-card { padding: var(--gap-3); gap: var(--gap-2); }
+  .next-pip { width: 64px; height: 64px; top: -38px; right: var(--gap-3); }
   .next-start { width: 100%; }
-  .pip-intro { grid-template-columns: minmax(0, 1fr); padding: var(--gap-3); }
-  .pip-intro .pip { grid-row: auto; width: 88px; height: 88px; margin-bottom: var(--gap-1); }
-  .pip-intro h2, .home-section > h2 { font-size: var(--step-2); }
-  .pip-intro p { font-size: var(--step-0); }
+  .next-actions > .btn { flex: 1 1 100%; }
+  .home-section > h2, .home-example h2 { font-size: var(--step-2); }
   .skill-list { grid-template-columns: minmax(0, 1fr); gap: var(--gap-2); }
-  .skill-card { grid-template-columns: auto minmax(0, 1fr); align-items: start; padding: var(--gap-2) var(--gap-3) var(--gap-2) var(--gap-2); }
+  .skill-card { padding: var(--gap-2); }
   .skill-card .skill-badge { width: 48px; height: 48px; }
-  .skill-card > .icon { display: none; }
-  .home-section { margin-top: var(--gap-5); }
+  .home-section { margin-top: var(--gap-4); }
 }
 
 /* Goal picker: card-stock options, the chosen one in mint */
