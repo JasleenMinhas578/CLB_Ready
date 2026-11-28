@@ -483,6 +483,33 @@
 }
 .narrow { max-width: 960px; }
 
+/* Scored results at desktop width: ResultsBody renders two even columns from 1100px, one stack below that. */
+.results-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gap-3); align-items: start; }
+.results-columns > div { min-width: 0; }
+
+/* Pip at work: a slow bob and three pulsing dots, transform and opacity only. Reduced motion: Pip still, no dots. */
+.pip-working { display: inline-flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: none; }
+.pip-working .pip { animation: pip-bob 2.4s ease-in-out infinite; }
+.pip-dots { display: flex; gap: 4px; }
+.pip-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--lilac-ink); animation: pip-dot 1.2s ease-in-out infinite; }
+.pip-dots span:nth-child(2) { animation-delay: 0.2s; }
+.pip-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pip-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes pip-dot { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .pip-working .pip { animation: none; }
+  .pip-dots { display: none; }
+}
+
+/* One sky panel stands in for everything Pip decides until step 1 is done. */
+.processing-card { background: var(--info-bg); border-color: transparent; }
+.processing-head { display: flex; gap: var(--gap-2); align-items: flex-start; margin-bottom: var(--gap-1); }
+.processing-head h2 { margin: 0 0 0.25rem; }
+.processing-step { margin: 0; font-weight: 800; }
+.processing-card .bar { margin-bottom: var(--gap-1); background: var(--surface); }
+.processing-card .fine-print { margin: 0 0 var(--gap-1); }
+.processing-card .fine-print:last-child { margin-bottom: 0; }
+
 /* The improved answer as it's written: a blinking caret marks where Pip is. */
 .improved-card.is-writing .ai-status { margin: 0 0 var(--gap-2); }
 .streaming-text { white-space: pre-wrap; }
