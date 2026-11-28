@@ -60,8 +60,13 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
     showTab(next);
     document.getElementById(`reading-tab-${next}`)?.focus();
   };
+  // Side by side, each panel carries a small label; as tabs, the tab names it instead.
   const panelProps = (id: Tab) =>
-    tabbed ? { id: `reading-panel-${id}`, role: 'tabpanel', 'aria-labelledby': `reading-tab-${id}`, hidden: tab !== id } : {};
+    tabbed
+      ? { id: `reading-panel-${id}`, role: 'tabpanel', 'aria-labelledby': `reading-tab-${id}`, hidden: tab !== id }
+      : { role: 'region', 'aria-labelledby': `reading-label-${id}` };
+  const panelLabel = (id: Tab) =>
+    !tabbed && <h2 id={`reading-label-${id}`} className="exam-panel-label">{TABS.find((item) => item.id === id)?.label}</h2>;
 
   const answer = (id: string, option: number) => setAnswers((current) => ({ ...current, [id]: option }));
 
@@ -123,17 +128,19 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
       )}
       <div className="exam-body exam-columns objective-columns">
         <div className="exam-panel passage-panel" {...panelProps('passage')}>
+          {panelLabel('passage')}
           <PassageView blocks={part.blocks} questions={part.questions} numbers={numbers} answers={answers} onAnswer={answer} />
         </div>
         {listed.length > 0 && (
           <div className="exam-panel" {...panelProps('questions')}>
+            {panelLabel('questions')}
             <QuestionList questions={listed} numbers={numbers} answers={answers} onAnswer={answer} />
           </div>
         )}
       </div>
       <div className="exam-meta">
-        <span>{answered} of {part.questions.length} answered. Unanswered questions count as wrong, so make a guess.</span>
-        <span>Time for this part: {task.timing.minutes} minutes.</span>
+        <p>{answered} of {part.questions.length} answered. Unanswered questions count as wrong, so make a guess.</p>
+        <p>Time for this part: {task.timing.minutes} minutes.</p>
       </div>
     </div>
   );

@@ -1,14 +1,21 @@
 /* Test-style task screens. Calm and plain on purpose: only the --exam-* colours,
    no shadows, no hover lifts and no decoration, so practice feels like test day. */
 .exam-page {
-  min-height: 100vh; display: flex; flex-direction: column;
-  background: var(--exam-bg); color: var(--exam-ink);
+  /* One capped column for the bar's contents, the panels and the notes: on a wide screen the
+     margins grow, not the gap between the task and its controls. */
+  --exam-width: 75rem;
+  --exam-inset: max(var(--gutter), (100% - var(--exam-width)) / 2);
+  min-height: 100vh; background: var(--exam-bg); color: var(--exam-ink);
 }
-.exam-main { flex: 1; width: 100%; max-width: none; margin: 0; padding: 0; }
+/* No stretching: the notes sit right under the task, not at the foot of an empty screen. */
+.exam-main { width: 100%; max-width: none; margin: 0; padding: 0; }
 .exam-main:focus { outline: none; }
-.exam-footnote { margin: 0 auto; padding: 0.75rem 16px 1rem; font-size: 0.8rem; color: var(--exam-soft); text-align: center; max-width: none; }
-
-.exam-screen { display: flex; flex-direction: column; min-height: calc(100vh - 3rem); }
+.exam-body, .exam-meta, .exam-instructions, .exam-tabs, .exam-footnote { padding-inline: var(--exam-inset); }
+.exam-footnote {
+  margin: 0; padding-block: 12px var(--gap-3); max-width: none;
+  font-size: 0.8rem; line-height: 1.5; color: var(--exam-soft);
+}
+.exam-footnote::before { content: ''; display: block; margin-bottom: 12px; border-top: 1px solid var(--exam-line); }
 
 /* Plain focus rings on exam screens; white on the dark bar. */
 .exam-page :focus-visible { outline-color: var(--exam-accent); }
@@ -32,7 +39,7 @@
 .exam-bar {
   position: sticky; top: 0; z-index: 5;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  padding: 0.7rem var(--gutter); background: var(--exam-accent); color: var(--exam-surface);
+  padding: 0.7rem var(--exam-inset); background: var(--exam-accent); color: var(--exam-surface);
 }
 /* One row at every width: a long title is cut short rather than making the sticky bar taller. */
 .exam-bar-title { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; }
@@ -51,7 +58,7 @@
 .exam-time span { font-size: 0.75rem; font-weight: 700; opacity: 0.85; }
 .exam-time strong { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
 /* Low time: the clock turns into a white tag with red text and the warning icon, like the real test's red timer. */
-.exam-time.is-low strong { padding: 0 0.45rem; color: var(--exam-rec); background: var(--exam-surface); border-radius: 6px; }
+.exam-time.is-low strong { padding: 0 0.45rem; color: var(--exam-rec-ink); background: var(--exam-surface); border-radius: 6px; }
 .warn-icon { flex: none; }
 .exam-next {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -77,10 +84,12 @@
 .exam-dialog-actions .btn { flex: 1 1 0; }
 
 /* Body */
-.exam-body { flex: 1; display: grid; gap: 20px; width: 100%; margin: 0 auto; padding: 20px var(--gutter); align-items: start; align-content: start; }
+.exam-body { display: grid; gap: 20px; width: 100%; margin: 0; padding-block: 20px; align-items: start; align-content: start; }
 .exam-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .exam-stack { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .exam-panel { background: var(--exam-surface); border: 1px solid var(--exam-line); border-radius: 10px; padding: var(--gap-3); }
+/* Names what each panel holds ("Task", "Your answer"), quietly: the content below is the headline. */
+.exam-panel-label { display: block; margin: 0 0 12px; font: 800 0.9rem/1.3 var(--font-body); color: var(--exam-soft); }
 
 .exam-prompt { font-size: 1.1rem; line-height: 1.6; margin-bottom: 0.75rem; max-width: none; }
 .exam-points { margin: 0 0 0.75rem; padding-left: 1.3rem; display: grid; gap: 0.3rem; font-size: 1.05rem; }
@@ -108,6 +117,7 @@
 
 /* Writing editor */
 .editor-panel { display: flex; flex-direction: column; gap: 12px; }
+.editor-panel .exam-panel-label { margin: 0; }
 .editor-toolbar { display: flex; flex-wrap: wrap; gap: var(--gap-1); }
 .exam-tool {
   min-height: 44px; padding: 0 0.85rem; font: 700 0.9rem var(--font-body); color: var(--exam-ink);
@@ -116,7 +126,7 @@
 .exam-tool:hover:not(:disabled) { background: var(--exam-bg); }
 .exam-tool:disabled { color: var(--exam-soft); border-color: var(--exam-line); cursor: not-allowed; }
 .exam-textarea {
-  width: 100%; min-height: 420px; resize: vertical; padding: 12px var(--gap-2);
+  width: 100%; min-height: clamp(300px, 48vh, 420px); resize: vertical; padding: 12px var(--gap-2);
   font: 400 1.05rem/1.6 var(--font-body); color: var(--exam-ink); caret-color: var(--exam-accent);
   background: var(--exam-surface); border: 1px solid var(--exam-line-strong); border-radius: 6px;
 }
@@ -131,7 +141,8 @@
 .exam-wordcount.is-good span { color: var(--exam-ink); font-weight: 800; }
 
 /* Speaking timers */
-.status-panel { min-height: 160px; }
+/* Focused from code only, when the button that was pressed leaves with its state. */
+.status-panel:focus { outline: none; }
 .phase-timers { display: grid; gap: var(--gap-2); }
 .phase-timer { padding: 12px var(--gap-2); border: 1px solid var(--exam-line); border-radius: 8px; background: var(--exam-sunk); color: var(--exam-soft); }
 .phase-timer.is-active { color: var(--exam-ink); background: var(--exam-surface); border-color: var(--exam-accent); }
@@ -139,7 +150,7 @@
 .phase-timer-label { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 800; }
 .phase-timer-head strong { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
 .phase-timer.is-active .phase-timer-head strong { font-size: 1.5rem; }
-.phase-timer.is-low .phase-timer-head strong, .kind-answer.is-active .phase-timer-head strong { color: var(--exam-rec); }
+.phase-timer.is-low .phase-timer-head strong, .kind-answer.is-active .phase-timer-head strong { color: var(--exam-rec-ink); }
 .phase-bar { height: 12px; background: var(--exam-line); border-radius: 6px; overflow: hidden; }
 /* The fill scales from the left (the width is set inline as a scaleX), so the browser never re-lays out the bar. */
 .phase-bar span { display: block; width: 100%; height: 100%; background: var(--exam-accent); transform-origin: left; transition: transform 0.2s linear; }
@@ -147,6 +158,11 @@
 .phase-timer:not(.is-active) .phase-bar span { background: var(--exam-line-strong); }
 .kind-answer.is-active .phase-bar span { background: var(--exam-rec); }
 .phase-timer .level-meter { margin-top: 12px; height: 28px; }
+/* Before Start: the same rows as a plain list of what will happen and for how long. */
+.phase-timers.is-preview { gap: var(--gap-1); width: 100%; }
+.is-preview .phase-timer { padding: 12px var(--gap-2); }
+.is-preview .phase-timer-head { margin: 0; }
+.is-preview .phase-bar { display: none; }
 .phase-timer .level-meter span { width: 9px; }
 /* Steady, not blinking: no looping motion beside a timer. */
 .rec-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--exam-rec); }
@@ -159,8 +175,9 @@
 }
 .level-meter span.is-lit { background: var(--exam-accent); border-color: var(--exam-accent); }
 
-.exam-message, .mic-check { display: grid; gap: 0.75rem; justify-items: start; }
-.exam-message h2, .mic-check h2 {
+.exam-message, .mic-check { display: grid; gap: var(--gap-2); justify-items: start; }
+.exam-message .btn-primary { min-width: 10rem; }
+.exam-message h3, .mic-check h3 {
   display: flex; align-items: center; gap: 0.5rem; margin: 0;
   font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; line-height: 1.3;
 }
@@ -175,24 +192,24 @@
 
 /* A problem that stops the task, under the panels. */
 .exam-alert {
-  display: flex; align-items: center; gap: 0.5rem; margin: 0 var(--gutter) 12px; padding: 12px var(--gap-2); max-width: none;
+  display: flex; align-items: center; gap: 0.5rem; width: auto; max-width: var(--exam-width); margin: 0 var(--exam-inset) 12px; padding: 12px var(--gap-2);
   font-weight: 800; color: var(--exam-ink); background: var(--exam-surface); border: 1px solid var(--exam-rec); border-radius: 8px;
 }
 .exam-alert .warn-icon { color: var(--exam-rec); }
 
 .exam-meta {
   display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
-  width: 100%; margin: 0 auto; padding: 0 var(--gutter) 12px; font-size: 0.85rem; color: var(--exam-soft);
+  width: 100%; margin: 0; padding-bottom: 12px; font-size: 0.85rem; color: var(--exam-soft);
 }
-.plan-badge { max-width: none; margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--exam-soft); }
+.exam-meta p { margin: 0; max-width: none; }
+.plan-badge { max-width: none; margin: 0; font-size: 0.85rem; color: var(--exam-soft); }
 .plan-badge a { color: var(--exam-ink); }
 
 @media (max-width: 860px) { /* Same as NARROW in ReadingTask.tsx */
   .exam-columns, .exam-stack { grid-template-columns: 1fr; }
-  .exam-bar { padding: 0.6rem 16px; }
-  .exam-body { padding: var(--gap-2); }
-  .exam-meta { padding: 0 16px 12px; }
-  .exam-alert { margin: 0 16px 12px; }
+  .exam-page { --exam-inset: 16px; }
+  .exam-bar { padding-block: 0.6rem; }
+  .exam-body { padding-block: var(--gap-2); }
   .exam-textarea { min-height: 300px; }
 }
 @media (max-width: 480px) {
@@ -225,13 +242,13 @@
 .exam-scene p { margin: 0; font-size: 1.05rem; line-height: 1.6; max-width: none; }
 
 /* Reading and listening */
-.exam-instructions { margin: 0; padding: var(--gap-2) var(--gutter) 0; font-weight: 700; max-width: none; }
+.exam-instructions { margin: 0; padding-top: var(--gap-2); font-weight: 700; max-width: none; }
 .exam-instructions-inline { margin: 0 0 0.75rem; font-weight: 700; max-width: none; }
 .objective-columns { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
 .passage-panel { position: sticky; top: 84px; max-height: calc(100vh - 104px); overflow: auto; }
 .exam-panel[hidden] { display: none; }
 /* Passage / questions tabs, only on narrow screens (ReadingTask). */
-.exam-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-1); padding: 12px var(--gap-2) 0; scroll-margin-top: 4.5rem; }
+.exam-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-1); padding-top: 12px; scroll-margin-top: 4.5rem; }
 .exam-tabs [role='tab'] {
   min-height: 44px; font: 800 1rem var(--font-body); color: var(--exam-ink);
   background: var(--exam-surface); border: 1px solid var(--exam-line-strong); border-radius: 8px; cursor: pointer;
@@ -241,7 +258,7 @@
 .passage { display: grid; gap: 20px; }
 /* Grid items would otherwise grow to fit a wide table or dropdown and push the passage off screen. */
 .passage > * { min-width: 0; }
-.passage-block h2 { margin: 0 0 0.5rem; font: 800 1.05rem var(--font-body); }
+.passage-block h3 { margin: 0 0 0.5rem; font: 800 1.05rem var(--font-body); }
 .passage-block p { margin: 0 0 0.8rem; line-height: 1.7; max-width: none; white-space: pre-line; }
 .passage-block.is-cloze { padding: var(--gap-2); background: var(--exam-sunk); border: 1px solid var(--exam-line); border-radius: 8px; }
 .passage-table-wrap { overflow-x: auto; }
@@ -270,10 +287,11 @@
 .audio-progress { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--gap-1) 12px; font-weight: 800; }
 .audio-progress .icon { color: var(--exam-accent); }
 .audio-progress .phase-bar { grid-column: 1 / -1; }
+.exam-waiting { margin: 0; max-width: none; color: var(--exam-soft); }
 @media (max-width: 860px) { /* Same as NARROW in ReadingTask.tsx */
   .objective-columns, .listening-body { grid-template-columns: 1fr; }
   .passage-panel { position: static; max-height: none; }
-  .exam-instructions { padding: 12px 16px 0; }
+  .exam-instructions { padding-top: 12px; }
 }
 
 /* Work in progress (saving, checking, getting voices ready): a spinner and words, never the spinner alone. */

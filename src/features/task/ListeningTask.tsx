@@ -11,6 +11,7 @@ import { ExamBar, TimeRemaining } from './exam/ExamBar';
 import { QuestionList, type Answers } from './objective/Questions';
 import { useClipPlayer } from './objective/useClipPlayer';
 import { Icon } from '@/components/Icon';
+import { formatSeconds } from '@/domain/timer';
 
 /** Time to answer each question after a recording, close to test day. */
 export const SECONDS_PER_QUESTION = 30;
@@ -77,7 +78,8 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
         }
       />
       <div className="exam-body listening-body">
-        <div className="exam-panel listening-panel">
+        <section className="exam-panel listening-panel" aria-labelledby="listening-label">
+          <h2 id="listening-label" className="exam-panel-label">Recording</h2>
           <p className="exam-instructions-inline">{part.instructions}</p>
           <p className="listening-intro">{clip.intro}</p>
           {player.state === 'preparing' && (
@@ -90,7 +92,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
           )}
           {player.state === 'ready' && (
             <div className="exam-message">
-              <p>Each recording plays once. You cannot pause or replay it.</p>
+              <p>It plays once. You cannot pause or replay it.</p>
               <button type="button" className="exam-play" onClick={() => { unlockBeeps(); player.play(); }}><Icon name="play" /> Play recording</button>
             </div>
           )}
@@ -111,12 +113,19 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
                   : 'The AI voice could not run on this device. Your browser’s own voice is reading the recording instead.'}
             </p>
           )}
-        </div>
-        {answering && (
-          <div className="exam-panel">
+        </section>
+        <section className="exam-panel" aria-labelledby="questions-label">
+          <h2 id="questions-label" className="exam-panel-label">Questions</h2>
+          {answering ? (
             <QuestionList questions={clip.questions} startAt={questionStart} answers={answers} onAnswer={(id, option) => setAnswers((current) => ({ ...current, [id]: option }))} />
-          </div>
-        )}
+          ) : (
+            // Says what comes next, so the learner knows the plan before pressing Play.
+            <p className="exam-waiting">
+              {clip.questions.length === 1 ? 'Your question appears' : `Your ${clip.questions.length} questions appear`} here when the recording ends.
+              You then have {formatSeconds(clip.questions.length * SECONDS_PER_QUESTION)} to answer.
+            </p>
+          )}
+        </section>
       </div>
     </div>
   );
