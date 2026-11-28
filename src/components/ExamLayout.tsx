@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
+import { DISCLAIMER } from './Disclaimer';
 
 /**
- * Test-day frame for task screens: no site header, candy decoration or
+ * Test-day frame for task screens: no site header, decoration or
  * footer links, so the learner focuses on the task like the real test.
  * Each task draws its own exam bar (title, timer, Next).
  */
@@ -11,9 +12,7 @@ export function ExamLayout({ children }: { children: ReactNode }) {
       <main id="main" tabIndex={-1} className="exam-main">
         {children}
       </main>
-      <p className="exam-footnote">
-        CLB Ready practice test. Independent tool, not affiliated with CELPIP. Your answers stay on this device.
-      </p>
+      <p className="exam-footnote">{DISCLAIMER}</p>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import type { Availability } from '@/domain/skills';
 import type { Tone } from '@/domain/measure/writingMetrics';
 import type { ListeningPart, ReadingPart } from './objective';
 
@@ -51,7 +50,6 @@ export interface PracticeModule {
   id: string;
   number: number;
   title: string;
-  status: Availability;
   prompts: PracticePrompt[];
   reading?: ReadingPart[];
   listening?: ListeningPart[];

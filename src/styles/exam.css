@@ -1,10 +1,6 @@
-/* Test-style task screens. Calm and plain on purpose: no candy, stickers or
-   motion, so practice feels like test day. Brand shows only in the grape bar. */
+/* Test-style task screens. Calm and plain on purpose: only the --exam-* colours,
+   no shadows, no hover lifts and no decoration, so practice feels like test day. */
 .exam-page {
-  --exam-bg: #efedf3;
-  --exam-line: #cfc8d8;
-  --exam-ink: #2a1d33;
-  --exam-soft: #5d5269;
   min-height: 100vh; display: flex; flex-direction: column;
   background: var(--exam-bg); color: var(--exam-ink);
 }
@@ -14,182 +10,279 @@
 
 .exam-screen { display: flex; flex-direction: column; min-height: calc(100vh - 3rem); }
 
+/* Plain focus rings on exam screens; white on the dark bar. */
+.exam-page :focus-visible { outline-color: var(--exam-accent); }
+.exam-bar :focus-visible { outline-color: var(--exam-surface); }
+
+/* Shared buttons turn flat and square-ish here: no pill, no shadow, no lift. */
+.exam-page .btn {
+  min-height: 48px; border: 1px solid transparent; border-radius: 8px;
+  font-family: var(--font-body); font-weight: 800; font-size: 1rem; color: var(--exam-ink);
+}
+/* No card-stock edge, lift or press here: test-day buttons are flat. */
+.exam-page .btn, .exam-page .btn:hover, .exam-page .btn:active, .exam-page .btn:disabled { box-shadow: none; transform: none; }
+.exam-page .btn-primary, .exam-page .btn-primary:hover { color: var(--exam-surface); background: var(--exam-accent); border-color: var(--exam-accent); }
+.exam-page .btn-secondary { background: var(--exam-surface); border-color: var(--exam-line-strong); }
+.exam-page .btn-secondary:hover { background: var(--exam-sunk); color: var(--exam-ink); }
+.exam-page .btn-quiet { color: var(--exam-ink); text-decoration: underline; text-underline-offset: 3px; }
+.exam-page .btn-quiet:hover { background: var(--exam-sunk); color: var(--exam-ink); }
+.exam-page .btn:disabled { color: var(--exam-soft); background: var(--exam-sunk); border-color: var(--exam-line); }
+
 /* Top bar */
 .exam-bar {
   position: sticky; top: 0; z-index: 5;
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
-  padding: 0.7rem var(--gutter); background: var(--grape); color: #fff;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.7rem var(--gutter); background: var(--exam-accent); color: var(--exam-surface);
 }
-.exam-bar-title { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+/* One row at every width: a long title is cut short rather than making the sticky bar taller. */
+.exam-bar-title { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; }
+.exam-bar-title > div { min-width: 0; }
 .exam-bar h1 { margin: 0; font-family: var(--font-body); font-size: 1.15rem; font-weight: 800; line-height: 1.2; }
-.exam-position { display: block; font-size: 0.8rem; font-weight: 700; opacity: 0.8; }
+.exam-bar h1, .exam-position { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exam-position { display: block; font-size: 0.8rem; font-weight: 700; opacity: 0.85; }
 .exam-exit {
-  padding: 0.3rem 0.75rem; font-size: 0.85rem; font-weight: 800; text-decoration: none; color: #fff;
-  border: 1.5px solid rgb(255 255 255 / 0.5); border-radius: 8px;
+  flex: none; display: inline-flex; align-items: center; min-height: 44px;
+  padding: 0 0.75rem; font-size: 1rem; font-weight: 800; text-decoration: none; color: var(--exam-surface);
+  border: 1.5px solid var(--exam-bar-line); border-radius: 8px;
 }
-.exam-exit:hover { background: rgb(255 255 255 / 0.12); color: #fff; }
-.exam-bar-right { display: flex; align-items: center; gap: 1rem; }
+.exam-exit:hover { background: var(--exam-bar-hover); color: var(--exam-surface); }
+.exam-bar-right { display: flex; align-items: center; gap: 1rem; flex: none; }
 .exam-time { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
-.exam-time span { font-size: 0.75rem; font-weight: 700; opacity: 0.8; }
-.exam-time strong { font-size: 1.35rem; font-variant-numeric: tabular-nums; }
-.exam-time.is-low strong { color: var(--lemon); }
+.exam-time span { font-size: 0.75rem; font-weight: 700; opacity: 0.85; }
+.exam-time strong { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+/* Low time: the clock turns into a white tag with red text and the warning icon, like the real test's red timer. */
+.exam-time.is-low strong { padding: 0 0.45rem; color: var(--exam-rec); background: var(--exam-surface); border-radius: 6px; }
+.warn-icon { flex: none; }
 .exam-next {
-  min-width: 7rem; min-height: 42px; padding: 0.4rem 1.2rem;
-  font: 800 1rem var(--font-body); color: var(--grape);
-  background: var(--lemon); border: 0; border-radius: 8px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  /* Wide enough for its longest label ("Finish answer", "Checking…"), so changing state never moves the bar. */
+  min-width: 9rem; min-height: 44px; padding: 0 1.2rem;
+  font: 800 1rem var(--font-body); color: var(--exam-accent);
+  background: var(--exam-surface); border: 0; border-radius: 8px; cursor: pointer;
 }
-.exam-next:hover:not(:disabled) { background: #ffe57f; }
-.exam-next:disabled { background: transparent; color: rgb(255 255 255 / 0.6); box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.35); cursor: not-allowed; }
-.exam-bar :focus-visible { outline-color: var(--lemon); }
+.exam-next:hover:not(:disabled) { background: var(--exam-sunk); }
+.exam-next:disabled { background: transparent; color: var(--exam-bar-line); box-shadow: inset 0 0 0 1.5px var(--exam-bar-faint); cursor: not-allowed; }
+/* Busy is not the same as unavailable: it stays solid, with a spinner, so "Saving…" reads as work in progress. */
+.exam-next[aria-busy='true']:disabled { color: var(--exam-accent); background: var(--exam-surface); box-shadow: none; cursor: progress; }
+
+/* Exit confirm: plain like the rest of the exam, opened with showModal(). */
+.exam-dialog {
+  width: 26rem; max-width: calc(100% - 2 * var(--gap-2)); padding: var(--gap-3);
+  color: var(--exam-ink); background: var(--exam-surface); border: 1px solid var(--exam-line); border-radius: 10px;
+}
+.exam-dialog::backdrop { background: var(--exam-scrim); }
+.exam-dialog h2 { margin: 0 0 0.5rem; font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; }
+.exam-dialog p { margin: 0 0 1rem; max-width: none; }
+.exam-dialog-actions { display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+.exam-dialog-actions .btn { flex: 1 1 0; }
 
 /* Body */
-.exam-body { flex: 1; display: grid; gap: 20px; width: 100%; margin: 0 auto; padding: 20px var(--gutter); align-items: start; }
+.exam-body { flex: 1; display: grid; gap: 20px; width: 100%; margin: 0 auto; padding: 20px var(--gutter); align-items: start; align-content: start; }
 .exam-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .exam-stack { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.exam-panel { background: #fff; border: 1px solid var(--exam-line); border-radius: 10px; padding: 20px 22px; }
+.exam-panel { background: var(--exam-surface); border: 1px solid var(--exam-line); border-radius: 10px; padding: var(--gap-3); }
 
 .exam-prompt { font-size: 1.1rem; line-height: 1.6; margin-bottom: 0.75rem; max-width: none; }
 .exam-points { margin: 0 0 0.75rem; padding-left: 1.3rem; display: grid; gap: 0.3rem; font-size: 1.05rem; }
 .exam-note { font-size: 0.85rem; color: var(--exam-soft); margin: 0.5rem 0 0; max-width: none; }
 
+/* Answer options. The edge uses the strong line so each choice reads as a control (3:1). */
 .exam-options { border: 0; padding: 0; margin: 0.5rem 0 0.75rem; display: grid; gap: 8px; }
 .exam-option {
   display: grid; grid-template-columns: auto auto 1fr; gap: 0.6rem; align-items: center;
-  padding: 0.7rem 0.9rem; border: 1px solid var(--exam-line); border-radius: 8px; cursor: pointer; background: #faf9fc;
+  padding: 0.7rem 0.9rem; border: 1px solid var(--exam-line-strong); border-radius: 8px; cursor: pointer; background: var(--exam-surface);
 }
-.exam-option input { width: 18px; height: 18px; accent-color: var(--grape); margin: 0; }
-.exam-option.is-selected { border-color: var(--grape); background: #f4effa; box-shadow: inset 0 0 0 1px var(--grape); }
-.exam-options:disabled .exam-option { cursor: default; opacity: 0.8; }
+.exam-option:hover { background: var(--exam-sunk); }
+.exam-option input { width: 18px; height: 18px; accent-color: var(--exam-accent); margin: 0; }
+.exam-option.is-selected { border-color: var(--exam-accent); background: var(--exam-sunk); box-shadow: inset 0 0 0 1px var(--exam-accent); }
+.exam-options:disabled .exam-option { cursor: default; }
+.exam-options:disabled .exam-option:not(.is-selected) { color: var(--exam-soft); border-color: var(--exam-line); background: var(--exam-sunk); }
 .exam-option-letter { font-weight: 800; font-size: 0.85rem; white-space: nowrap; }
 
 .exam-image { width: 100%; border-radius: 8px; border: 1px solid var(--exam-line); }
 .exam-image-placeholder {
   display: grid; place-items: center; aspect-ratio: 4 / 3; padding: 1rem; text-align: center;
-  color: var(--exam-soft); font-weight: 700; background: repeating-linear-gradient(-45deg, #f6f4f9 0 12px, #eeebf3 12px 24px);
-  border: 1px dashed var(--exam-line); border-radius: 8px;
+  color: var(--exam-soft); font-weight: 700; background: var(--exam-sunk);
+  border: 1px dashed var(--exam-line-strong); border-radius: 8px;
 }
 
 /* Writing editor */
-.editor-panel { display: flex; flex-direction: column; gap: 10px; }
-.editor-toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+.editor-panel { display: flex; flex-direction: column; gap: 12px; }
+.editor-toolbar { display: flex; flex-wrap: wrap; gap: var(--gap-1); }
 .exam-tool {
-  min-height: 34px; padding: 0.25rem 0.85rem; font: 700 0.9rem var(--font-body); color: var(--exam-ink);
-  background: #f6f4f9; border: 1px solid var(--exam-line); border-radius: 6px; cursor: pointer;
+  min-height: 44px; padding: 0 0.85rem; font: 700 0.9rem var(--font-body); color: var(--exam-ink);
+  background: var(--exam-sunk); border: 1px solid var(--exam-line-strong); border-radius: 8px; cursor: pointer;
 }
-.exam-tool:hover:not(:disabled) { background: #ebe6f1; }
-.exam-tool:disabled { opacity: 0.45; cursor: not-allowed; }
+.exam-tool:hover:not(:disabled) { background: var(--exam-bg); }
+.exam-tool:disabled { color: var(--exam-soft); border-color: var(--exam-line); cursor: not-allowed; }
 .exam-textarea {
-  width: 100%; min-height: 420px; resize: vertical; padding: 12px 14px;
-  font: 400 1.05rem/1.6 var(--font-body); color: var(--exam-ink);
-  background: #fff; border: 1px solid #b9b0c6; border-radius: 6px;
+  width: 100%; min-height: 420px; resize: vertical; padding: 12px var(--gap-2);
+  font: 400 1.05rem/1.6 var(--font-body); color: var(--exam-ink); caret-color: var(--exam-accent);
+  background: var(--exam-surface); border: 1px solid var(--exam-line-strong); border-radius: 6px;
 }
-.exam-textarea:focus { outline: 2px solid var(--grape); outline-offset: 1px; }
-.exam-textarea:disabled { background: #f6f4f9; }
+.exam-textarea:focus { outline: 2px solid var(--exam-accent); outline-offset: 1px; }
+.exam-textarea:disabled { color: var(--exam-soft); background: var(--exam-sunk); }
+.exam-textarea::selection { background: var(--exam-line); color: var(--exam-ink); }
 .exam-wordcount { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; margin: 0; max-width: none; font-weight: 700; }
 .exam-wordcount-number { white-space: nowrap; }
 .exam-wordcount strong { font-variant-numeric: tabular-nums; margin-left: 0.3rem; }
 .exam-wordcount span { color: var(--exam-soft); font-weight: 600; }
-.exam-wordcount.is-good span { color: var(--mint-deep); }
+/* In range: the words say so; weight, not a colour, marks it. */
+.exam-wordcount.is-good span { color: var(--exam-ink); font-weight: 800; }
 
 /* Speaking timers */
 .status-panel { min-height: 160px; }
-.phase-timers { display: grid; gap: 14px; }
-.phase-timer { padding: 12px 14px; border: 1px solid var(--exam-line); border-radius: 8px; background: #faf9fc; opacity: 0.6; }
-.phase-timer.is-active { opacity: 1; background: #fff; border-color: var(--grape); }
-.phase-timer.is-done { opacity: 0.75; }
-.phase-timer.is-done .phase-timer-head strong { color: var(--mint-deep); }
+.phase-timers { display: grid; gap: var(--gap-2); }
+.phase-timer { padding: 12px var(--gap-2); border: 1px solid var(--exam-line); border-radius: 8px; background: var(--exam-sunk); color: var(--exam-soft); }
+.phase-timer.is-active { color: var(--exam-ink); background: var(--exam-surface); border-color: var(--exam-accent); }
 .phase-timer-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 8px; }
 .phase-timer-label { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 800; }
-.phase-timer-head strong { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
-.phase-bar { height: 12px; background: #e8e4ee; border-radius: 6px; overflow: hidden; }
-.phase-bar span { display: block; height: 100%; background: var(--blueberry); transition: width 0.2s linear; }
-.kind-answer.is-active .phase-bar span { background: #e2486f; }
-.phase-timer .level-meter { margin-top: 10px; height: 28px; }
-.phase-timer .level-meter span { width: 9px; border-width: 1.5px; }
-.rec-dot { width: 12px; height: 12px; border-radius: 50%; background: #e2486f; animation: rec-blink 1.2s ease-in-out infinite; }
-@keyframes rec-blink { 50% { opacity: 0.3; } }
+.phase-timer-head strong { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.phase-timer.is-active .phase-timer-head strong { font-size: 1.5rem; }
+.phase-timer.is-low .phase-timer-head strong, .kind-answer.is-active .phase-timer-head strong { color: var(--exam-rec); }
+.phase-bar { height: 12px; background: var(--exam-line); border-radius: 6px; overflow: hidden; }
+/* The fill scales from the left (the width is set inline as a scaleX), so the browser never re-lays out the bar. */
+.phase-bar span { display: block; width: 100%; height: 100%; background: var(--exam-accent); transform-origin: left; transition: transform 0.2s linear; }
+/* Phases that are waiting or finished are dimmed with colour, not opacity, so their text stays readable. */
+.phase-timer:not(.is-active) .phase-bar span { background: var(--exam-line-strong); }
+.kind-answer.is-active .phase-bar span { background: var(--exam-rec); }
+.phase-timer .level-meter { margin-top: 12px; height: 28px; }
+.phase-timer .level-meter span { width: 9px; }
+/* Steady, not blinking: no looping motion beside a timer. */
+.rec-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--exam-rec); }
 
-.exam-message { display: grid; gap: 0.6rem; justify-items: start; }
-.exam-message h2 { margin: 0; font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; }
-.exam-message p { margin: 0; }
-.exam-message .btn { box-shadow: none; border-width: 2px; border-radius: 8px; font-family: var(--font-body); font-weight: 800; }
-.status-panel .mic-check { align-items: flex-start; text-align: left; }
-.status-panel .mic-check .row-actions { justify-content: flex-start; }
-.status-panel .mic-check .btn { box-shadow: none; border-width: 2px; border-radius: 8px; }
-.status-panel .model-badge { background: #f6f4f9; border-width: 1px; }
+/* Microphone level: one quiet colour; the bars' height already shows loudness. */
+.level-meter { display: flex; align-items: flex-end; gap: 4px; height: 44px; }
+.level-meter span {
+  width: 12px; background: var(--exam-surface); border: 1px solid var(--exam-line-strong); border-radius: 4px;
+  transition: background 0.08s linear;
+}
+.level-meter span.is-lit { background: var(--exam-accent); border-color: var(--exam-accent); }
 
-.exam-alert { margin: 0 auto 1rem; padding: 0.7rem 1rem; max-width: 860px; background: #fff3c4; border: 1px solid #e6c84f; border-radius: 8px; font-weight: 700; }
+.exam-message, .mic-check { display: grid; gap: 0.75rem; justify-items: start; }
+.exam-message h2, .mic-check h2 {
+  display: flex; align-items: center; gap: 0.5rem; margin: 0;
+  font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; line-height: 1.3;
+}
+.exam-message p, .mic-check p { margin: 0; max-width: none; }
+.mic-verdict { font-weight: 800; color: var(--exam-soft); }
+.mic-verdict.is-good { color: var(--exam-ink); }
+.exam-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+
+/* "Getting speech-to-text ready" and similar: a plain status line, not a badge. */
+.model-badge { display: flex; align-items: center; gap: 0.4rem; margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--exam-soft); max-width: none; }
+.model-badge.is-error { color: var(--exam-ink); }
+
+/* A problem that stops the task, under the panels. */
+.exam-alert {
+  display: flex; align-items: center; gap: 0.5rem; margin: 0 var(--gutter) 12px; padding: 12px var(--gap-2); max-width: none;
+  font-weight: 800; color: var(--exam-ink); background: var(--exam-surface); border: 1px solid var(--exam-rec); border-radius: 8px;
+}
+.exam-alert .warn-icon { color: var(--exam-rec); }
+
 .exam-meta {
   display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
   width: 100%; margin: 0 auto; padding: 0 var(--gutter) 12px; font-size: 0.85rem; color: var(--exam-soft);
 }
-.exam-meta .plan-badge { margin: 0; font-size: 0.85rem; }
+.plan-badge { max-width: none; margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--exam-soft); }
+.plan-badge a { color: var(--exam-ink); }
 
-@media (max-width: 860px) {
+@media (max-width: 860px) { /* Same as NARROW in ReadingTask.tsx */
   .exam-columns, .exam-stack { grid-template-columns: 1fr; }
   .exam-bar { padding: 0.6rem 16px; }
-  .exam-body { padding: 14px 16px; }
+  .exam-body { padding: var(--gap-2); }
   .exam-meta { padding: 0 16px 12px; }
+  .exam-alert { margin: 0 16px 12px; }
   .exam-textarea { min-height: 300px; }
 }
 @media (max-width: 480px) {
-  .exam-tool { padding: 0.25rem 0.55rem; font-size: 0.85rem; }
+  .exam-tool { flex: 1; padding: 0.25rem 0.4rem; font-size: 0.85rem; }
+  /* Let the task name use two lines and drop the timer's visible label (the timer keeps its spoken name), so the title stays readable. */
+  .exam-bar { gap: 0.5rem; }
+  .exam-bar h1 { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .exam-time span { display: none; }
+  .exam-bar-right { gap: 0.5rem; }
   .editor-toolbar { gap: 4px; }
   .exam-panel { padding: 16px; }
-  .exam-bar-title { gap: 0.6rem; }
+  .exam-bar-title { gap: 0.5rem; }
   .exam-bar h1 { font-size: 1rem; }
-  .exam-time strong { font-size: 1.1rem; }
-  .exam-next { min-width: 5.5rem; }
+  .exam-time strong { font-size: 1.25rem; }
+  /* One fixed width for every label; the busy spinner moves to the status line under the task, which says the same in words. */
+  /* Reading and listening never show a busy label, so their button keeps its natural width and the title more room. */
+  .exam-next { min-width: 0; padding: 0 0.75rem; }
+  /* Writing and speaking do: one fixed width for all their labels, so "Checking…" or "Saving…" never moves the bar. */
+  .exam-next-fixed { min-width: 6.25rem; padding: 0 0.5rem; }
+  .exam-exit { padding: 0 0.6rem; font-size: 0.9rem; }
+  .exam-next .spinner { display: none; }
+  /* Speaking has no timer in the bar, so its button can hold "Finish answer".*/
+  .exam-next-fixed.exam-next-wide { min-width: 8.5rem; }
+  .exam-position { font-size: 0.75rem; }
 }
 
 /* Picture tasks before the picture is drawn: the scene in words. */
-.exam-scene { margin: 0; padding: 14px 16px; background: #faf9fc; border: 1px dashed var(--exam-line); border-radius: 8px; }
+.exam-scene { margin: 0; padding: var(--gap-2); background: var(--exam-sunk); border: 1px dashed var(--exam-line-strong); border-radius: 8px; }
 .exam-scene figcaption { font-size: 0.85rem; font-weight: 700; color: var(--exam-soft); margin-bottom: 0.4rem; }
 .exam-scene p { margin: 0; font-size: 1.05rem; line-height: 1.6; max-width: none; }
 
 /* Reading and listening */
-.exam-instructions { margin: 0; padding: 14px var(--gutter) 0; font-weight: 700; max-width: none; }
+.exam-instructions { margin: 0; padding: var(--gap-2) var(--gutter) 0; font-weight: 700; max-width: none; }
 .exam-instructions-inline { margin: 0 0 0.75rem; font-weight: 700; max-width: none; }
 .objective-columns { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
 .passage-panel { position: sticky; top: 84px; max-height: calc(100vh - 104px); overflow: auto; }
-.passage { display: grid; gap: 18px; }
+.exam-panel[hidden] { display: none; }
+/* Passage / questions tabs, only on narrow screens (ReadingTask). */
+.exam-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-1); padding: 12px var(--gap-2) 0; scroll-margin-top: 4.5rem; }
+.exam-tabs [role='tab'] {
+  min-height: 44px; font: 800 1rem var(--font-body); color: var(--exam-ink);
+  background: var(--exam-surface); border: 1px solid var(--exam-line-strong); border-radius: 8px; cursor: pointer;
+}
+.exam-tabs [role='tab']:hover { background: var(--exam-sunk); }
+.exam-tabs [role='tab'][aria-selected='true'] { color: var(--exam-surface); background: var(--exam-accent); border-color: var(--exam-accent); }
+.passage { display: grid; gap: 20px; }
+/* Grid items would otherwise grow to fit a wide table or dropdown and push the passage off screen. */
+.passage > * { min-width: 0; }
 .passage-block h2 { margin: 0 0 0.5rem; font: 800 1.05rem var(--font-body); }
 .passage-block p { margin: 0 0 0.8rem; line-height: 1.7; max-width: none; white-space: pre-line; }
-.passage-block.is-cloze { padding: 14px 16px; background: #faf9fc; border: 1px solid var(--exam-line); border-radius: 8px; }
+.passage-block.is-cloze { padding: var(--gap-2); background: var(--exam-sunk); border: 1px solid var(--exam-line); border-radius: 8px; }
 .passage-table-wrap { overflow-x: auto; }
 .passage-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-.passage-table th, .passage-table td { padding: 8px 10px; border: 1px solid var(--exam-line); text-align: left; vertical-align: top; }
-.passage-table thead th { background: #f4effa; }
-.passage-table tbody th { font-weight: 800; background: #faf9fc; }
+.passage-table th, .passage-table td { padding: var(--gap-1) 12px; border: 1px solid var(--exam-line); text-align: left; vertical-align: top; }
+.passage-table thead th { background: var(--exam-bg); }
+.passage-table tbody th { font-weight: 800; background: var(--exam-sunk); }
 .passage-note { font-size: 0.85rem; color: var(--exam-soft); margin-top: 0.5rem; }
-.cloze-blank { display: inline-flex; align-items: center; gap: 4px; margin: 2px 2px; }
+.cloze-blank { display: inline-flex; align-items: center; gap: 4px; margin: 2px 2px; max-width: 100%; }
 .cloze-number { font-size: 0.75rem; font-weight: 800; color: var(--exam-soft); }
-.cloze-blank select { max-width: 100%; padding: 3px 6px; font: 600 0.95rem var(--font-body); color: var(--exam-ink); border: 1px solid #b9b0c6; border-radius: 6px; background: #fff; }
-.cloze-blank select:focus { outline: 2px solid var(--grape); outline-offset: 1px; }
-.question-list { display: grid; gap: 18px; }
-.choice-field { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
-.choice-field legend { margin-bottom: 6px; font-weight: 700; line-height: 1.5; }
+.cloze-blank select { min-width: 0; max-width: 100%; min-height: 44px; padding: 4px var(--gap-1); font: 600 0.95rem var(--font-body); color: var(--exam-ink); border: 1px solid var(--exam-line-strong); border-radius: 6px; background: var(--exam-surface); }
+.cloze-blank select:focus { outline: 2px solid var(--exam-accent); outline-offset: 1px; }
+.question-list { display: grid; gap: 20px; }
+.choice-field { border: 0; margin: 0; padding: 0; display: grid; gap: var(--gap-1); }
+.choice-field legend { margin-bottom: var(--gap-1); font-weight: 700; line-height: 1.5; }
 .choice-number { font-weight: 800; color: var(--exam-soft); }
 .choice-field .exam-option { grid-template-columns: auto 1fr; }
 .listening-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .listening-intro { font-size: 1.1rem; line-height: 1.6; margin: 0 0 1rem; max-width: none; }
 .exam-play {
-  min-height: 46px; padding: 0.5rem 1.4rem; font: 800 1rem var(--font-body); color: #fff;
-  background: var(--grape); border: 0; border-radius: 8px; cursor: pointer;
+  min-height: 48px; padding: 0 var(--gap-3); font: 800 1rem var(--font-body); color: var(--exam-surface);
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--exam-accent); border: 0; border-radius: 8px; cursor: pointer;
 }
-.exam-play:hover { background: #523063; }
-.audio-progress { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 10px; font-weight: 800; }
+.exam-play:hover { background: var(--exam-ink); }
+.audio-progress { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--gap-1) 12px; font-weight: 800; }
+.audio-progress .icon { color: var(--exam-accent); }
 .audio-progress .phase-bar { grid-column: 1 / -1; }
-.listening-dot { background: var(--blueberry); }
-@media (max-width: 860px) {
+@media (max-width: 860px) { /* Same as NARROW in ReadingTask.tsx */
   .objective-columns, .listening-body { grid-template-columns: 1fr; }
   .passage-panel { position: static; max-height: none; }
   .exam-instructions { padding: 12px 16px 0; }
 }
-.ai-voice-status { display: flex; align-items: center; gap: 10px; margin: 0; font-weight: 700; color: var(--exam-soft); max-width: none; }
-.ai-voice-status .spinner {
-  flex: none; width: 18px; height: 18px; border-radius: 50%;
-  border: 3px solid var(--exam-line); border-top-color: var(--grape); animation: voice-spin 0.9s linear infinite;
+
+/* Work in progress (saving, checking, getting voices ready): a spinner and words, never the spinner alone. */
+.busy-status { display: flex; align-items: center; gap: 12px; margin: 0; font-weight: 700; color: var(--exam-soft); max-width: none; }
+.spinner {
+  flex: none; display: inline-block; width: 1.25em; height: 1.25em; border-radius: 50%;
+  border: 3px solid var(--exam-line); border-top-color: var(--exam-accent); animation: spin 0.9s linear infinite;
 }
-@keyframes voice-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .ai-voice-status .spinner { animation: none; } }
+.exam-next .spinner { width: 1em; height: 1em; border-width: 2.5px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* With reduced motion the ring stays still: the dark quarter still marks it as busy, and the words say what is happening. */
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SpeechEngineStore } from '../src/services/ai/speechEngine';
 import type { ModelPlan } from '../src/services/device/tier';
 import type { SpeechToText } from '../src/services/ai/types';
+import type { LoadableModel } from '../src/services/ai/modelStore';
 
 function planFor(keepWhisperLoaded: boolean): ModelPlan {
   return {
@@ -80,5 +81,46 @@ describe('SpeechEngineStore', () => {
     await store.ensureLoaded();
     expect(seen[0]).toBe('loading');
     expect(seen[seen.length - 1]).toBe('ready');
+  });
+
+  it('drops a download that finishes after unload, without falling back', async () => {
+    const log: string[] = [];
+    let finishLoad = () => {};
+    let fellBack = false;
+    const slowEngine = (): SpeechToText => ({
+      ...fakeEngine(log),
+      load: () => new Promise((resolve) => { log.push('load'); finishLoad = () => resolve({ elapsedMs: 1 }); }),
+    });
+    const store = new SpeechEngineStore(async () => planFor(true), slowEngine, async () => (fellBack = true));
+    const loading = store.ensureLoaded();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await store.unload();
+    finishLoad();
+    await expect(loading).rejects.toThrow('unloaded');
+    expect(store.getStatus().state).toBe('idle');
+    expect(fellBack).toBe(false);
+    expect(log).toEqual(['load', 'unload', 'unload']);
+    // The next use starts a fresh load instead of reusing the dropped one.
+    const next = store.ensureLoaded();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    finishLoad();
+    await next;
+    expect(store.getStatus().state).toBe('ready');
+  });
+
+  it('forgets a crashed model and reloads it on next use', async () => {
+    const log: string[] = [];
+    const engines: LoadableModel[] = [];
+    const store = new SpeechEngineStore(async () => planFor(true), () => {
+      const engine = fakeEngine(log);
+      engines.push(engine);
+      return engine;
+    });
+    await store.ensureLoaded();
+    engines[0].onCrash?.(new Error('The speech model could not start in this browser.'));
+    expect(store.getStatus()).toMatchObject({ state: 'error', error: 'The speech model could not start in this browser.' });
+    await store.transcribe(new Float32Array(10));
+    expect(engines).toHaveLength(2);
+    expect(store.getStatus().state).toBe('ready');
   });
 });

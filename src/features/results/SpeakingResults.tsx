@@ -1,16 +1,17 @@
+import { use } from 'react';
 import type { SpeakingAttempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
-import { blendScores, codeEstimates, overallLevel, type Scores } from '@/domain/scoring/estimate';
+import { codeEstimates, overallLevel } from '@/domain/scoring/estimate';
+import { finalScores } from '@/domain/scoring/finalScores';
 import { codeTips } from '@/domain/scoring/codeTips';
-import { Emoji } from '@/components/Emoji';
+import { matchAiChecklist } from '@/domain/scoring/autoChecks';
 import { useFeedback } from './useFeedback';
-import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
-import { MIN_SCORABLE_SPEAKING_WORDS, isScorable, lengthCeiling } from '@/domain/scoring/sufficiency';
+import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, ResultsHead, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { MIN_SCORABLE_SPEAKING_WORDS, expectedSpokenWords, isScorable } from '@/domain/scoring/sufficiency';
 import { TranscriptView } from './TranscriptView';
-import { dropOutlierScores } from '@/domain/scoring/outliers';
 import { MeasureTiles } from './MeasureTiles';
 import { SampleAnswerCard } from './SampleAnswerCard';
-import { getPrompt } from '@/content/modules';
+import { getPrompt, loadModule } from '@/content/modules';
 import { getTaskType } from '@/domain/tasks/catalog';
 import { isSpeakingTask } from '@/domain/tasks/types';
 
@@ -18,7 +19,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
   const scorable = isScorable('speaking', attempt.metrics.wordCount);
   const { outcome, progress } = useFeedback(attempt);
   const ai = outcome?.kind === 'ai' ? outcome.run.reply : null;
-  const modelAnswer = getPrompt(attempt.moduleId, attempt.taskTypeId)?.modelAnswer;
+  const modelAnswer = getPrompt(use(loadModule(attempt.moduleId)), attempt.taskTypeId)?.modelAnswer;
   const task = getTaskType(attempt.taskTypeId);
   const sample = modelAnswer && task && isSpeakingTask(task) ? (
     <SampleAnswerCard text={modelAnswer} taskTypeId={task.id} seconds={task.timing.answerSeconds} />
@@ -26,11 +27,8 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
 
   if (!scorable) {
     return (
-      <section className="results">
-        <div className="screen-head">
-          <h1>Your feedback</h1>
-          <p>{attempt.taskTitle}</p>
-        </div>
+      <section className="results results-speaking">
+        <ResultsHead attempt={attempt} title="Your feedback" retryFirst />
         <div className="results-grid">
           <div className="results-side">
             <TooShortCard
@@ -48,33 +46,25 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             {sample}
             <div className="results-card">
               <h2>What we heard</h2>
-              <blockquote className="transcript">{attempt.transcript.trim() || '(No words detected)'}</blockquote>
-              <p className="fine-print">If you spoke more than this, check your microphone in the mic check and try again.</p>
+              <blockquote className="transcript">{attempt.transcript.trim() || '(We did not hear any words)'}</blockquote>
+              <p className="fine-print">If you said more than this, check your microphone and try again.</p>
             </div>
           </div>
         </div>
-        <ResultsActions attempt={attempt} />
+        <ResultsActions attempt={attempt} retryFirst />
       </section>
     );
   }
 
-  const codeScores = codeEstimates(attempt.metrics);
-  const rawModel: Partial<Scores> | null = ai
-    ? { content: ai.scores.content, vocabulary: ai.scores.vocabulary, listenability: ai.scores.delivery, task: ai.scores.task }
-    : null;
-  const checked = rawModel ? dropOutlierScores(rawModel, codeScores) : null;
-  const ceiling = lengthCeiling(attempt.metrics.wordCount, attempt.metrics.answerSeconds * 2);
-  const scores = blendScores(codeScores, checked?.scores ?? null, undefined, ceiling);
+  const { scores, ignored } = finalScores(
+    'speaking', codeEstimates(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, expectedSpokenWords(attempt.metrics.answerSeconds),
+  );
   const overall = overallLevel(scores);
   const final = outcome !== null;
 
   return (
-    <section className="results">
-      <div className="screen-head">
-        <Emoji symbol={overall >= attempt.goal ? '🎉' : '🍭'} size="xl" motion="bounce" />
-        <h1>Your feedback</h1>
-        <p>{attempt.taskTitle}</p>
-      </div>
+    <section className="results results-speaking">
+      <ResultsHead attempt={attempt} title="Your feedback" />
       <div className="results-grid">
         <div className="results-side">
           <LevelCard
@@ -84,10 +74,10 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             overall={overall}
             final={final}
             status={<AiStatus outcome={outcome} progress={progress} />}
-            notes={outlierNotes(checked?.ignored ?? [], getCriteria('speaking'))}
+            notes={outlierNotes(ignored)}
           />
           <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
-          <ChecklistCard items={attempt.checklist} results={ai ? ai.checklist.map((row) => ({ met: row.met })) : null} final={final} />
+          <ChecklistCard items={attempt.checklist} results={matchAiChecklist(attempt.checklist, ai?.checklist ?? null)?.map((row) => ({ met: row.met })) ?? null} final={final} />
           <div className="results-card">
             <h2>What we measured</h2>
             <MeasureTiles metrics={attempt.metrics} />
@@ -100,7 +90,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
           <div className="results-card">
             <h2>What we heard</h2>
             <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />
-            <p className="fine-print">Speech recognition can drop filler words, so counts are a minimum.</p>
+            <p className="fine-print">Speech-to-text can miss filler words like “um”, so the real count may be higher.</p>
           </div>
         </div>
       </div>

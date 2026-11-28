@@ -1,16 +1,17 @@
 import type { ObjectiveAttempt } from '@/domain/attempt';
-import { getObjectivePart } from '@/content/modules';
+import { use } from 'react';
+import { getObjectivePart, loadModule } from '@/content/modules';
 import { partQuestions, type ChoiceQuestion, type ListeningClip } from '@/content/objective';
 import { correctForGoal, estimateObjective } from '@/domain/scoring/objective';
 import { href } from '@/app/router';
-import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
+import { Icon } from '@/components/Icon';
 import { numberQuestions } from '@/features/task/objective/numbering';
-import { ResultsActions } from './cards';
+import { EstimateNote, ResultsActions, ResultsHead } from './cards';
 
 /** Results for a reading or listening part: the score, an estimated level and every answer explained. */
 export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
-  const part = getObjectivePart(attempt.moduleId, attempt.taskTypeId);
+  const part = getObjectivePart(use(loadModule(attempt.moduleId)), attempt.taskTypeId);
   if (!part) return <NotFound />;
   const questions = partQuestions(part);
   const numbers = 'blocks' in part ? numberQuestions(part.blocks, part.questions).numbers : new Map(questions.map((question, index) => [question.id, index + 1]));
@@ -22,12 +23,8 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
   const blanks = questions.filter((question) => attempt.answers[question.id] == null).length;
 
   return (
-    <section className="results">
-      <div className="screen-head">
-        <Emoji symbol={reached ? '🎉' : '🍭'} size="xl" motion="bounce" />
-        <h1>Your results</h1>
-        <p>{attempt.taskTitle}</p>
-      </div>
+    <section className={`results results-${attempt.skill}`}>
+      <ResultsHead attempt={attempt} title="Your results" />
       <div className="results-grid">
         <div className="results-side">
           <div className="results-card level-card">
@@ -36,12 +33,15 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
                 <span>Correct answers</span>
                 <strong>{correct} of {questions.length}</strong>
               </div>
-              <div>
+              <div className="is-level">
                 <span>Estimated level</span>
-                <strong>{estimate.level === null ? 'Below 3' : estimate.level >= 10 ? 'CLB 10+' : `CLB ${estimate.level}`}</strong>
+                {/* No-break spaces keep "CLB 3" on one line in the narrow level box. */}
+                <strong>{estimate.level === null ? 'Below CLB\u00a03' : estimate.level >= 10 ? 'CLB\u00a010+' : `CLB\u00a0${estimate.level}`}</strong>
               </div>
             </div>
+            <EstimateNote>Estimate for practice only, not an official CELPIP score.</EstimateNote>
             <p className={`goal-line ${reached ? 'is-reached' : ''}`}>
+              {reached && <Icon name="check" />}{' '}
               {reached
                 ? `On track for your goal of CLB ${attempt.goal}.`
                 : `For CLB ${attempt.goal}, aim for about ${target} of ${questions.length} in this part.`}
@@ -49,9 +49,9 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
             {!attempt.goalChosen && (
               <p className="fine-print">No goal set, so we used CLB {attempt.goal}. <a href={href('/goal')}>Choose your goal</a>.</p>
             )}
-            {blanks > 0 && <p className="fine-print">{blanks} left blank. On test day a guess can’t lose marks, so always answer.</p>}
+            {blanks > 0 && <p className="fine-print">{blanks} left blank. On test day, a wrong guess does not lose marks, so always answer.</p>}
             <p className="fine-print">
-              Based on CELPIP’s approximate chart for the full {attempt.skill} test, scaled to this part. One part has only{' '}
+              This level uses a CELPIP score chart for the full {attempt.skill} test, scaled to this part. One part has only{' '}
               {questions.length} questions, so treat the level as a rough guide.
             </p>
           </div>
@@ -68,7 +68,7 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
           {'clips' in part && (
             <div className="results-card">
               <h2>What you heard</h2>
-              <p className="fine-print">Read the recording while you check your answers. Notice the words that gave each answer away.</p>
+              <p className="fine-print">Read what was said while you check your answers. Look for the words that give each answer.</p>
               {part.clips.map((clip, index) => <Transcript key={clip.id} clip={clip} index={index} count={part.clips.length} />)}
             </div>
           )}
@@ -84,12 +84,12 @@ function AnswerRow({ question, number, chosen }: { question: ChoiceQuestion; num
   return (
     <li className={`answer-row ${right ? 'is-right' : 'is-wrong'}`} value={number}>
       <p className="answer-question">
-        <span aria-hidden="true">{right ? '✅' : '⭕'}</span> {question.text || `Blank ${number}`}
+        <Icon name={right ? 'check' : 'missed'} /> {question.text || `Blank ${number}`}
         <span className="sr-only">{right ? 'Correct' : 'Incorrect'}</span>
       </p>
       {!right && (
         <p className="answer-yours">
-          Your answer: <span>{chosen === null ? 'No answer' : question.options[chosen]}</span>
+          Your answer: <span className={chosen === null ? 'is-blank' : undefined}>{chosen === null ? 'No answer' : question.options[chosen]}</span>
         </p>
       )}
       <p className="answer-correct">

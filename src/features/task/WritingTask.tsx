@@ -11,10 +11,19 @@ import { ruleChecker } from '@/services/grammar/ruleChecker';
 import type { GrammarChecker } from '@/domain/grammar';
 import { getFeedbackEngine } from '@/services/ai/feedbackEngine';
 import { useCountdown } from './useCountdown';
-import { ExamBar, TimeRemaining } from './exam/ExamBar';
+import { ExamBar, TimeRemaining, WarnIcon } from './exam/ExamBar';
 import { PromptPanel } from './exam/PromptPanel';
 import { WritingEditor } from './exam/WritingEditor';
 import { ModelPlanBadge } from './ModelPlanBadge';
+import { clearDraft, hasUnsavedWork, loadDraft, saveDraft, warnBeforeLeaving } from './exam/unsavedWork';
+
+/**
+ * Resolves after the browser has painted. The grammar check blocks the page,
+ * so without this "Checking…" would never show before the results open.
+ */
+function afterPaint(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+}
 
 interface WritingTaskProps {
   task: WritingTaskType;
@@ -32,12 +41,14 @@ interface WritingTaskProps {
  */
 export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: WritingTaskProps) {
   const { goal, setLastAttempt } = useSession();
-  const [text, setText] = useState('');
+  // Brings back a draft if the learner left this task earlier in this tab.
+  const [text, setText] = useState(() => loadDraft(moduleId, task.id));
   const [selected, setSelected] = useState<0 | 1 | null>(null);
   const [state, setState] = useState<'writing' | 'checking'>('writing');
   const [timeUp, setTimeUp] = useState(false);
   const textRef = useRef(text);
   textRef.current = text;
+  const unsaved = hasUnsavedWork(state === 'writing', text);
 
   const secondsLeft = useCountdown(task.timing.minutes * 60, state === 'writing' && !timeUp, () => setTimeUp(true));
   const total = getTaskTypesForSkill('writing').length;
@@ -47,10 +58,21 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
     void getFeedbackEngine().then((store) => store.preload());
   }, []);
 
+  useEffect(() => {
+    if (state === 'writing') saveDraft(moduleId, task.id, text);
+  }, [state, text, moduleId, task.id]);
+
+  useEffect(() => {
+    if (!unsaved) return;
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [unsaved]);
+
   const finish = async () => {
     if (state === 'checking') return;
     setState('checking');
     const answer = textRef.current;
+    await afterPaint();
     const issues = await grammar.check(answer);
     const metrics = measureWriting({
       text: answer,
@@ -74,6 +96,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
       options: prompt.options,
       metrics,
     });
+    clearDraft(moduleId, task.id);
     navigate('/results');
   };
 
@@ -87,12 +110,14 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
   return (
     <div className="exam-screen">
       <ExamBar
-        position={`Writing Task ${task.order} of ${total}`}
+        position={`Writing task ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/writing/${moduleId}`}
-        status={<TimeRemaining seconds={secondsLeft} warnBelow={300} />}
+        exitWarning={unsaved ? 'Your writing is kept in this tab. It comes back when you open this task again, but the timer starts over.' : undefined}
+        status={<TimeRemaining seconds={secondsLeft} totalSeconds={task.timing.minutes * 60} warnBelow={300} />}
         action={
-          <button type="button" className="exam-next" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'}>
+          <button type="button" className="exam-next exam-next-fixed" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'} aria-busy={state === 'checking'}>
+            {state === 'checking' && <span className="spinner" aria-hidden="true" />}
             {state === 'checking' ? 'Checking…' : 'Next'}
           </button>
         }
@@ -104,11 +129,18 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
       </div>
 
       {timeUp && !text.trim() && (
-        <p className="exam-alert" role="alert">Time is up and nothing was written. Exit to try again.</p>
+        <p className="exam-alert" role="alert"><WarnIcon /> Time is up, and you did not write anything. Press Exit to try again.</p>
       )}
       <div className="exam-meta">
-        <span>Press Next when you finish. Your writing is checked after you submit.</span>
-        <ModelPlanBadge needsSpeech={false} />
+        {state === 'checking' ? (
+          <span className="busy-status" role="status">
+            <span className="spinner" aria-hidden="true" />
+            Checking your writing on this device…
+          </span>
+        ) : (
+          <span>Press Next when you finish. Then we check your writing.</span>
+        )}
+        <ModelPlanBadge />
       </div>
     </div>
   );

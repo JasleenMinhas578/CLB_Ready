@@ -1,7 +1,10 @@
+import type { VoiceId } from '@/content/objective';
+
 /** Messages between the main thread and the Kokoro worker. */
 export type KokoroRequest =
-  | { id: number; type: 'load'; device: 'webgpu' | 'wasm'; dtype: 'fp32' | 'q8' }
-  | { id: number; type: 'speak'; text: string; voice: string }
+  /** voicesUrl: where the site serves its voice files (public/voices/), resolved by the page. */
+  | { id: number; type: 'load'; device: 'webgpu' | 'wasm'; dtype: 'fp32' | 'q8'; voicesUrl: string }
+  | { id: number; type: 'speak'; text: string; voice: VoiceId }
   | { id: number; type: 'unload' };
 
 export type KokoroResponse =

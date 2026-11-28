@@ -110,3 +110,11 @@ export function summarizeDiff(parts: DiffPart[]): DiffSummary {
   const kept = count('same');
   return { added, removed, kept, keptShare: kept + added > 0 ? kept / (kept + added) : 0 };
 }
+
+/** Below this share of the learner's own words, marked changes are too dense to read. */
+export const MOSTLY_REWRITTEN_BELOW = 0.5;
+
+/** True when less than half of the improved answer is the learner's own words. */
+export function isMostlyRewritten(summary: DiffSummary): boolean {
+  return summary.keptShare < MOSTLY_REWRITTEN_BELOW;
+}

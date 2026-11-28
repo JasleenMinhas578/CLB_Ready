@@ -1,4 +1,7 @@
 import { href } from '@/app/router';
+import { Icon } from './Icon';
+import { Disclaimer } from './Disclaimer';
+import { Pip } from './Pip';
 
 const PRACTICE_LINKS = [
   { label: 'Speaking practice', to: '/practice/speaking/module-1' },
@@ -9,7 +12,7 @@ const PRACTICE_LINKS = [
 ];
 
 const ABOUT_LINKS = [
-  { label: 'AI models and privacy', to: '/settings' },
+  { label: 'Settings and privacy', to: '/settings' },
   { label: 'Model lab', to: '/lab' },
 ];
 
@@ -20,12 +23,12 @@ export function Footer() {
       <div className="footer-inner">
         <div className="footer-brand">
           <a className="footer-logo" href={href('/')}>
-            <img src="./favicon.svg" alt="" width={36} height={36} />
+            <Pip size={36} />
             <span>CLB Ready</span>
           </a>
-          <p className="footer-tagline">Free, private AI coaching for CELPIP-style practice in all four skills.</p>
+          <p className="footer-tagline">Free CELPIP-style practice in speaking, writing, reading and listening, with Pip, your AI coach.</p>
           <p className="footer-privacy">
-            <span aria-hidden="true">🔒</span> Your answers never leave this device.
+            <Icon name="lock" size="sm" /> Your answers never leave this device.
           </p>
         </div>
 
@@ -50,11 +53,7 @@ export function Footer() {
       </div>
 
       <div className="footer-legal">
-        <p>
-          CLB Ready is an independent, AI-powered practice tool. It is not affiliated with, endorsed by or connected to
-          CELPIP, Prometric, the Centre for Canadian Language Benchmarks or the Government of Canada. CELPIP is a
-          trademark of its owner. Scores are estimates for practice only.
-        </p>
+        <Disclaimer />
         <p className="footer-copy">© {new Date().getFullYear()} CLB Ready</p>
       </div>
     </footer>

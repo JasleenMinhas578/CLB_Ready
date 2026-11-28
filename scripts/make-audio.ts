@@ -16,11 +16,21 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { env } from '@huggingface/transformers';
 import { KokoroTTS } from 'kokoro-js';
-import { MODULES } from '../src/content/modules';
+import { module1 } from '../src/content/modules/module1';
+import { module2 } from '../src/content/modules/module2';
+import { module3 } from '../src/content/modules/module3';
+import { module4 } from '../src/content/modules/module4';
+import { module5 } from '../src/content/modules/module5';
 import { clipAudioPath, type ListeningClip } from '../src/content/objective';
+import { KOKORO_MODEL, KOKORO_SHA } from '../src/services/modelPins';
 
-const MODEL = 'onnx-community/Kokoro-82M-v1.0-ONNX';
+// kokoro-js drops the `revision` option, so pin the commit in the download path instead.
+// On Node, kokoro-js reads voices from its own npm package, so they need no pin.
+env.remotePathTemplate = `{model}/resolve/${KOKORO_SHA}/`;
+// The app loads modules lazily; this script needs them all at once.
+const MODULES = [module1, module2, module3, module4, module5];
 const PUBLIC = join(import.meta.dirname, '..', 'public');
 const MANIFEST = join(PUBLIC, 'audio', 'manifest.json');
 /** Silence between two speakers, and between two lines by the same speaker, in seconds. */
@@ -78,7 +88,7 @@ async function main() {
   if (!todo.length) return;
 
   console.log('Loading Kokoro (downloads about 330 MB the first time)…');
-  const tts = await KokoroTTS.from_pretrained(MODEL, { dtype: 'fp32', device: 'cpu' });
+  const tts = await KokoroTTS.from_pretrained(KOKORO_MODEL, { dtype: 'fp32', device: 'cpu' });
 
   for (const [index, { moduleId, clip }] of todo.entries()) {
     const started = Date.now();

@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { Icon } from '@/components/Icon';
 import { normalizeWord, type SpeakingMetrics, type MetricWord } from '@/domain/measure/speakingMetrics';
 
 interface TranscriptViewProps {
@@ -11,13 +12,13 @@ const FILLERS = new Set(['um', 'uh', 'er', 'erm', 'ah', 'hmm', 'mm', 'uhm']);
 
 /** The transcript with fillers, vague words and long pauses marked inline. */
 export function TranscriptView({ text, words, metrics }: TranscriptViewProps) {
-  if (words.length === 0) return <blockquote className="transcript">{text || '(No words detected)'}</blockquote>;
+  if (words.length === 0) return <blockquote className="transcript">{text || '(We didn’t hear any words)'}</blockquote>;
 
   const vague = new Set(metrics.vagueWords);
   const pauseAfter = new Map(metrics.longPauses.map((pause) => [pause.afterWord, pause.seconds]));
   const pauseChip = (seconds: number) => (
     <span className="pause-chip" title="Long pause">
-      <span aria-hidden="true">⏸</span> {seconds.toFixed(1)}s
+      <Icon name="pause" size="sm" /> {seconds.toFixed(1)}s
     </span>
   );
 

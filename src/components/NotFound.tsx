@@ -1,13 +1,20 @@
 import { LinkButton } from './Button';
-import { Emoji } from './Emoji';
+import { Pip } from './Pip';
+import { nextTask, taskPath, useProgress } from '@/services/progress/progress';
 
 export function NotFound() {
+  const next = nextTask(useProgress());
   return (
     <section className="empty-state">
-      <Emoji symbol="🍬" size="xl" motion="wiggle" />
-      <h1>This page doesn't exist</h1>
-      <p>The link may be old. Head back home to pick a skill.</p>
-      <LinkButton to="/">Go home</LinkButton>
+      <Pip mood="oops" size={72} />
+      <div>
+        <h1>We can’t find this page</h1>
+        <p>The link may be old or have a typing mistake. Your saved progress is safe.</p>
+        <div className="row-actions">
+          <LinkButton to={taskPath(next)}>Continue practising</LinkButton>
+          <LinkButton to="/" variant="secondary">Go to the home page</LinkButton>
+        </div>
+      </div>
     </section>
   );
 }

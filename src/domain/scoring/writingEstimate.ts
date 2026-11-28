@@ -61,7 +61,7 @@ export function writingTips(m: WritingMetrics, goal: number, options?: [string, 
   else if (m.wordCount > max) tips.push(`You wrote ${plural(m.wordCount, 'word')}, over the ${max}-word limit. Cut repeated ideas so every sentence adds something.`);
 
   if (m.survey?.chosen === null && options) {
-    tips.push(`Say clearly which option you choose, e.g. "I would choose ${options[0].toLowerCase()} because…", in your first sentence.`);
+    tips.push(`Say clearly which option you choose, for example "I would choose ${options[0].toLowerCase()} because…", in your first sentence.`);
   }
   if (m.email) {
     if (m.email.headerLines.length) {
@@ -78,11 +78,11 @@ export function writingTips(m: WritingMetrics, goal: number, options?: [string, 
   if (m.grammarIssues >= 3) tips.push(`We marked ${plural(m.grammarIssues, 'possible mistake')}. Save 2 minutes at the end to reread and fix them.`);
   if (m.vagueWords.length >= 2) {
     const examples = m.vagueWords.slice(0, 3).map((word) => `"${word}"`).join(', ');
-    tips.push(`Swap general words like ${examples} for precise ones. CLB ${goal} writing names exactly what it means.`);
+    tips.push(`Replace general words like ${examples} with more precise words. CLB ${goal} writing uses precise words.`);
   }
   if (m.repeatedWords.length > 0) {
     const { word, count } = m.repeatedWords[0];
-    tips.push(`You used "${word}" ${count} times. Use a synonym or rephrase.`);
+    tips.push(`You used "${word}" ${count} times. Try a different word with the same meaning, or say it another way.`);
   }
   if (m.linkingWords.length < 3) tips.push('Connect your ideas with words like "however", "in addition" and "as a result".');
   if (m.sentences >= MIN_SENTENCES_FOR_VARIETY && m.sentenceVariety < 3) tips.push('Your sentences are all a similar length. Mix short sentences with longer ones joined by "although" or "which".');

@@ -1,61 +1,46 @@
-import { CreateWebWorkerMLCEngine, prebuiltAppConfig, type WebWorkerMLCEngine } from '@mlc-ai/web-llm';
 import type { CompleteOptions, FeedbackModel, GenerationStats, LoadProgress } from './types';
+import type { WebLlmRequest, WebLlmResponse } from './webllm.protocol';
+import { WorkerRpc } from '@/services/workerRpc';
+import { WEBLLM_MODELS } from '@/services/modelPins';
 
 /** Approximate GPU memory WebLLM lists for a model, in MB. */
 export function estimatedGpuMb(modelId: string): number | null {
-  const record = prebuiltAppConfig.model_list.find((model) => model.model_id === modelId);
-  return record?.vram_required_MB ?? null;
+  return WEBLLM_MODELS[modelId]?.vramMb ?? null;
 }
 
+/** Main-thread wrapper for the WebLLM worker, which holds the whole library. */
 export class WebLlmFeedbackModel implements FeedbackModel {
-  private engine: WebWorkerMLCEngine | null = null;
+  onCrash?: (error: Error) => void;
+
+  private rpc = new WorkerRpc<WebLlmRequest, WebLlmResponse>(
+    () => new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' }),
+    'The feedback model could not start in this browser.',
+    (error) => this.onCrash?.(error),
+  );
 
   constructor(private readonly modelId: string) {}
 
   async load(onProgress?: (progress: LoadProgress) => void) {
     const started = performance.now();
-    const worker = new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' });
-    this.engine = await CreateWebWorkerMLCEngine(worker, this.modelId, {
-      initProgressCallback: (report) => onProgress?.({ fraction: report.progress, text: report.text }),
-    });
+    await this.rpc.send({ type: 'load', modelId: this.modelId }, onProgress);
     return { elapsedMs: performance.now() - started };
   }
 
   async complete(system: string, user: string, { schema, maxTokens, onText }: CompleteOptions) {
-    if (!this.engine) throw new Error('Feedback model is not loaded yet.');
     const started = performance.now();
     let firstTokenAt: number | null = null;
-    let text = '';
-    let promptTokens = 0;
-    let completionTokens = 0;
-    let truncated = false;
-
-    const stream = await this.engine.chat.completions.create({
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-      stream: true,
-      stream_options: { include_usage: true },
-      temperature: 0.3,
-      max_tokens: maxTokens,
-      // With a schema, WebLLM forces valid JSON that matches it, so the UI never gets mush.
-      ...(schema ? { response_format: { type: 'json_object' as const, schema: JSON.stringify(schema) } } : {}),
-    });
-
-    for await (const chunk of stream) {
-      const delta = chunk.choices[0]?.delta?.content ?? '';
-      if (delta) {
+    let soFar = '';
+    const reply = await this.rpc.send(
+      { type: 'complete', system, user, maxTokens, schema: schema ? JSON.stringify(schema) : undefined },
+      // While writing, the worker's progress text is the newly written part.
+      ({ text }) => {
         firstTokenAt ??= performance.now();
-        text += delta;
-        onText?.(text);
-      }
-      if (chunk.choices[0]?.finish_reason === 'length') truncated = true;
-      if (chunk.usage) {
-        promptTokens = chunk.usage.prompt_tokens;
-        completionTokens = chunk.usage.completion_tokens;
-      }
-    }
+        soFar += text;
+        onText?.(soFar);
+      },
+    );
+    if (reply.type !== 'completed') throw new Error('Unexpected reply from the feedback model.');
+    const { text, truncated, promptTokens, completionTokens } = reply;
 
     const totalMs = performance.now() - started;
     const decodeMs = firstTokenAt ? performance.now() - firstTokenAt : totalMs;
@@ -69,16 +54,16 @@ export class WebLlmFeedbackModel implements FeedbackModel {
     return { text, stats, truncated };
   }
 
+  // Both do nothing before load, so they never start a worker just to stop or clear it.
   interrupt() {
-    void this.engine?.interruptGenerate();
+    if (this.rpc.running) this.rpc.send({ type: 'interrupt' }).catch(() => undefined);
   }
 
   async reset() {
-    await this.engine?.resetChat();
+    if (this.rpc.running) await this.rpc.send({ type: 'reset' });
   }
 
-  async unload() {
-    await this.engine?.unload();
-    this.engine = null;
+  unload() {
+    return this.rpc.unload();
   }
 }

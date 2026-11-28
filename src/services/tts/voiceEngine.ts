@@ -1,7 +1,8 @@
 import type { ModelPlan } from '@/services/device/tier';
 import { LIGHT_VOICE } from '@/services/device/tier';
-import { ModelStore, useModelStatus, type ModelStatus } from '@/services/ai/modelStore';
+import { ModelStore } from '@/services/ai/modelStore';
 import type { SpokenLine, TextToSpeech } from './types';
+import type { VoiceId } from '@/content/objective';
 
 /**
  * One shared Kokoro voice model. Listening screens call speak() line by
@@ -18,7 +19,7 @@ export class VoiceEngineStore extends ModelStore<TextToSpeech> {
     });
   }
 
-  speak(text: string, voice: string): Promise<SpokenLine> {
+  speak(text: string, voice: VoiceId): Promise<SpokenLine> {
     const task = async () => (await this.ensureLoaded()).speak(text, voice);
     const result = this.queue.then(task, task);
     this.queue = result.catch(() => undefined);
@@ -35,8 +36,4 @@ export async function getVoiceEngine(): Promise<VoiceEngineStore> {
     shared ??= new VoiceEngineStore(getModelPlan, (plan) => new KokoroTextToSpeech(plan.voice ?? LIGHT_VOICE));
   }
   return shared;
-}
-
-export function useVoiceStatus(store: VoiceEngineStore | null): ModelStatus {
-  return useModelStatus(store);
 }

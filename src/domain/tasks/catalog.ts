@@ -97,7 +97,7 @@ export const TASK_TYPES: readonly TaskType[] = [
   {
     id: 'listening-1', skill: 'listening', order: 1, needsImage: false,
     title: 'Listening to problem solving',
-    summary: 'Hear two people work through a problem, in three short parts.',
+    summary: 'Hear two people work through a problem, in three short recordings.',
     questionCount: 8, clipCount: 3, audioMinutes: 4,
   },
   {

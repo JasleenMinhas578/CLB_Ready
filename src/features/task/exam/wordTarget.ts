@@ -4,5 +4,5 @@ export function targetText(words: number, { min, max }: { min: number; max: numb
   if (words === 0) return target;
   if (words < min) return `${target}, ${min - words} more needed`;
   if (words > max) return `${target}, ${words - max} over`;
-  return `${target} ✓`;
+  return `${target}, on target`;
 }

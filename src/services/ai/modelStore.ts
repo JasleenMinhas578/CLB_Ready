@@ -15,6 +15,8 @@ export interface ModelStatus {
 export interface LoadableModel {
   load(onProgress?: (progress: LoadProgress) => void): Promise<{ elapsedMs: number }>;
   unload(): Promise<void>;
+  /** Set by the store; the engine calls it if its worker crashes, so the store stops treating it as ready. */
+  onCrash?: (error: Error) => void;
 }
 
 export class ModelUnavailableError extends Error {
@@ -23,6 +25,8 @@ export class ModelUnavailableError extends Error {
     this.name = 'ModelUnavailableError';
   }
 }
+
+const UNLOADED_MESSAGE = 'The model was unloaded before it finished.';
 
 export const IDLE_STATUS: ModelStatus = { state: 'idle', progress: null, model: null, error: null };
 
@@ -37,6 +41,10 @@ export abstract class ModelStore<E extends LoadableModel> {
   private listeners = new Set<() => void>();
   protected engine: E | null = null;
   private loading: Promise<E> | null = null;
+  /** The engine still downloading, so unload() can stop it too. */
+  private loadingEngine: E | null = null;
+  /** Bumped by unload(), so a load that was in flight knows its result is no longer wanted. */
+  private generation = 0;
 
   constructor(
     protected readonly getPlan: () => Promise<ModelPlan>,
@@ -75,40 +83,66 @@ export abstract class ModelStore<E extends LoadableModel> {
   }
 
   private async load(retried = false): Promise<E> {
+    const generation = this.generation;
+    const cancelled = () => generation !== this.generation;
     try {
       const plan = await this.getPlan();
+      if (cancelled()) throw new Error(UNLOADED_MESSAGE);
       const engine = this.createEngine(plan);
       if (!engine) {
         this.setStatus({ state: 'unavailable', progress: null, model: null, error: null });
         throw new ModelUnavailableError();
       }
+      engine.onCrash = (error) => this.crashed(engine, error);
       this.setStatus({ state: 'loading', progress: 0, model: this.displayName(plan), error: null });
+      this.loadingEngine = engine;
       try {
-        await engine.load((progress) => this.setStatus({ progress: progress.fraction }));
+        await engine.load((progress) => {
+          if (!cancelled()) this.setStatus({ progress: progress.fraction });
+        });
+        // unload() ran while this was downloading (say, a tier change in Settings): drop it.
+        if (cancelled()) throw new Error(UNLOADED_MESSAGE);
       } catch (error) {
         // Free whatever was partly loaded before any retry.
         await engine.unload().catch(() => undefined);
         throw error;
+      } finally {
+        if (this.loadingEngine === engine) this.loadingEngine = null;
       }
       this.engine = engine;
       this.setStatus({ state: 'ready', progress: 1 });
       return engine;
     } catch (error) {
-      if (error instanceof ModelUnavailableError) throw error;
+      // An unload already reset the status; a retry or an error would undo it.
+      if (cancelled() || error instanceof ModelUnavailableError) throw error;
       // Often out of memory: try once more with the next lighter tier.
-      if (!retried && this.fallBack && (await this.fallBack())) return await this.load(true);
+      if (!retried && this.fallBack && (await this.fallBack())) {
+        if (cancelled()) throw error;
+        return await this.load(true);
+      }
       this.setStatus({ state: 'error', error: error instanceof Error ? error.message : String(error) });
       throw error;
     } finally {
-      this.loading = null;
+      // A newer load may have started after an unload; leave its promise alone.
+      if (!cancelled()) this.loading = null;
     }
   }
 
-  async unload(): Promise<void> {
-    const engine = this.engine;
+  /** The worker died, so the model is gone: show the error, and load afresh on next use. */
+  private crashed(engine: E, error: Error) {
+    if (this.engine !== engine) return;
     this.engine = null;
+    this.setStatus({ state: 'error', progress: null, error: error.message });
+  }
+
+  async unload(): Promise<void> {
+    const engines = [this.engine, this.loadingEngine];
+    this.generation += 1;
+    this.engine = null;
+    this.loadingEngine = null;
+    this.loading = null;
     this.setStatus(IDLE_STATUS);
-    await engine?.unload();
+    await Promise.all(engines.map((engine) => engine?.unload()));
   }
 }
 

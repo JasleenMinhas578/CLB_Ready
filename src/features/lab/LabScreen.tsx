@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { detectDevice, type DeviceReport } from '@/services/device/detectDevice';
-import { planModels, type ModelPlan } from '@/services/device/tier';
+import type { DeviceReport } from '@/services/device/detectDevice';
+import type { ModelPlan } from '@/services/device/tier';
+import { getDeviceReport, getModelPlan } from '@/services/device/plan';
+import { unloadAllModels } from '@/services/unloadModels';
 import { WhisperSpeechToText } from '@/services/ai/whisperClient';
 import { WebLlmFeedbackModel, estimatedGpuMb } from '@/services/ai/webllmClient';
 import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, buildFeedbackPrompt, parseFeedback } from '@/services/ai/feedbackPrompt';
 import type { GenerationStats, LoadProgress } from '@/services/ai/types';
 import { startRecording, toWhisperAudio } from '@/services/audio/recorder';
 import { getCriteria } from '@/domain/criteria';
-import { getPrompt } from '@/content/modules';
+import { getPrompt, loadModule } from '@/content/modules';
 import { Button } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
+import { friendlyModelError } from '@/services/ai/errorText';
 
 /**
  * Model lab: loads both models and measures them on this device.
@@ -94,17 +97,22 @@ export default function LabScreen() {
   const [validJson, setValidJson] = useState<boolean | null>(null);
 
   useEffect(() => {
-    void detectDevice().then((report) => {
-      setDevice(report);
-      setPlan(planModels(report));
-    });
+    // The lab loads its own copies to time them, so free the app's shared ones
+    // rather than hold two of each in memory.
+    void unloadAllModels();
+    void getDeviceReport().then(setDevice);
+    // Same plan as the tasks, so the lab measures the tier chosen in Settings.
+    void getModelPlan().then(setPlan);
     return () => {
+      stopRef.current?.(); // Turns the mic off if the learner leaves mid-recording.
       void whisper.current?.unload();
       void llm.current?.unload();
     };
   }, []);
 
-  const fail = (err: unknown) => setError(err instanceof Error ? err.message : String(err));
+  // The plain sentence first, then the raw message, which is what someone measuring models needs.
+  const fail = (err: unknown) =>
+    setError(`${friendlyModelError(err, 'Something went wrong. Try again.')} Details: ${err instanceof Error ? err.message : String(err)}`);
 
   const loadWhisper = async () => {
     if (!plan) return;
@@ -117,6 +125,9 @@ export default function LabScreen() {
       setWhisperState('ready');
       void memory.refresh();
     } catch (err) {
+      // Free whatever was partly loaded.
+      void whisper.current?.unload().catch(() => undefined);
+      whisper.current = null;
       fail(err);
       setWhisperState('idle');
     }
@@ -153,13 +164,15 @@ export default function LabScreen() {
       setLlmState('ready');
       void memory.refresh();
     } catch (err) {
+      void llm.current?.unload().catch(() => undefined);
+      llm.current = null;
       fail(err);
       setLlmState('idle');
     }
   };
 
   const runFeedback = async () => {
-    const prompt = getPrompt('module-1', 'speaking-1');
+    const prompt = getPrompt(await loadModule('module-1'), 'speaking-1');
     if (!llm.current || !prompt) return;
     setError(null);
     setLlmState('working');
@@ -207,7 +220,7 @@ export default function LabScreen() {
   return (
     <section className="lab">
       <div className="screen-head align-left">
-        <h1><Emoji symbol="🧪" size="lg" /> Model lab</h1>
+        <h1><Icon name="lab" size="lg" /> Model lab</h1>
         <p>Load the AI models on this device and measure how fast they run. Everything stays in your browser.</p>
       </div>
 
@@ -228,7 +241,7 @@ export default function LabScreen() {
               <Stat label="Tier" value={plan.tier} />
             </div>
             <p className="lab-plan">
-              <Emoji symbol="🧠" /> {plan.reason} Speech: <code>{plan.whisperModel}</code> on {plan.whisperDevice}.
+              <Icon name="sparkle" /> {plan.reason} Speech: <code>{plan.whisperModel}</code> on {plan.whisperDevice}.
               Feedback: <code>{plan.feedbackModel ?? 'light mode'}</code>.
             </p>
           </>
@@ -236,7 +249,7 @@ export default function LabScreen() {
       </div>
 
       <div className="lab-card">
-        <h2>1. Speech to text</h2>
+        <h2>1. Speech-to-text</h2>
         <div className="row-actions">
           <Button onClick={loadWhisper} disabled={!plan || whisperState !== 'idle'}>
             {whisperState === 'loading' ? 'Loading…' : whisperState === 'idle' ? 'Load speech model' : 'Speech model ready'}
@@ -245,7 +258,7 @@ export default function LabScreen() {
             <Button variant="secondary" onClick={() => stopRef.current?.()}>Stop recording</Button>
           ) : (
             <Button variant="secondary" onClick={recordAndTranscribe} disabled={whisperState !== 'ready'}>
-              {whisperState === 'working' ? 'Transcribing…' : `Record up to ${LAB_RECORD_SECONDS}s`}
+              {whisperState === 'working' ? 'Converting speech to text…' : `Record up to ${LAB_RECORD_SECONDS}s`}
             </Button>
           )}
         </div>
@@ -262,7 +275,7 @@ export default function LabScreen() {
       <div className="lab-card">
         <h2>2. Feedback model</h2>
         {plan && !plan.feedbackModel ? (
-          <p>This device has no WebGPU, so the app will use light mode (code-only feedback).</p>
+          <p>This device has no WebGPU. Pip is off on this device, so feedback comes from word counts, timing and simple checks.</p>
         ) : (
           <>
             <div className="row-actions">
@@ -295,11 +308,11 @@ export default function LabScreen() {
           <Stat label="Downloaded models" value={mb(memory.storage)} />
         </div>
         <p className="fine-print">
-          Browsers don't report GPU memory directly. For real numbers, open Chrome's task manager (Shift + Esc)
-          and watch the GPU process while a model loads.
+          Browsers do not report GPU memory directly. To see it, open the Chrome task manager (Shift + Esc). Then watch
+          the GPU process while a model loads.
         </p>
         <div className="row-actions">
-          <Button variant="quiet" onClick={() => void memory.refresh()}>Refresh</Button>
+          <Button variant="quiet" onClick={() => void memory.refresh()}>Refresh numbers</Button>
           <Button variant="quiet" onClick={() => void clearModels()}>Delete downloaded models</Button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { ISSUE_LABELS, type GrammarIssue, type IssueKind } from '@/domain/grammar';
 import { plural } from '@/domain/scoring/sufficiency';
+import { Icon } from '@/components/Icon';
 
 type View = 'corrections' | 'original';
 
@@ -114,7 +115,12 @@ export function EssayView({ text, issues }: { text: string; issues: GrammarIssue
               {group.examples.slice(0, 4).map((example) => (
                 <span key={`${example.from}-${example.to}`} className="issue-example">
                   {example.from !== '(missing)' && <del>{example.from}</del>}
-                  {example.to && <ins>{example.to}</ins>}
+                  {example.to && (
+                    <>
+                      <Icon name="arrow-right" size="sm" />
+                      <ins>{example.to}</ins>
+                    </>
+                  )}
                   {example.count > 1 && <small>×{example.count}</small>}
                 </span>
               ))}

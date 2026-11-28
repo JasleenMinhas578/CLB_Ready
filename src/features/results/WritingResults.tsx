@@ -1,16 +1,15 @@
 import type { WritingAttempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
-import { blendScores, overallLevel, DEFAULT_WRITING_WEIGHTS, type Scores, type WritingCriterionId } from '@/domain/scoring/estimate';
+import { overallLevel } from '@/domain/scoring/estimate';
+import { finalScores } from '@/domain/scoring/finalScores';
 import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstimate';
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
-import { Emoji } from '@/components/Emoji';
 import { useFeedback } from './useFeedback';
-import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, ResultsHead, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { EssayView } from './EssayView';
-import { dropOutlierScores } from '@/domain/scoring/outliers';
 import { mergeChecklist } from '@/domain/scoring/autoChecks';
 import { TileList, type Tile } from './MeasureTiles';
-import { MIN_SCORABLE_WRITING_WORDS, MIN_SENTENCES_FOR_VARIETY, MIN_WORDS_FOR_VARIETY, isScorable, lengthCeiling, plural } from '@/domain/scoring/sufficiency';
+import { MIN_SCORABLE_WRITING_WORDS, MIN_SENTENCES_FOR_VARIETY, MIN_WORDS_FOR_VARIETY, isScorable, plural } from '@/domain/scoring/sufficiency';
 
 function writingTiles(m: WritingMetrics, options?: [string, string]): Tile[] {
   const { min, max } = m.wordRange;
@@ -39,7 +38,7 @@ function writingTiles(m: WritingMetrics, options?: [string, string]): Tile[] {
     },
   ];
   if (m.email) {
-    const parts = [m.email.hasGreeting ? 'greeting ✓' : 'no greeting', m.email.hasClosing ? 'closing ✓' : 'no closing'];
+    const parts = [m.email.hasGreeting ? 'has a greeting' : 'no greeting', m.email.hasClosing ? 'has a closing' : 'no closing'];
     tiles.push({
       label: 'Email format', value: m.email.hasGreeting && m.email.hasClosing ? 'Complete' : 'Missing parts', note: parts.join(', '),
       tone: m.email.hasGreeting && m.email.hasClosing ? 'good' : 'work',
@@ -64,17 +63,10 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
   const scorable = isScorable('writing', attempt.metrics.wordCount);
   const { outcome, progress } = useFeedback(attempt);
   const ai = outcome?.kind === 'ai' ? outcome.run.reply : null;
-  const header = (
-    <div className="screen-head">
-      <h1>Your feedback</h1>
-      <p>{attempt.taskTitle}</p>
-    </div>
-  );
-
   if (!scorable) {
     return (
-      <section className="results">
-        {header}
+      <section className="results results-writing">
+        <ResultsHead attempt={attempt} title="Your feedback" retryFirst />
         <div className="results-grid">
           <div className="results-side">
             <TooShortCard
@@ -95,29 +87,21 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             </div>
           </div>
         </div>
-        <ResultsActions attempt={attempt} />
+        <ResultsActions attempt={attempt} retryFirst />
       </section>
     );
   }
 
-  const codeScores = codeEstimatesWriting(attempt.metrics);
-  const rawModel: Partial<Scores<WritingCriterionId>> | null = ai
-    ? { content: ai.scores.content, vocabulary: ai.scores.vocabulary, readability: ai.scores.delivery, task: ai.scores.task }
-    : null;
-  const checked = rawModel ? dropOutlierScores(rawModel, codeScores) : null;
-  const ceiling = lengthCeiling(attempt.metrics.wordCount, attempt.metrics.wordRange.min);
-  const scores = blendScores(codeScores, checked?.scores ?? null, DEFAULT_WRITING_WEIGHTS, ceiling);
+  const { scores, ignored } = finalScores(
+    'writing', codeEstimatesWriting(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, attempt.metrics.wordRange.min,
+  );
   const checklist = mergeChecklist(attempt.checklist, ai?.checklist ?? null, attempt.text, attempt.metrics);
   const overall = overallLevel(scores);
   const final = outcome !== null;
 
   return (
-    <section className="results">
-      <div className="screen-head">
-        <Emoji symbol={overall >= attempt.goal ? '🎉' : '🍭'} size="xl" motion="bounce" />
-        <h1>Your feedback</h1>
-        <p>{attempt.taskTitle}</p>
-      </div>
+    <section className="results results-writing">
+      <ResultsHead attempt={attempt} title="Your feedback" />
       <div className="results-grid">
         <div className="results-side">
           <LevelCard
@@ -127,7 +111,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             overall={overall}
             final={final}
             status={<AiStatus outcome={outcome} progress={progress} />}
-            notes={outlierNotes(checked?.ignored ?? [], getCriteria('writing'))}
+            notes={outlierNotes(ignored)}
           />
           <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, writingTips(attempt.metrics, attempt.goal, attempt.options), !!ai)} />
           <ChecklistCard items={attempt.checklist} results={checklist} final={final} />
@@ -142,7 +126,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
           <div className="results-card">
             <h2>Your writing, checked</h2>
             <EssayView text={attempt.text} issues={attempt.issues} />
-            <p className="fine-print">The checker catches common mistakes only, so a clean result doesn’t mean zero errors.</p>
+            <p className="fine-print">The checker finds common mistakes only, so it may miss some.</p>
           </div>
         </div>
       </div>

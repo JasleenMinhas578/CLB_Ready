@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { VOICES, clipAudioPath, type ListeningClip } from '@/content/objective';
 import { getVoiceEngine } from '@/services/tts/voiceEngine';
 import type { SpokenLine } from '@/services/tts/types';
+import type { ModelStatus } from '@/services/ai/modelStore';
 import { playBuffer, sleep } from '@/services/tts/playback';
 
 /** `preparing` = getting voices ready; Play is enabled once the first line exists. */
@@ -28,6 +29,15 @@ function deferred<T>(): Deferred<T> {
   });
   promise.catch(() => undefined);
   return { promise, resolve, reject };
+}
+
+/**
+ * True once Kokoro has failed to load in this visit. Every try is a long wait
+ * (often running out of memory again), so later clips go straight to the browser voice.
+ * A tier change in Settings resets the status, which allows one more try.
+ */
+export function aiVoiceFailed(status: ModelStatus): boolean {
+  return status.state === 'error';
 }
 
 /**
@@ -70,6 +80,7 @@ export function useClipPlayer(moduleId: string, clip: ListeningClip) {
       }
       try {
         const engine = await getVoiceEngine();
+        if (aiVoiceFailed(engine.getStatus())) throw new Error('The voice model failed earlier.');
         const unsubscribe = engine.subscribe(() => {
           const status = engine.getStatus();
           if (alive() && status.state === 'loading') setVoiceLoading(status.progress);

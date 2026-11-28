@@ -20,12 +20,6 @@ export function checkRecording(samples: Float32Array, sampleRate: number): Recor
   return null;
 }
 
-/** Speaking pace. Uses time spent speaking, not the full answer window. */
-export function wordsPerMinute(wordCount: number, seconds: number): number {
-  if (seconds <= 0) return 0;
-  return Math.round((wordCount / seconds) * 60);
-}
-
 export type MicProblem = 'denied' | 'no-mic' | 'busy' | 'unsupported' | 'unknown';
 
 /** Turns getUserMedia errors into something we can explain to the learner. */
@@ -59,14 +53,14 @@ export const MIC_PROBLEM_TEXT: Record<MicProblem, { title: string; help: string 
   },
   busy: {
     title: 'Your microphone is busy',
-    help: 'Close other apps that may be using it, such as video calls, then try again.',
+    help: 'Close other apps that may be using it, such as video calls. Then try again.',
   },
   unsupported: {
-    title: 'This browser can’t record here',
+    title: 'This browser cannot record here',
     help: 'Open CLB Ready in Chrome or Edge, using a secure (https) address.',
   },
   unknown: {
-    title: 'The microphone didn’t start',
+    title: 'The microphone did not start',
     help: 'Check your microphone settings, then try again.',
   },
 };

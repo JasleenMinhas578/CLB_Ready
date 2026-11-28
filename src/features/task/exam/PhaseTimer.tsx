@@ -1,4 +1,6 @@
 import { LevelMeter } from '@/components/LevelMeter';
+import { formatSeconds } from '@/domain/timer';
+import { WarnIcon } from './ExamBar';
 
 interface PhaseTimerProps {
   kind: 'select' | 'prep' | 'answer';
@@ -13,25 +15,27 @@ interface PhaseTimerProps {
 
 const LABELS = { select: 'Choosing time', prep: 'Preparation time', answer: 'Recording time' } as const;
 
-/** One test-style timer row: label, seconds, and a bar that drains (prep) or fills (recording). */
+/** One test-style timer row: label, time left, and a bar that drains as the time runs out. */
 export function PhaseTimer({ kind, secondsLeft, totalSeconds, active, done = false, level = 0 }: PhaseTimerProps) {
-  const remaining = Math.max(0, Math.ceil(secondsLeft));
-  const elapsed = totalSeconds - Math.max(0, secondsLeft);
-  // Preparation bars drain; the recording bar fills.
-  const fraction = done ? (kind === 'answer' ? 1 : 0) : active ? (kind === 'answer' ? elapsed / totalSeconds : secondsLeft / totalSeconds) : kind === 'answer' ? 0 : 1;
+  // Every bar shows time left, so the number and the bar always move the same way.
+  const fraction = done ? 0 : active ? secondsLeft / totalSeconds : 1;
   const recording = kind === 'answer' && active;
+  const low = active && totalSeconds > 10 && secondsLeft <= 10;
 
   return (
-    <div className={`phase-timer kind-${kind} ${active ? 'is-active' : ''} ${done ? 'is-done' : ''}`}>
+    <div className={`phase-timer kind-${kind} ${active ? 'is-active' : ''} ${done ? 'is-done' : ''} ${low ? 'is-low' : ''}`}>
       <div className="phase-timer-head">
         <span className="phase-timer-label">
           {recording && <span className="rec-dot" aria-hidden="true" />}
           {recording ? 'Recording…' : LABELS[kind]}
         </span>
-        <strong>{done ? 'Done' : active ? `${remaining} seconds` : `${totalSeconds} seconds`}</strong>
+        <strong>
+          {low && <WarnIcon />}
+          {done ? 'Done' : active ? `${formatSeconds(secondsLeft)} left` : formatSeconds(totalSeconds)}
+        </strong>
       </div>
       <div className="phase-bar" aria-hidden="true">
-        <span style={{ width: `${Math.min(1, Math.max(0, fraction)) * 100}%` }} />
+        <span style={{ transform: `scaleX(${Math.min(1, Math.max(0, fraction))})` }} />
       </div>
       {recording && <LevelMeter level={level} />}
     </div>

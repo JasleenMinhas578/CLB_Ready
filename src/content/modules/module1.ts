@@ -18,7 +18,6 @@ export const module1: PracticeModule = {
   id: 'module-1',
   number: 1,
   title: 'Module 1',
-  status: 'available',
   reading: module1Reading,
   listening: module1Listening,
   prompts: [

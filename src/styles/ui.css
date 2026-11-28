@@ -1,143 +1,129 @@
 /* Reusable components */
 
 /* Page frame */
-.page { min-height: 100vh; display: flex; flex-direction: column; }
-main { flex: 1; width: 100%; max-width: calc(var(--page-width) + 2 * var(--gutter)); margin: 0 auto; padding: var(--gap-3) var(--gutter) var(--gap-5); }
+.page { min-height: 100dvh; display: flex; flex-direction: column; }
+main { flex: 1; width: 100%; max-width: calc(var(--page-width) + 2 * var(--gutter)); margin: 0 auto; padding: var(--gap-3) var(--gutter) var(--gap-6); }
 main:focus { outline: none; }
 
+/* Header: the wordmark on the left, settings and the goal as small card-stock pills on the right */
 .site-header {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--gap-2);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--gap-1);
   max-width: calc(var(--page-width) + 2 * var(--gutter)); width: 100%; margin: 0 auto; padding: var(--gap-2) var(--gutter);
 }
-.brand {
-  display: inline-flex; align-items: center; gap: 0.55rem;
-  font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; text-decoration: none;
+.brand, .footer-logo {
+  white-space: nowrap; color: var(--ink);
+  display: inline-flex; align-items: center; gap: var(--gap-1); min-height: 44px;
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; letter-spacing: var(--tracking-display); text-decoration: none;
 }
-.goal-chip {
-  display: inline-block; padding: 0.35rem 0.95rem; font-weight: 800; font-size: var(--step--1);
-  background: var(--white); border: var(--line); border-radius: var(--radius-pill);
-  box-shadow: var(--sticker-small); text-decoration: none;
+.brand:hover, .footer-logo:hover { color: var(--ink); }
+.header-nav { display: flex; align-items: center; gap: var(--gap-1); }
+.nav-link, .goal-chip {
+  display: inline-flex; align-items: center; gap: var(--gap-1); min-height: 44px; padding: 0 var(--gap-2); white-space: nowrap;
+  font-weight: 800; font-size: var(--step--1); color: var(--ink); text-decoration: none;
+  background: var(--surface); border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge) 0 0 var(--edge);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
-.goal-chip:hover { background: var(--lemon); color: var(--grape); }
+.nav-link:hover, .goal-chip:hover { color: var(--ink); transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
+.nav-link:active, .goal-chip:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
+/* The goal is a fact about the learner, so it takes the mint of growth once it is set. */
+.goal-chip.is-set { background: var(--mint-tint); color: var(--mint-ink); box-shadow: inset 0 0 0 1px var(--mint-ink), 0 var(--stock-edge) 0 0 var(--mint-ink); }
+/* The screen you are on: pressed in and inked, like the current module tab. */
+.nav-link[aria-current='page'], .nav-link[aria-current='page']:hover,
+.goal-chip[aria-current='page'], .goal-chip[aria-current='page']:hover { background: var(--ink); color: var(--bg); transform: translateY(3px); box-shadow: 0 var(--stock-edge-down) 0 0 var(--ink); }
+/* On phones the settings link keeps only its icon; the word stays for screen readers. */
+@media (max-width: 480px) {
+  .nav-link { width: 44px; padding: 0; justify-content: center; }
+  .nav-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .brand { font-size: 1.3rem; }
+}
 
+/* Footer: one paper sheet with rounded top corners */
 .site-footer {
-  position: relative; margin-top: var(--gap-4);
-  background: var(--grape); color: var(--milk);
-  padding: calc(var(--gap-4) + 8px) var(--gutter) var(--gap-3);
+  padding: var(--gap-5) var(--gutter) var(--gap-3);
+  background: var(--grain), var(--surface-sunk); color: var(--ink);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
-/* The one candy touch: a thin stripe along the top edge. */
-.site-footer::before {
-  content: ''; position: absolute; inset: 0 0 auto; height: 8px;
-  background: repeating-linear-gradient(-45deg, var(--bubblegum) 0 10px, var(--milk) 10px 20px);
-}
-.site-footer a { color: var(--milk); text-decoration-color: rgb(255 246 250 / 0.4); }
-.site-footer a:hover { color: var(--lemon); text-decoration-color: var(--lemon); }
-.site-footer :focus-visible { outline-color: var(--lemon); }
 .footer-inner {
   display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-4);
   max-width: var(--page-width); margin: 0 auto;
 }
-.footer-logo {
-  display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none;
-  font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;
-}
-.footer-logo img { background: var(--milk); border-radius: 50%; padding: 3px; }
-.footer-tagline { margin: var(--gap-1) 0 var(--gap-2); color: rgb(255 246 250 / 0.8); max-width: 36ch; }
+.footer-tagline { margin: var(--gap-1) 0 var(--gap-2); color: var(--ink-soft); max-width: 40ch; }
 .footer-privacy {
-  display: inline-flex; gap: 0.4rem; align-items: center; margin: 0; padding: 0.35rem 0.9rem;
-  font-weight: 800; font-size: var(--step--1); color: var(--grape);
-  background: var(--mint); border-radius: var(--radius-pill);
+  display: inline-flex; gap: var(--gap-1); align-items: center; margin: 0; padding: var(--gap-1) var(--gap-2);
+  font-weight: 800; font-size: var(--step--1); color: var(--mint-ink); background: var(--mint-tint); border-radius: var(--radius-md);
 }
-.footer-col h2 {
-  margin: 0.4rem 0 var(--gap-1); font-family: var(--font-body); font-size: var(--step--1); font-weight: 800;
-  color: var(--lemon);
-}
-.footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
-.footer-col span { color: rgb(255 246 250 / 0.7); }
+.footer-col h2 { margin: var(--gap-1) 0; font-family: var(--font-body); font-size: var(--step--1); font-weight: 800; letter-spacing: 0; color: var(--ink-soft); }
+.footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+.footer-col a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration-color: var(--border); }
+.footer-col a:hover { color: var(--link); text-decoration-color: currentColor; }
+.footer-col span { display: inline-flex; min-height: 44px; align-items: center; color: var(--ink-soft); }
 .footer-legal {
   max-width: var(--page-width); margin: var(--gap-4) auto 0; padding-top: var(--gap-2);
-  border-top: 1px solid rgb(255 246 250 / 0.2);
-  font-size: 0.8rem; color: rgb(255 246 250 / 0.7);
+  border-top: 1px solid var(--border-soft); font-size: var(--step--1); color: var(--ink-soft);
 }
-.footer-legal p { max-width: 110ch; margin-bottom: var(--gap-1); }
+.footer-legal p { margin-bottom: var(--gap-1); }
 .footer-copy { margin: 0; }
 @media (max-width: 720px) {
-  .footer-inner { grid-template-columns: 1fr 1fr; gap: var(--gap-3); }
+  .footer-inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-3); }
   .footer-brand { grid-column: 1 / -1; }
 }
 
-/* Buttons */
+/* Buttons: card stock. A solid edge below; hover raises it, a press flattens it.
+   Secondary controls carry a --border hairline (3:1), so they read as buttons beside the pear primary. */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-  min-height: 48px; padding: 0.6rem 1.35rem;
-  font-family: var(--font-display); font-weight: 600; font-size: 1.05rem;
-  border: var(--line); border-radius: var(--radius-pill); box-shadow: var(--sticker-small);
-  cursor: pointer; text-decoration: none; color: var(--grape);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--gap-1);
+  min-height: 52px; padding: 0 var(--gap-3); white-space: nowrap;
+  font-family: var(--font-display); font-weight: 600; font-size: 1.1rem;
+  border: 0; border-radius: var(--radius-md);
+  background: var(--surface); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge) 0 0 var(--edge);
+  cursor: pointer; text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
 }
-.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--grape); color: var(--grape); }
-.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--grape); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: var(--sticker-small); }
-.btn-primary { background: var(--bubblegum); }
-.btn-secondary { background: var(--white); }
-.btn-quiet { background: transparent; box-shadow: none; border-width: 2px; min-height: 40px; font-size: 0.95rem; }
-.btn-quiet:hover { box-shadow: none; background: var(--milk-deep); }
+.btn:hover { color: var(--ink); transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
+.btn:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
+/* Disabled: pressed flat into the paper, its words still readable (not faded with opacity). */
+.btn:disabled, .btn:disabled:hover { cursor: not-allowed; transform: none; color: var(--ink-soft); background: var(--surface-sunk); box-shadow: inset 0 0 0 1px var(--border-soft); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 var(--stock-edge) 0 0 var(--accent-edge); transition-timing-function: var(--ease-spring); }
+.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 var(--stock-edge-up) 0 0 var(--accent-edge); }
+.btn-primary:active { box-shadow: 0 var(--stock-edge-down) 0 0 var(--accent-edge); }
+/* Quiet: a text button, underlined so it still reads as something to press. */
+.btn-quiet { background: transparent; box-shadow: none; min-height: 44px; padding: 0 var(--gap-2); text-decoration: underline; text-decoration-color: var(--border); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.btn-quiet:hover, .btn-quiet:active { background: var(--surface-sunk); box-shadow: none; transform: none; text-decoration-color: currentColor; }
 
 .row-actions { display: flex; flex-wrap: wrap; gap: var(--gap-2); align-items: center; }
-.row-actions.center { justify-content: center; }
 
-/* Emoji motion. Each runs briefly or gently; all stop for reduced motion. */
-.emoji { display: inline-block; line-height: 1; }
-.emoji-sm { font-size: 1rem; }
-.emoji-md { font-size: 1.25rem; }
-.emoji-lg { font-size: 2rem; }
-.emoji-xl { font-size: 3.5rem; }
-.emoji-bounce { animation: bounce 1.2s ease-in-out 2; }
-.emoji-wiggle { animation: wiggle 0.6s ease-in-out infinite; }
-.emoji-pulse { animation: pulse 1.1s ease-in-out infinite; }
-.emoji-float { animation: float 3s ease-in-out infinite; }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-14px); } 60% { transform: translateY(-6px); } }
-@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
-@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+/* Icons: sized by class, coloured by the text around them. */
+.icon { display: inline-block; flex: none; width: var(--icon-md); height: var(--icon-md); vertical-align: -0.25em; }
+.icon-sm { width: var(--icon-sm); height: var(--icon-sm); vertical-align: -0.15em; }
+.icon-lg { width: var(--icon-lg); height: var(--icon-lg); }
+.icon-xl { width: var(--icon-xl); height: var(--icon-xl); }
 
-/* Mascot: the swirl spins once on the home page. */
-.mascot { display: block; overflow: visible; }
-.mascot-spin .mascot-swirl { transform-origin: 100px 92px; animation: swirl 1.4s cubic-bezier(.3,.9,.4,1) 0.2s 1 both; }
-.mascot-spin .mascot-candy { transform-origin: 100px 160px; animation: hop 1.4s ease 0.2s 1 both; }
-@keyframes swirl { from { transform: rotate(-540deg); } to { transform: rotate(0); } }
-@keyframes hop { 0% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-12px) rotate(-4deg); } 60% { transform: translateY(0) rotate(3deg); } 100% { transform: rotate(0); } }
+/* Pip, the AI coach illustration */
+.pip { display: block; flex: none; }
 
-/* Timer ring */
-.timer-ring { position: relative; width: 128px; height: 128px; flex: none; }
-.timer-track { fill: var(--white); stroke: var(--milk-deep); stroke-width: 12; }
-.timer-fill { fill: none; stroke: var(--mint); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.2s linear; }
-.timer-urgent .timer-fill { stroke: var(--lemon); }
-.timer-text { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
-.timer-text strong { font-family: var(--font-display); font-size: 1.8rem; line-height: 1; }
-.timer-text span { font-size: var(--step--1); font-weight: 800; color: var(--grape-soft); }
-
-/* Bars (results and lab) */
-.bar { position: relative; height: 18px; background: var(--milk-deep); border: 2px solid var(--grape); border-radius: var(--radius-pill); overflow: visible; }
-.bar-fill { display: block; height: 100%; background: var(--blueberry); border-radius: var(--radius-pill); }
-.bar-fill.is-reached { background: var(--mint); }
-.bar-goal { position: absolute; top: -6px; bottom: -6px; width: 4px; margin-left: -2px; background: var(--grape); border-radius: 2px; }
+/* Bars (results and lab). The fill is sky ink, or mint ink once the goal is reached; both are 5.5:1 on the track. */
+.bar { position: relative; height: 12px; background: var(--surface-sunk); border-radius: var(--radius-pill); box-shadow: inset 0 0 0 1px var(--border-soft); }
+.bar-fill { display: block; height: 100%; background: var(--info); border-radius: var(--radius-pill); }
+.bar-fill.is-reached { background: var(--ok); }
+.bar-goal { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 2px; }
 
 /* Small text */
 .tag {
-  display: inline-block; margin-left: 0.5rem; padding: 0 0.55rem; font-size: 0.78rem; font-weight: 800;
-  background: var(--lemon); border: 2px solid var(--grape); border-radius: var(--radius-pill);
+  display: inline-block; margin-left: var(--gap-1); padding: 0 var(--gap-1); font-size: 0.8125rem; font-weight: 800;
+  color: var(--butter-ink); background: var(--butter-tint); border-radius: var(--radius-sm);
 }
-.fine-print { font-size: var(--step--1); color: var(--grape-soft); }
-.loading-line { text-align: center; padding: var(--gap-4); font-weight: 800; }
+.fine-print { font-size: var(--step--1); color: var(--ink-soft); }
+.loading-line { padding: var(--gap-4) 0; font-weight: 800; color: var(--ink-soft); }
 .error-box {
-  background: #fff0f0; border: var(--line); border-color: var(--bubblegum-deep);
-  border-radius: var(--radius-field); padding: var(--gap-2); font-weight: 700; max-width: none;
+  background: var(--bad-bg); color: var(--ink); box-shadow: inset 0 0 0 2px var(--bad);
+  border-radius: var(--radius-md); padding: var(--gap-2); font-weight: 700; max-width: none;
 }
 
-.header-nav { display: flex; align-items: center; gap: 0.6rem; }
-.icon-link {
-  display: grid; place-items: center; width: 40px; height: 40px; font-size: 1.2rem; text-decoration: none;
-  background: var(--white); border: var(--line); border-radius: 50%; box-shadow: var(--sticker-small);
+/* Cards: the one container recipe for settings, results and the lab. A hairline, no shadow, on lighter paper. */
+.results-card, .lab-card {
+  padding: var(--gap-3); margin-bottom: var(--gap-3);
+  background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-lg);
 }
-.icon-link:hover { background: var(--lemon); }
+.results-card h2, .lab-card h2 { font-size: var(--step-1); letter-spacing: 0; }
