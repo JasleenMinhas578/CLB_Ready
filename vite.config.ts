@@ -5,16 +5,15 @@ import { fileURLToPath, URL } from 'node:url';
 
 // Content Security Policy for the built page. GitHub Pages can't send headers, so
 // it goes in a <meta> tag, added at build time only because the dev server uses
-// inline scripts. Models come from Hugging Face (which redirects downloads to its
-// *.hf.co CDN hosts) and WebLLM's compiled model code from raw.githubusercontent.com.
-// 'wasm-unsafe-eval' lets WebAssembly compile; nothing needs eval or inline code.
-// Workers are separate same-origin files, and their own fetches follow the
+// inline scripts. 'wasm-unsafe-eval' lets WebAssembly compile; nothing needs eval
+// or inline code. The page itself only fetches its own files: models are downloaded
+// by the workers, which are separate same-origin files whose fetches follow the
 // worker's policy, not this one.
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'wasm-unsafe-eval'",
   "worker-src 'self'",
-  "connect-src 'self' https://huggingface.co https://*.hf.co https://raw.githubusercontent.com",
+  "connect-src 'self'",
   "style-src 'self'",
   "font-src 'self'",
   "img-src 'self' data:",
