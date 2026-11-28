@@ -16,7 +16,7 @@ export interface DeviceReport extends DeviceSignals {
 }
 
 /**
- * Reads device hints with no permission prompt. These values stay in the
+ * browser and are only used to pick model sizes; nothing is sent or counted.
  * browser; only the resulting tier name is ever counted (privacy spec).
  */
 export async function detectDevice(): Promise<DeviceReport> {
