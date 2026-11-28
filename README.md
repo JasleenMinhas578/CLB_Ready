@@ -10,7 +10,7 @@ payment, and nothing you say or write leaves your device.
 **Try it:** [clbready.vercel.app](https://clbready.vercel.app) · also on
 [GitHub Pages](https://jasleenminhas578.github.io/CLB_Ready/). Chrome or Edge on a laptop works best.
 
-![CLB Ready home page: start your next task, pick a CLB goal, and see progress for each skill](docs/screenshots/01-home.png)
+<p align="center"><img src="docs/screenshots/01-home.png" alt="CLB Ready home page: start your next task, pick a CLB goal, and see progress for each skill" width="760"></p>
 
 ## 🎯 Why learners use it
 
@@ -42,91 +42,54 @@ flowchart LR
   G --> B
 ```
 
-### 1️⃣ Pick a goal and start
+1️⃣ **Pick a goal and start.** Choose the CLB level you need on the start card; Start opens your next
+unfinished task. Without a goal, feedback aims at CLB 9.
 
-Choose the CLB level you need on the start card. Start opens your next unfinished task. You can change the
-goal at any time; without one, feedback aims at CLB 9.
+2️⃣ **Answer under test timers.** Each task looks and runs like test day. A soft beep marks when each timer
+starts and ends, kept out of your recording (turn it off in Settings).
 
-![The start card with the CLB goal picker](docs/screenshots/02-goal-picker.png)
+3️⃣ **Pip checks your answer.** Speech is turned into text on your device, then Pip reads it. The first time,
+Pip downloads, and a panel shows the step and progress.
 
-### 2️⃣ Answer under test timers
+4️⃣ **See your level and what to fix.** Your estimated level beside your goal, a score per criterion, up to
+three tips and the task checklist. No level shows until Pip has checked that you answered the question.
 
-Each task looks and runs like test day. In speaking, the preparation and recording timers run one after
-another. A soft beep marks when each timer starts and ends, and the beeps are kept out of your recording.
-You can turn them off with the Timer sounds setting.
+5️⃣ **Read a better version.** Pip rewrites your answer at your goal level, with every change marked.
 
-![A speaking task before it starts, showing the preparation and recording times](docs/screenshots/03-speaking-task.png)
+6️⃣ **Go to the next task, or start again.** A task is ticked only when you gave an answer. Each module has a
+Reset progress button, and Settings can clear everything.
 
-![A speaking task while recording](docs/screenshots/04-speaking-recording.png)
+| 1️⃣ Pick a goal | 3️⃣ Pip checks your answer |
+| --- | --- |
+| <img src="docs/screenshots/02-goal-picker.png" alt="The start card with the CLB goal picker" width="420"> | <img src="docs/screenshots/05-pip-checking.png" alt="Pip checking the answer, with the step and download progress" width="420"> |
+| **5️⃣ A better version, changes marked** | **6️⃣ Progress ticks and Reset progress** |
+| <img src="docs/screenshots/07-better-answer.png" alt="Your answer rewritten at CLB 9, with changes marked" width="420"> | <img src="docs/screenshots/13-task-list.png" alt="The speaking task list with done ticks, the next task and Reset progress" width="420"> |
 
-### 3️⃣ Pip checks your answer
+## 📸 Task and results, skill by skill
 
-Your recording is turned into text on your device, and Pip reads it. The first time, Pip has to download,
-which can take a few minutes. A panel shows which step Pip is on and how far the download has got.
+Each row shows the test-style task on the left and the feedback you get on the right.
 
-![Pip checking the answer, with the step and download progress](docs/screenshots/05-pip-checking.png)
+| Task | Results |
+| --- | --- |
+| **🗣️ Speaking:** 8 task types per test, with the test's preparation and speaking times. Your answer is transcribed and measured (pace, pauses, fillers, word variety). | Level beside your goal, a score per criterion, tips and the task checklist. |
+| <img src="docs/screenshots/03-speaking-task.png" alt="A speaking task with the preparation and recording times" width="420"> | <img src="docs/screenshots/06-speaking-results.png" alt="Speaking results: estimated level beside the goal, scores, tips and checklist" width="420"> |
+| **✍️ Writing:** an email and a survey response per test, in an editor with a live word count. Your draft stays in the tab until you submit. | Possible grammar mistakes marked, a score per criterion, the task checklist and an improved version. |
+| <img src="docs/screenshots/08-writing-task.png" alt="The writing editor with a live word count" width="420"> | <img src="docs/screenshots/09-writing-results.png" alt="Writing results: level, scores, tips and checklist" width="420"> |
+| **📖 Reading:** 4 parts per test, from correspondence to viewpoints. Fill blanks and answer questions on the clock. | Your score, an estimated level and, for every answer, the line that proves it. |
+| <img src="docs/screenshots/10-reading-task.png" alt="A reading part with a schedule, an email with blanks, and questions" width="420"> | <img src="docs/screenshots/11-reading-results.png" alt="Reading results with every answer explained" width="420"> |
+| **🎧 Listening:** 6 parts per test. Each recording plays once, like test day, then the questions appear. | Every answer explained with a quote from the recording, plus the full transcript. |
+| <img src="docs/screenshots/12-listening-task.png" alt="A listening part after the recording has played" width="420"> | <img src="docs/screenshots/17-listening-results.png" alt="Listening results with each answer explained" width="420"> |
 
-### 4️⃣ See your level and what to fix
+<details>
+<summary>More screens: recording, sample answers, light mode and phone</summary>
 
-Feedback comes in two steps. First: your estimated level beside your goal, a score for each criterion, up to
-three tips and the task checklist. No level shows until Pip has checked your answer, and an answer to some
-other question can't earn a good level.
+| Recording a speaking answer | A sample answer at CLB 10+ |
+| --- | --- |
+| <img src="docs/screenshots/04-speaking-recording.png" alt="A speaking task while recording" width="420"> | <img src="docs/screenshots/15-sample-answer.png" alt="A sample answer at CLB 10+ with notes on why it works" width="420"> |
+| **Light mode (no WebGPU)** | **On a phone** |
+| <img src="docs/screenshots/16-light-mode.png" alt="Light mode results: measured scores only, and a note that a level needs Pip" width="420"> | <img src="docs/screenshots/14-phone.png" alt="CLB Ready home page on a phone" width="220"> |
 
-![Speaking results: estimated level beside the goal, scores, tips and checklist](docs/screenshots/06-speaking-results.png)
-
-### 5️⃣ Read a better version of your answer
-
-Second: Pip rewrites your answer at your goal level. Every word added, cut or replaced is marked, so you
-can see what moves an answer up a level.
-
-![Your answer rewritten at CLB 9, with changes marked](docs/screenshots/07-better-answer.png)
-
-### 6️⃣ Go to the next task, or start again
-
-Results lead straight to the next task. A task is ticked as done only when you gave an answer. Each module
-and skill has a Reset progress button, and Settings can clear everything.
-
-![The speaking task list with done ticks, the next task and Reset progress](docs/screenshots/13-task-list.png)
-
-## 🗣️ Speaking
-
-8 task types per practice test, from giving advice to describing an unusual situation, with the test's
-preparation and speaking times (30 or 60 seconds to prepare, 1:00 or 1:30 to speak). Your answer is
-transcribed and measured (pace, pauses, fillers, word variety), then scored and rewritten by Pip. Each task
-also has a sample answer at CLB 10+ with notes on why it works and a Listen button.
-
-![A sample answer at CLB 10+ with notes on why it works](docs/screenshots/15-sample-answer.png)
-
-## ✍️ Writing
-
-An email and a survey response per practice test, in a test-style editor with a live word count against
-the 150 to 200 word target. Your writing draft stays in the tab until you submit it. Feedback marks possible
-grammar mistakes, scores each criterion, checks the task points and gives an improved version.
-
-![The writing editor with a live word count](docs/screenshots/08-writing-task.png)
-
-![Writing results: level, scores, tips and checklist](docs/screenshots/09-writing-results.png)
-
-## 📖 Reading
-
-4 parts per practice test: correspondence, applying a diagram, reading for information and reading for
-viewpoints. Fill blanks and answer questions on the clock. Results show your score, an estimated level and,
-for every answer, the line in the passage that proves it.
-
-![A reading part with a schedule, an email with blanks, and questions](docs/screenshots/10-reading-task.png)
-
-![Reading results with every answer explained](docs/screenshots/11-reading-results.png)
-
-## 🎧 Listening
-
-6 parts per practice test: problem solving, a daily life conversation, information, a news item, a
-discussion and viewpoints. Each recording plays once, like test day, and
-then the questions appear. Results explain every answer with a quote from the recording and show the full
-transcript.
-
-![A listening part after the recording has played](docs/screenshots/12-listening-task.png)
-
-![Listening results with each answer explained](docs/screenshots/17-listening-results.png)
+</details>
 
 ## 🔒 Private by design
 
@@ -174,16 +137,12 @@ The app checks the device (memory, CPU cores, WebGPU support) without asking for
 sizes to match. Devices without WebGPU get light mode, where Pip is off: results show the measured scores
 (vocabulary and how clear your answer is) and say that a level needs Pip.
 
-![Light mode results: measured scores only, and a note that a level needs Pip](docs/screenshots/16-light-mode.png)
-
 ## 🏫 For teachers and settlement programs
 
 Share one link. There's nothing to install, no accounts to manage and no student data to protect, because
 none is collected. Students get 5 full practice tests across all four skills, feedback aimed at the level
 they need, and a sample answer for every speaking task. Progress ticks are kept in each student's own
 browser, and it also works on phones.
-
-<img src="docs/screenshots/14-phone.png" alt="CLB Ready home page on a phone" width="260">
 
 ## 💻 Run it locally
 
