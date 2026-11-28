@@ -66,7 +66,7 @@ code {
 }
 
 ::selection { background: var(--butter-tint); color: var(--ink); }
-/* Browser surfaces in the palette: the scrollbar on paper, a blue caret like the focus ring. */
+/* Browser surfaces in the palette: the scrollbar on paper, a violet caret like the focus ring. */
 html { scrollbar-color: var(--border) var(--bg); }
 input, textarea { caret-color: var(--link); }
 
