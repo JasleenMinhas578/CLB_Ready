@@ -30,7 +30,7 @@ Spacing is `--gap-1` to `--gap-6` (8, 16, 24, 40, 64, 96px). Type is `--step--1`
 - Text on a tint is `--ink` or that tint's `-ink` (all pairs 5.5:1 or more). Never colour alone for meaning.
 
 ## Controls
-- Card stock: `--radius-md`, no border, `box-shadow: 0 var(--stock-edge) 0 0 <edge>`; hover lifts 1px to `--stock-edge-up`, active presses 3px to `--stock-edge-down`. Primary: `--accent` fill, `--accent-edge`, spring easing. Secondary: `--surface`, inset `--border-soft` hairline, `--edge`. Height 52px (44px for pills and tabs).
+- Card stock: `--radius-md`, no border, `box-shadow: 0 var(--stock-edge) 0 0 <edge>`; hover lifts 1px to `--stock-edge-up`, active presses 3px to `--stock-edge-down`. Primary: `--accent` fill, `--accent-edge`, spring easing. Secondary: `--surface`, inset `--border` hairline (3:1 against the page), `--edge`. Height 52px (44px for pills and tabs).
 - Selected: ink fill with paper text (module tab), or mint fill with a 2px mint-ink ring (goal, model choice).
 - Containers: `.results-card`/`.lab-card` = `--surface`, 1px `--border-soft`, `--radius-lg`, no shadow. Never a card in a card; wells inside cards are `--surface-sunk` at `--radius-sm`.
 
