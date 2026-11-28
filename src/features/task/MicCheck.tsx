@@ -79,7 +79,7 @@ export function MicCheck({ onReady, onCancel }: MicCheckProps) {
         </>
       ) : (
         <>
-          <p>Say “Hello, I’m ready to practise.” The candy bars should light up.</p>
+          <p>Say “Hello, I’m ready to practise.” The bars below should light up.</p>
           <LevelMeter level={level} />
           <p className={`mic-verdict ${heard ? 'is-good' : ''}`} aria-live="polite">
             {heard ? 'We can hear you clearly.' : 'Listening…'}

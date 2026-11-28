@@ -6,15 +6,17 @@ main { flex: 1; width: 100%; max-width: calc(var(--page-width) + 2 * var(--gutte
 main:focus { outline: none; }
 
 .site-header {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--gap-2);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--gap-1);
   max-width: calc(var(--page-width) + 2 * var(--gutter)); width: 100%; margin: 0 auto; padding: var(--gap-2) var(--gutter);
 }
 .brand {
-  display: inline-flex; align-items: center; gap: 0.55rem;
+  white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 0.55rem; min-height: 44px;
   font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; text-decoration: none;
 }
 .goal-chip {
-  display: inline-block; padding: 0.35rem 0.95rem; font-weight: 800; font-size: var(--step--1);
+  white-space: nowrap;
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0.35rem 0.95rem; font-weight: 800; font-size: var(--step--1);
   background: var(--white); border: var(--line); border-radius: var(--radius-pill);
   box-shadow: var(--sticker-small); text-decoration: none;
 }
@@ -33,7 +35,7 @@ main:focus { outline: none; }
   max-width: var(--page-width); margin: 0 auto;
 }
 .footer-logo {
-  display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.55rem; min-height: 44px; text-decoration: none;
   font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;
 }
 .footer-logo img { background: var(--milk); border-radius: 50%; padding: 3px; }
@@ -75,7 +77,7 @@ main:focus { outline: none; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: var(--sticker-small); }
 .btn-primary { background: var(--bubblegum); }
 .btn-secondary { background: var(--white); }
-.btn-quiet { background: transparent; box-shadow: none; border-width: 2px; min-height: 40px; font-size: 0.95rem; }
+.btn-quiet { background: transparent; box-shadow: none; border-width: 2px; min-height: 44px; font-size: 0.95rem; }
 .btn-quiet:hover { box-shadow: none; background: var(--milk-deep); }
 
 .row-actions { display: flex; flex-wrap: wrap; gap: var(--gap-2); align-items: center; }
@@ -115,9 +117,9 @@ main:focus { outline: none; }
   border-radius: var(--radius-field); padding: var(--gap-2); font-weight: 700; max-width: none;
 }
 
-.header-nav { display: flex; align-items: center; gap: 0.6rem; }
+.header-nav { display: flex; align-items: center; gap: 0.5rem; }
 .icon-link {
-  display: grid; place-items: center; width: 40px; height: 40px; font-size: 1.2rem; text-decoration: none;
+  display: grid; place-items: center; flex: none; width: 44px; height: 44px; font-size: 1.2rem; text-decoration: none;
   background: var(--white); border: var(--line); border-radius: 50%; box-shadow: var(--sticker-small);
 }
 .icon-link:hover { background: var(--lemon); }

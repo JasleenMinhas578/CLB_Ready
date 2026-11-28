@@ -30,6 +30,7 @@
 .exam-exit {
   padding: 0.3rem 0.75rem; font-size: 0.85rem; font-weight: 800; text-decoration: none; color: #fff;
   border: 1.5px solid rgb(255 255 255 / 0.5); border-radius: 8px;
+  display: inline-flex; align-items: center; min-height: 44px;
 }
 .exam-exit:hover { background: rgb(255 255 255 / 0.12); color: #fff; }
 .exam-bar-right { display: flex; align-items: center; gap: 1rem; flex: none; }
@@ -40,12 +41,14 @@
 .exam-time.is-low strong { color: var(--lemon); }
 .warn-icon { flex: none; }
 .exam-next {
-  min-width: 7rem; min-height: 42px; padding: 0.4rem 1.2rem;
+  min-width: 7rem; min-height: 44px; padding: 0.4rem 1.2rem;
   font: 800 1rem var(--font-body); color: var(--grape);
   background: var(--lemon); border: 0; border-radius: 8px; cursor: pointer;
 }
 .exam-next:hover:not(:disabled) { background: #ffe57f; }
 .exam-next:disabled { background: transparent; color: rgb(255 255 255 / 0.6); box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.35); cursor: not-allowed; }
+/* Plain grape focus rings on exam screens instead of candy pink; lemon on the dark bar. */
+.exam-page :focus-visible { outline-color: var(--grape); }
 .exam-bar :focus-visible { outline-color: var(--lemon); }
 
 /* Exit confirm: plain like the rest of the exam, opened with showModal(). */
@@ -58,9 +61,11 @@
 .exam-dialog p { margin: 0 0 1rem; max-width: none; }
 .exam-dialog-actions { display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
 .exam-dialog .btn { box-shadow: none; border-width: 2px; border-radius: 8px; font-family: var(--font-body); font-weight: 800; }
+.exam-dialog .btn-primary, .exam-dialog .btn-primary:hover { color: #fff; background: var(--grape); border-color: var(--grape); }
+.exam-dialog .btn:hover { transform: none; box-shadow: none; }
 
 /* Body */
-.exam-body { flex: 1; display: grid; gap: 20px; width: 100%; margin: 0 auto; padding: 20px var(--gutter); align-items: start; }
+.exam-body { flex: 1; display: grid; gap: 20px; width: 100%; margin: 0 auto; padding: 20px var(--gutter); align-items: start; align-content: start; }
 .exam-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .exam-stack { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .exam-panel { background: #fff; border: 1px solid var(--exam-line); border-radius: 10px; padding: 20px 22px; }
@@ -90,7 +95,7 @@
 .editor-panel { display: flex; flex-direction: column; gap: 10px; }
 .editor-toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
 .exam-tool {
-  min-height: 34px; padding: 0.25rem 0.85rem; font: 700 0.9rem var(--font-body); color: var(--exam-ink);
+  min-height: 44px; padding: 0.25rem 0.85rem; font: 700 0.9rem var(--font-body); color: var(--exam-ink);
   background: #f6f4f9; border: 1px solid var(--exam-line); border-radius: 6px; cursor: pointer;
 }
 .exam-tool:hover:not(:disabled) { background: #ebe6f1; }
@@ -125,8 +130,8 @@
 .kind-answer.is-active .phase-bar span { background: #e2486f; }
 .phase-timer .level-meter { margin-top: 10px; height: 28px; }
 .phase-timer .level-meter span { width: 9px; border-width: 1.5px; }
-.rec-dot { width: 12px; height: 12px; border-radius: 50%; background: #e2486f; animation: rec-blink 1.2s ease-in-out infinite; }
-@keyframes rec-blink { 50% { opacity: 0.3; } }
+/* Steady, not blinking: no looping motion beside a timer. */
+.rec-dot { width: 12px; height: 12px; border-radius: 50%; background: #e2486f; }
 
 .exam-message { display: grid; gap: 0.6rem; justify-items: start; }
 .exam-message h2 { margin: 0; font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; }
@@ -135,9 +140,14 @@
 .status-panel .mic-check { align-items: flex-start; text-align: left; }
 .status-panel .mic-check .row-actions { justify-content: flex-start; }
 .status-panel .mic-check .btn { box-shadow: none; border-width: 2px; border-radius: 8px; }
+/* Exam screens stay plain: grape buttons and body-font headings, no candy pink or big emoji. */
+.status-panel .mic-verdict { align-self: stretch; text-align: left; }
+.status-panel .mic-check h2 { margin: 0; font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; }
+.status-panel .mic-check .emoji { display: none; }
+.status-panel .btn-primary, .status-panel .btn-primary:hover { color: #fff; background: var(--grape); border-color: var(--grape); }
+.status-panel .btn:hover { transform: none; box-shadow: none; }
 .status-panel .model-badge { background: #f6f4f9; border-width: 1px; }
 
-.exam-alert { margin: 0 auto 1rem; padding: 0.7rem 1rem; max-width: 860px; background: #fff3c4; border: 1px solid #e6c84f; border-radius: 8px; font-weight: 700; }
 .exam-meta {
   display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
   width: 100%; margin: 0 auto; padding: 0 var(--gutter) 12px; font-size: 0.85rem; color: var(--exam-soft);
@@ -152,7 +162,12 @@
   .exam-textarea { min-height: 300px; }
 }
 @media (max-width: 480px) {
-  .exam-tool { padding: 0.25rem 0.55rem; font-size: 0.85rem; }
+  .exam-tool { flex: 1; padding: 0.25rem 0.4rem; font-size: 0.85rem; }
+  /* Let the task name use two lines and drop the timer's visible label (the timer keeps its spoken name), so the title stays readable. */
+  .exam-bar { gap: 0.6rem; }
+  .exam-bar h1 { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .exam-time span { display: none; }
+  .exam-bar-right { gap: 0.6rem; }
   .editor-toolbar { gap: 4px; }
   .exam-panel { padding: 16px; }
   .exam-bar-title { gap: 0.6rem; }
@@ -180,6 +195,8 @@
 }
 .exam-tabs [role='tab'][aria-selected='true'] { color: #fff; background: var(--grape); border-color: var(--grape); }
 .passage { display: grid; gap: 18px; }
+/* Grid items would otherwise grow to fit a wide table or dropdown and push the passage off screen. */
+.passage > * { min-width: 0; }
 .passage-block h2 { margin: 0 0 0.5rem; font: 800 1.05rem var(--font-body); }
 .passage-block p { margin: 0 0 0.8rem; line-height: 1.7; max-width: none; white-space: pre-line; }
 .passage-block.is-cloze { padding: 14px 16px; background: #faf9fc; border: 1px solid var(--exam-line); border-radius: 8px; }
@@ -189,9 +206,9 @@
 .passage-table thead th { background: #f4effa; }
 .passage-table tbody th { font-weight: 800; background: #faf9fc; }
 .passage-note { font-size: 0.85rem; color: var(--exam-soft); margin-top: 0.5rem; }
-.cloze-blank { display: inline-flex; align-items: center; gap: 4px; margin: 2px 2px; }
+.cloze-blank { display: inline-flex; align-items: center; gap: 4px; margin: 2px 2px; max-width: 100%; }
 .cloze-number { font-size: 0.75rem; font-weight: 800; color: var(--exam-soft); }
-.cloze-blank select { max-width: 100%; padding: 3px 6px; font: 600 0.95rem var(--font-body); color: var(--exam-ink); border: 1px solid #b9b0c6; border-radius: 6px; background: #fff; }
+.cloze-blank select { min-width: 0; max-width: 100%; min-height: 44px; padding: 3px 6px; font: 600 0.95rem var(--font-body); color: var(--exam-ink); border: 1px solid #b9b0c6; border-radius: 6px; background: #fff; }
 .cloze-blank select:focus { outline: 2px solid var(--grape); outline-offset: 1px; }
 .question-list { display: grid; gap: 18px; }
 .choice-field { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }

@@ -100,7 +100,7 @@ a.skill-card::after {
 }
 .module-tabs { display: flex; flex-wrap: wrap; gap: var(--gap-1); margin-bottom: var(--gap-3); }
 .module-tab {
-  padding: 0.35rem 1rem; font-weight: 800; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.35rem; min-height: 44px; padding: 0.35rem 1rem; font-weight: 800; text-decoration: none;
   background: var(--white); border: 2px solid var(--grape); border-radius: var(--radius-pill);
 }
 .module-tab.is-current { background: var(--grape); color: var(--milk); }
@@ -186,7 +186,7 @@ a.skill-card::after {
 .criterion-head { display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 0.3rem; }
 .checklist, .tips { margin: 0; padding: 0; display: grid; gap: var(--gap-1); }
 .checklist { list-style: none; }
-.checklist li { display: flex; gap: 0.6rem; align-items: center; padding: 0.55rem 0.8rem; border-radius: 14px; background: var(--milk); font-weight: 700; }
+.checklist li { display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; align-items: center; padding: 0.55rem 0.8rem; border-radius: 14px; background: var(--milk); font-weight: 700; }
 .checklist li.is-met { background: #e6fbf5; }
 .tips { padding-left: 1.4rem; }
 .tips li { padding-left: 0.25rem; }
@@ -223,7 +223,10 @@ a.skill-card::after {
 @media (max-width: 560px) {
   .skill-grid, .goal-grid { grid-template-columns: 1fr; }
   .skill-card { min-height: 0; }
-  .task-row { padding: var(--gap-2); }
+  /* The Done tag moves under the text, so the task name keeps the full width. */
+  .task-row { padding: var(--gap-2); flex-wrap: wrap; row-gap: var(--gap-1); }
+  .task-text { flex-basis: 12rem; }
+  .task-done { margin-left: calc(44px + var(--gap-2)); }
   .task-go { display: none; }
 }
 
@@ -275,7 +278,7 @@ a.skill-card::after {
   background: var(--milk-deep); border: var(--line); border-radius: 22px;
 }
 .level-pair > div:first-child { background: var(--lemon); }
-.level-pair span { font-weight: 800; font-size: var(--step--1); }
+.level-pair span { font-weight: 800; font-size: var(--step--1); text-align: center; }
 .level-pair strong { font-family: var(--font-display); font-size: var(--step-3); line-height: 1.1; }
 
 .ai-status {
@@ -313,7 +316,10 @@ a.skill-card::after {
 
 @media (max-width: 560px) {
   .measure-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .level-pair { gap: var(--gap-1); }
+  .level-pair > div { padding: var(--gap-2) var(--gap-1); }
   .level-pair strong { font-size: var(--step-2); }
+  .results-card { padding: var(--gap-2); }
 }
 
 /* Week 4: writing results, settings, plan badge */
@@ -384,7 +390,7 @@ a.skill-card::after {
 .improved-head h2 { margin: 0; }
 .view-switch { display: inline-flex; padding: 3px; background: var(--white); border: 2px solid var(--grape); border-radius: var(--radius-pill); }
 .view-switch button {
-  padding: 0.3rem 0.9rem; border: 0; border-radius: var(--radius-pill); background: transparent;
+  min-height: 44px; padding: 0.3rem 0.9rem; border: 0; border-radius: var(--radius-pill); background: transparent;
   font: 800 0.9rem var(--font-body); color: var(--grape); cursor: pointer;
 }
 .view-switch button[aria-pressed='true'] { background: var(--grape); color: var(--milk); }
@@ -398,6 +404,8 @@ a.skill-card::after {
 .diff-summary .key-removed { background: #ffe0ea; color: #9b2450; }
 
 /* Calibration notes */
+/* Grows to take the row, so the tag drops below the text on narrow cards instead of squeezing it. */
+.checklist-text { flex: 1 1 12rem; }
 .checked-by { margin-left: auto; padding: 0 0.5em; font-size: 0.75rem; font-weight: 800; color: var(--mint-deep); border: 1.5px solid var(--mint-deep); border-radius: var(--radius-pill); white-space: nowrap; }
 .score-note { margin: 0.4rem 0 0; color: var(--grape); background: #fff8e0; padding: 0.4rem 0.7rem; border-radius: 10px; max-width: none; }
 
@@ -462,6 +470,8 @@ a.skill-card::after {
 .answer-row p { margin: 0 0 0.3rem; max-width: none; }
 .answer-question { font-weight: 800; }
 .answer-yours span { text-decoration: line-through; text-decoration-color: var(--bubblegum-deep); }
+/* "No answer" is not a wrong choice, so it is not struck through. */
+.answer-yours span.is-blank { text-decoration: none; font-style: italic; }
 .answer-why { font-size: var(--step--1); color: var(--grape-soft); }
 .clip-transcript { margin-top: var(--gap-2); border: 2px solid var(--milk-deep); border-radius: var(--radius-field); padding: 0.6rem 1rem; }
 .clip-transcript summary { font-weight: 800; cursor: pointer; }
@@ -491,7 +501,7 @@ a.skill-card::after {
 .sample-text { white-space: pre-line; }
 .sample-notes-title { margin: var(--gap-2) 0 var(--gap-1); font-family: var(--font-body); font-size: 1rem; font-weight: 800; }
 .sample-notes { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; }
-.btn-small { min-height: 40px; padding: 0.35rem 1rem; font-size: 0.95rem; }
+.btn-small { min-height: 44px; padding: 0.35rem 1rem; font-size: 0.95rem; }
 
 /* ---------- Landing page ---------- */
 .landing-hero {
@@ -583,10 +593,10 @@ a.skill-card::after {
 .schools p { max-width: 70ch; font-size: var(--step-1); line-height: 1.55; margin: 0; }
 
 .faq { display: grid; gap: var(--gap-2); margin-top: var(--gap-2); max-width: 900px; }
-.faq details { padding: 1rem 1.25rem; background: var(--white); border: var(--line); border-radius: var(--radius-field); }
-.faq summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; }
-.faq details[open] summary { margin-bottom: 0.5rem; }
-.faq p { margin: 0; color: var(--grape-soft); max-width: 75ch; }
+.faq details { background: var(--white); border: var(--line); border-radius: var(--radius-field); }
+.faq summary { padding: 1rem 1.25rem; cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; }
+.faq details[open] summary { padding-bottom: 0.5rem; }
+.faq p { margin: 0; padding: 0 1.25rem 1rem; color: var(--grape-soft); max-width: 75ch; }
 
 .final-cta { text-align: center; padding: var(--gap-4) var(--gap-3); background: var(--lemon); border: var(--line); border-radius: var(--radius-card); box-shadow: var(--sticker); }
 .final-cta h2 { margin-bottom: var(--gap-2); }
@@ -604,3 +614,6 @@ a.skill-card::after {
   .private-band, .schools { padding: var(--gap-3); }
   .demo-sentence { font-size: 1.1rem; }
 }
+
+/* Notes under a list need a little air above them. */
+.checklist + .fine-print, .issue-groups + .fine-print { margin-top: var(--gap-2); }

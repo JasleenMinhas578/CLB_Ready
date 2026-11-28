@@ -89,7 +89,7 @@ export function planModels(signals: DeviceSignals, options: PlanOptions = {}): M
     high: 'Strong graphics chip and plenty of memory, so this uses the largest models.',
     mid: 'Good graphics chip, so this uses balanced models for speed and quality.',
     low: 'Limited memory, so this uses the smallest models to keep things fast.',
-    'no-webgpu': 'This browser has no WebGPU, so speech-to-text runs on the processor and feedback uses light mode.',
+    'no-webgpu': 'Light mode: speech-to-text runs on the processor, and feedback uses your measurements only.',
   };
 
   return {

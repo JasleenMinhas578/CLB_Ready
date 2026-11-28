@@ -56,6 +56,8 @@ code {
   padding: 0.1em 0.35em;
 }
 
+::selection { background: var(--lemon); color: var(--grape); }
+
 :focus-visible {
   outline: 3px solid var(--bubblegum-ink);
   outline-offset: 3px;
