@@ -14,7 +14,7 @@ vi.mock('../src/content/modules', async (importOriginal) => {
 
 const SCORES_REPLY = JSON.stringify({
   checklist: [{ item: 'Says why', met: true }],
-  scores: { content: 8, vocabulary: 7, delivery: 7, task: 9 },
+  scores: { content_and_coherence: 8, vocabulary: 7, listenability_or_readability: 7, task_fulfillment: 9 },
   tips: ['Add the date', 'Say what you want'],
 });
 const ANSWER_REPLY = 'Dear Sir, I am writing to ask for a full refund.';

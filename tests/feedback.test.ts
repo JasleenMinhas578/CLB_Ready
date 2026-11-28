@@ -6,7 +6,7 @@ import type { FeedbackModel } from '../src/services/ai/types';
 
 const GOOD_REPLY = JSON.stringify({
   checklist: [{ item: 'Gives advice', met: true }],
-  scores: { content: 8, vocabulary: 7, delivery: 7, task: 9 },
+  scores: { content_and_coherence: 8, vocabulary: 7, listenability_or_readability: 7, task_fulfillment: 9 },
   tips: ['One', 'Two', 'Three', 'Four'],
 });
 
@@ -40,7 +40,7 @@ describe('parseFeedback', () => {
 
   it('rejects broken JSON and replies missing scores', () => {
     expect(parseFeedback('{"checklist": [')).toBeNull();
-    expect(parseFeedback(JSON.stringify({ checklist: [], scores: { content: 8 }, tips: [] }))).toBeNull();
+    expect(parseFeedback(JSON.stringify({ checklist: [], scores: { content_and_coherence: 8 }, tips: [] }))).toBeNull();
   });
 });
 

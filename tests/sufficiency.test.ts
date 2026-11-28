@@ -50,7 +50,7 @@ describe('too short to score', () => {
 });
 
 describe('reading AI replies', () => {
-  const reply = '{"checklist":[{"item":"a","met":true}],"scores":{"content":8,"vocabulary":7,"delivery":7,"task":8},"tips":["t"]}';
+  const reply = '{"checklist":[{"item":"a","met":true}],"scores":{"content_and_coherence":8,"vocabulary":7,"listenability_or_readability":7,"task_fulfillment":8},"tips":["t"]}';
 
   it('copes with code fences and text around the JSON', () => {
     expect(parseFeedback('```json\n' + reply + '\n```')).not.toBeNull();
