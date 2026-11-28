@@ -16,7 +16,7 @@ const MOUTHS: Record<Mood, string> = {
 };
 
 /**
- * Pip, your AI coach: a round little pear-coloured seed with a sprout, because practice
+ * Pip, your AI coach: a round little pink seed with a sprout, because practice
  * helps a level grow. Drawn from the palette tokens, never animated, and used
  * sparingly (home intro, AI status on results, empty and error states).
  */
@@ -33,7 +33,7 @@ export function Pip({ size = 96, mood = 'happy', label, className }: PipProps) {
       aria-label={label}
       aria-hidden={label ? undefined : true}
     >
-      {/* Cut from card stock like the buttons: a deeper pear edge shows below the body. */}
+      {/* Cut from card stock like the buttons: a deeper pink edge shows below the body. */}
       <path d="M60 29c24 0 40 18 40 42s-16 40-40 40-40-16-40-40 16-42 40-42z" fill="var(--accent-edge)" />
       <path d="M60 25c24 0 40 18 40 42s-16 40-40 40-40-16-40-40 16-42 40-42z" fill="var(--accent)" />
       <ellipse cx="60" cy="84" rx="24" ry="18" fill="var(--surface)" opacity="0.55" />
