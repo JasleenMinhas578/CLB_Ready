@@ -1,7 +1,6 @@
 import { SKILLS, getSkill } from '@/domain/skills';
 import { getModuleSummary } from '@/content/modules/catalog';
 import { useSession } from '@/app/session';
-import { href } from '@/app/router';
 import { LinkButton } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Pip } from '@/components/Pip';
@@ -36,9 +35,8 @@ export function HomeScreen() {
           )}
         </div>
 
-        {/* The one-click start, shown as the task it opens, with Pip peeking over it. */}
+        {/* The one-click start, shown as the task it opens, with Pip beside it. */}
         <div className={`next-card skill-${next.task.skill}`}>
-          <Pip size={88} className="next-pip" />
           <div className="next-head">
             <span className="skill-badge"><Icon name={next.task.skill} size="lg" /></span>
             <div>
@@ -47,28 +45,21 @@ export function HomeScreen() {
                 {nextSkill?.name} task {next.task.order}, {getModuleSummary(next.moduleId)?.title}
               </p>
             </div>
+            <Pip size={64} className="next-pip" />
           </div>
-          <div className="next-actions">
-            <LinkButton to={taskPath(next)} className="next-start">
-              {isNew ? 'Start practising' : 'Continue practising'} <Icon name="arrow-right" />
-            </LinkButton>
-            {isNew && !goal && <LinkButton to="/goal" variant="secondary">Set your goal</LinkButton>}
-          </div>
+          <LinkButton to={taskPath(next)} className="next-start">
+            {isNew ? 'Start practising' : 'Continue practising'} <Icon name="arrow-right" />
+          </LinkButton>
+          {/* The header's goal button is the one way to set it; this only says what feedback aims at. */}
           <p className="home-goal">
-            {goal ? (
-              <>Feedback is aimed at CLB {goal}. <a href={href('/goal')}>Change goal</a></>
-            ) : isNew ? (
-              <>Until you set a goal, feedback aims at CLB {DEFAULT_GOAL}.</>
-            ) : (
-              <>No goal yet, so feedback aims at CLB {DEFAULT_GOAL}. <a href={href('/goal')}>Choose your CLB goal</a></>
-            )}
+            {goal ? <>Feedback is aimed at CLB {goal}.</> : <>Until you set a goal, feedback aims at CLB {DEFAULT_GOAL}.</>}
           </p>
         </div>
       </section>
 
       {/* A fixed example of the results screen, built from its own styles. The numbers are not anyone's result. */}
-      <section className="home-section home-example" aria-labelledby="example-title">
-        <div>
+      <section className="home-section home-band" aria-labelledby="example-title">
+        <div className="home-section-head">
           <h2 id="example-title">What you see after each task</h2>
           <p>Your estimated level next to your goal, a score for each part of your answer, and tips for what to change.</p>
         </div>
@@ -84,17 +75,19 @@ export function HomeScreen() {
               <strong>CLB 9</strong>
             </div>
           </div>
-          <div className="criterion-head">
-            <span>Vocabulary</span>
-            <strong>7 (goal 9)</strong>
+          <div className="example-detail">
+            <div className="criterion-head">
+              <span>Vocabulary</span>
+              <strong>7 (goal 9)</strong>
+            </div>
+            <div className="bar" aria-label="Vocabulary: about 7 of 12, goal 9">
+              <span className="bar-fill" style={{ width: `${(7 / 12) * 100}%` }} />
+              <span className="bar-goal" style={{ left: `${(9 / 12) * 100}%` }} aria-hidden="true" />
+            </div>
+            <p className="example-tip">
+              <Icon name="sparkle" /> <span>Organize your answer with linking words such as “first”, “for example” and “as a result”.</span>
+            </p>
           </div>
-          <div className="bar" aria-label="Vocabulary: about 7 of 12, goal 9">
-            <span className="bar-fill" style={{ width: `${(7 / 12) * 100}%` }} />
-            <span className="bar-goal" style={{ left: `${(9 / 12) * 100}%` }} aria-hidden="true" />
-          </div>
-          <p className="example-tip">
-            <Icon name="sparkle" /> <span>Organize your answer with linking words such as “first”, “for example” and “as a result”.</span>
-          </p>
         </figure>
       </section>
 
@@ -109,7 +102,7 @@ export function HomeScreen() {
         </ul>
       </section>
 
-      <section className="home-section home-facts" aria-labelledby="facts-title">
+      <section className="home-section home-rule home-facts" aria-labelledby="facts-title">
         <h2 id="facts-title">Good to know</h2>
         <dl>
           <div>

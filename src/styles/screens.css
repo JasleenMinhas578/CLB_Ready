@@ -15,10 +15,11 @@
   background: var(--skill-tint); color: var(--skill-ink);
 }
 
-/* Home: the headline on the left, the next task as a card-stock ticket on the right, Pip peeking over it */
+/* Home: the headline on the left, the next task as a card-stock ticket on the right with Pip in its corner.
+   Every home section shares the page column, so the hero card and the sections below share both edges. */
 .home-hero {
   display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--gap-5); align-items: center;
-  padding: var(--gap-4) 0 var(--gap-2);
+  padding: var(--gap-4) 0 var(--gap-5);
 }
 .home-copy h1 {
   font-size: var(--step-4); line-height: 1.06; max-width: 24ch; margin-bottom: var(--gap-2);
@@ -36,31 +37,42 @@
 .home-done .icon { color: var(--mint-ink); }
 
 .next-card {
-  position: relative; display: grid; gap: var(--gap-3);
-  padding: var(--gap-4) var(--gap-3) var(--gap-3);
+  display: grid; gap: var(--gap-3); padding: var(--gap-3);
   background: var(--surface); border-radius: var(--radius-lg);
   box-shadow: inset 0 0 0 1px var(--border-soft), 0 6px 0 0 var(--edge), var(--shadow-card);
 }
-.next-pip { position: absolute; top: -52px; right: var(--gap-3); }
 .next-head { display: flex; align-items: center; gap: var(--gap-2); }
+.next-pip { margin-left: auto; }
 .next-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.1; letter-spacing: var(--tracking-display); }
 .next-where { margin: 0.2rem 0 0; font-weight: 700; color: var(--ink-soft); }
-.next-actions { display: flex; flex-wrap: wrap; gap: var(--gap-2); }
-.next-start { min-height: 56px; padding-inline: var(--gap-3); font-size: 1.2rem; }
+.next-start { width: 100%; min-height: 56px; padding-inline: var(--gap-3); font-size: 1.2rem; }
 .home-goal { margin: 0; padding-top: var(--gap-2); border-top: 1px solid var(--border-soft); font-size: var(--step--1); color: var(--ink-soft); }
 
-.home-section { margin-top: var(--gap-5); }
-.home-section > h2, .home-example h2 { font-size: var(--step-3); margin-bottom: var(--gap-3); }
+/* Home sections: each its own block, the same heading and the same space around it.
+   The example sits on a full-width band so it can't read as a second hero; Good to know starts at a hairline. */
+.home-section { padding-block: var(--gap-5); }
+.home-section:last-child { padding-bottom: 0; }
+.home-section h2 { font-size: var(--step-2); margin: 0 0 var(--gap-3); }
+.home-section-head { margin-bottom: var(--gap-3); }
+.home-section-head h2 { margin-bottom: var(--gap-1); }
+.home-section-head p { margin: 0; font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 60ch; }
+/* Full width: the band reaches the window edges while its content keeps the page column. */
+.home-band {
+  margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%);
+  background: var(--grain), var(--surface-sunk);
+}
+.home-rule { border-top: 1px solid var(--border-soft); }
 
 /* An example of the results screen, using its own card, level pair and bar */
-.home-example { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--gap-3) var(--gap-5); align-items: center; }
-.home-example p { margin: 0; font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 45ch; }
-.example-card { margin: 0; }
+.example-card {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--gap-4); align-items: start; margin: 0;
+}
+.example-card figcaption { grid-column: 1 / -1; }
+.example-card .level-pair { margin-bottom: 0; }
 .example-card figcaption { margin-bottom: var(--gap-2); font-size: var(--step--1); font-weight: 800; color: var(--ink-soft); }
-.example-card .level-pair { margin-bottom: var(--gap-2); }
 .example-card .level-pair .is-level { background: var(--speaking-tint); }
 .example-card .example-tip {
-  display: flex; gap: var(--gap-1); align-items: flex-start; max-width: none; margin-top: var(--gap-3); padding: var(--gap-2);
+  display: flex; gap: var(--gap-1); align-items: flex-start; max-width: none; margin-top: var(--gap-2); padding: var(--gap-2);
   background: var(--surface-sunk); border-radius: var(--radius-sm); font-size: var(--step-0); color: var(--ink);
 }
 .example-tip .icon { flex: none; margin-top: 0.2rem; color: var(--speaking-ink); }
@@ -89,32 +101,30 @@
 .skill-go { display: inline-flex; align-items: center; gap: var(--gap-1); font-weight: 800; color: var(--skill-ink); }
 
 /* Good to know: a ruled list, the point on the left and the detail on the right */
-.home-facts dl { margin: 0; max-width: 1080px; border-top: 1px solid var(--border-soft); }
+.home-facts dl { margin: 0; border-top: 1px solid var(--border-soft); }
 .home-facts dl > div {
   display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--gap-1) var(--gap-4);
   padding: var(--gap-3) 0; border-bottom: 1px solid var(--border-soft);
 }
-.home-facts dt { font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.15; letter-spacing: var(--tracking-display); }
+.home-facts dt { font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.15; letter-spacing: var(--tracking-display); }
 .home-facts dd { margin: 0; color: var(--ink-soft); max-width: var(--text-width); text-wrap: pretty; font-size: 1.125rem; }
 
 @media (max-width: 900px) {
-  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-5); padding: var(--gap-3) 0 var(--gap-2); }
-  .home-example { grid-template-columns: minmax(0, 1fr); }
+  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-4); padding: var(--gap-3) 0 var(--gap-5); }
+  .example-card { grid-template-columns: minmax(0, 1fr); }
+  .example-card .level-pair { margin-bottom: var(--gap-2); }
   .home-facts dl > div { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
-  .home-hero { padding-top: var(--gap-2); gap: var(--gap-4); }
+  .home-hero { padding: var(--gap-2) 0 var(--gap-4); gap: var(--gap-4); }
   .home-how, .home-done { margin-top: var(--gap-2); }
-  .home-lede, .home-example p { font-size: var(--step-0); }
-  .next-card { padding: var(--gap-3); gap: var(--gap-2); }
-  .next-pip { width: 64px; height: 64px; top: -38px; right: var(--gap-3); }
-  .next-start { width: 100%; }
-  .next-actions > .btn { flex: 1 1 100%; }
-  .home-section > h2, .home-example h2 { font-size: var(--step-2); }
+  .home-lede, .home-section-head p { font-size: var(--step-0); }
+  .home-section { padding-block: var(--gap-4); }
+  .next-card { padding: var(--gap-2); gap: var(--gap-2); }
+  .next-pip { width: 48px; height: 48px; }
   .skill-list { grid-template-columns: minmax(0, 1fr); gap: var(--gap-2); }
   .skill-card { padding: var(--gap-2); }
   .skill-card .skill-badge { width: 48px; height: 48px; }
-  .home-section { margin-top: var(--gap-4); }
 }
 
 /* Goal picker: card-stock options, the chosen one in mint */

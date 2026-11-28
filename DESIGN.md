@@ -4,10 +4,11 @@ The locked system. Every Hallmark run reads this first and every screen shares i
 
 ## System
 - Genre: playful
-- Shape: app screens; the home page has a Settled hero (headline left, the next task as a card-stock ticket right)
+- Shape: app screens; the home page has a Settled hero (headline left, the next task as a card-stock ticket right, Pip inside its top row, never overlapping an edge)
 - Theme: Hum (dealt 1/3), softened to gentle pastels: cut card stock on grained cream paper
 - Axes: light/rounded-sans/chromatic-yellow · posture: full-palette, each colour with one job
 - Two registers: soft paper for home, practice, goal, settings and results; calm grey for exam screens (`--exam-*`)
+- Home sections after the hero: heading on top (h2 at `--step-2`, clearly under the h1, with an optional one-line intro), then the content full width in the same page column as the hero, so left and right edges line up. No side-by-side headings, no zig-zag. `--gap-5` above and below each (`--gap-4` on phones). The example sits on a full-width `--surface-sunk` band; Good to know starts at a `--border-soft` hairline. Order: hero, example, skills, good to know, footer. The goal is set from the header only.
 
 ## Tokens
 `src/styles/tokens.css` is the source of truth (plain CSS custom properties, no Tailwind). The roles:
