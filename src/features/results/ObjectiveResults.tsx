@@ -7,7 +7,7 @@ import { href } from '@/app/router';
 import { NotFound } from '@/components/NotFound';
 import { Icon } from '@/components/Icon';
 import { numberQuestions } from '@/features/task/objective/numbering';
-import { ResultsActions } from './cards';
+import { EstimateNote, ResultsActions, ResultsHead } from './cards';
 
 /** Results for a reading or listening part: the score, an estimated level and every answer explained. */
 export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
@@ -23,11 +23,8 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
   const blanks = questions.filter((question) => attempt.answers[question.id] == null).length;
 
   return (
-    <section className="results">
-      <div className="screen-head">
-        <h1>Your results</h1>
-        <p>{attempt.taskTitle}</p>
-      </div>
+    <section className={`results results-${attempt.skill}`}>
+      <ResultsHead attempt={attempt} title="Your results" />
       <div className="results-grid">
         <div className="results-side">
           <div className="results-card level-card">
@@ -36,12 +33,14 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
                 <span>Correct answers</span>
                 <strong>{correct} of {questions.length}</strong>
               </div>
-              <div>
+              <div className="is-level">
                 <span>Estimated level</span>
                 <strong>{estimate.level === null ? 'Below CLB 3' : estimate.level >= 10 ? 'CLB 10+' : `CLB ${estimate.level}`}</strong>
               </div>
             </div>
+            <EstimateNote>Estimate for practice only, not an official CELPIP score.</EstimateNote>
             <p className={`goal-line ${reached ? 'is-reached' : ''}`}>
+              {reached && <Icon name="check" />}{' '}
               {reached
                 ? `On track for your goal of CLB ${attempt.goal}.`
                 : `For CLB ${attempt.goal}, aim for about ${target} of ${questions.length} in this part.`}
