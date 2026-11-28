@@ -29,12 +29,14 @@ export class WebLlmFeedbackModel implements FeedbackModel {
   async complete(system: string, user: string, { schema, maxTokens, onText }: CompleteOptions) {
     const started = performance.now();
     let firstTokenAt: number | null = null;
+    let soFar = '';
     const reply = await this.rpc.send(
       { type: 'complete', system, user, maxTokens, schema: schema ? JSON.stringify(schema) : undefined },
-      // While writing, the worker's progress text is the reply so far.
+      // While writing, the worker's progress text is the newly written part.
       ({ text }) => {
         firstTokenAt ??= performance.now();
-        onText?.(text);
+        soFar += text;
+        onText?.(soFar);
       },
     );
     if (reply.type !== 'completed') throw new Error('Unexpected reply from the feedback model.');

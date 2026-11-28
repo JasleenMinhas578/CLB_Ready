@@ -2,7 +2,7 @@ import { env } from '@huggingface/transformers';
 import { KokoroTTS } from 'kokoro-js';
 import type { KokoroRequest, KokoroResponse } from './kokoro.protocol';
 import { serveOnnxRuntimeLocally } from '@/services/ai/onnxRuntime';
-import { averageProgress, type ProgressEvent } from '@/services/ai/downloadProgress';
+import { averageProgress, type FileProgress, type ProgressEvent } from '@/services/ai/downloadProgress';
 import { KOKORO_MODEL, KOKORO_SHA } from '@/services/modelPins';
 
 /**
@@ -36,7 +36,7 @@ const worker = self as unknown as {
 };
 
 let tts: KokoroTTS | null = null;
-const fileProgress = new Map<string, number>();
+const fileProgress = new Map<string, FileProgress>();
 
 async function handle(request: KokoroRequest) {
   switch (request.type) {

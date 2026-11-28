@@ -48,12 +48,12 @@ describe('WebLLM worker protocol', () => {
     expect(replies).toEqual([{ id: 1, type: 'error', message: 'Error: Feedback model is not loaded yet.' }]);
   });
 
-  it('streams a completion as progress, then sends the full text and token counts', async () => {
+  it('streams each new part of a completion as progress, then sends the full text and token counts', async () => {
     expect(await send({ id: 2, type: 'load', modelId: 'm' })).toEqual([{ id: 2, type: 'loaded' }]);
     const replies = await send({ id: 3, type: 'complete', system: 's', user: 'u', maxTokens: 10, schema: '{}' });
     expect(replies).toEqual([
       { id: 3, type: 'progress', fraction: null, text: '{"a"' },
-      { id: 3, type: 'progress', fraction: null, text: '{"a":1}' },
+      { id: 3, type: 'progress', fraction: null, text: ':1}' },
       { id: 3, type: 'completed', text: '{"a":1}', truncated: false, promptTokens: 12, completionTokens: 4 },
     ]);
     expect(engine.chat.completions.create).toHaveBeenCalledWith(expect.objectContaining({

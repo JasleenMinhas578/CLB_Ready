@@ -1,7 +1,7 @@
 import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
 import type { WhisperRequest, WhisperResponse } from './whisper.protocol';
 import { serveOnnxRuntimeLocally } from './onnxRuntime';
-import { averageProgress, type ProgressEvent } from './downloadProgress';
+import { averageProgress, type FileProgress, type ProgressEvent } from './downloadProgress';
 import { WHISPER_SHAS } from '@/services/modelPins';
 
 serveOnnxRuntimeLocally();
@@ -21,7 +21,7 @@ const createAsr = pipeline as unknown as (
 ) => Promise<AutomaticSpeechRecognitionPipeline>;
 
 let asr: AutomaticSpeechRecognitionPipeline | null = null;
-const fileProgress = new Map<string, number>();
+const fileProgress = new Map<string, FileProgress>();
 
 function post(message: WhisperResponse) {
   worker.postMessage(message);

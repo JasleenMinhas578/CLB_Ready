@@ -58,13 +58,13 @@ describe('buildFeedbackPrompt', () => {
 });
 
 describe('FeedbackEngineStore', () => {
-  it('returns a parsed reply and resets the chat afterwards', async () => {
+  it('returns a parsed reply and resets the chat once afterwards', async () => {
     const log: string[] = [];
     const store = new FeedbackEngineStore(async () => plan('Qwen2.5-1.5B-Instruct-q4f16_1-MLC'), () => fakeModel([GOOD_REPLY], log));
     const run = await store.generate('s', 'u');
     expect(run.attempts).toBe(1);
     expect(run.reply.scores.task).toBe(9);
-    expect(log.includes('reset')).toBe(true);
+    expect(log.slice(-2)).toEqual(['generate', 'reset']);
     expect(store.getStatus().model).toBe('Qwen2.5-1.5B-Instruct');
   });
 
@@ -73,7 +73,7 @@ describe('FeedbackEngineStore', () => {
     const store = new FeedbackEngineStore(async () => plan('m'), () => fakeModel(['not json', GOOD_REPLY], log));
     const run = await store.generate('s', 'u');
     expect(run.attempts).toBe(2);
-    expect(log.filter((entry) => entry === 'generate').length).toBe(2);
+    expect(log.slice(1)).toEqual(['generate', 'reset', 'generate', 'reset']);
   });
 
   it('gives up after two unreadable replies', async () => {

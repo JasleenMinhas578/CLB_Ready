@@ -8,7 +8,7 @@ export type WebLlmRequest =
   | { id: number; type: 'unload' };
 
 export type WebLlmResponse =
-  /** While loading, text says what is downloading. While writing a reply, text is the reply so far. */
+  /** While loading, text says what is downloading. While writing a reply, text is the newly written part. */
   | { id: number; type: 'progress'; fraction: number | null; text: string }
   | { id: number; type: 'loaded' }
   | { id: number; type: 'completed'; text: string; truncated: boolean; promptTokens: number; completionTokens: number }

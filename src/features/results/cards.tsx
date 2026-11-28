@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { Criterion } from '@/domain/criteria';
 import { MAX_LEVEL } from '@/domain/scoring/estimate';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
@@ -10,7 +10,7 @@ import { friendlyModelError } from '@/services/ai/errorText';
 import type { AiPerf, AnswerStream, FeedbackOutcome, FeedbackProgress, StepPerf } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
 import { DiffView } from './DiffView';
-import { isMostlyRewritten } from '@/domain/diff';
+import { diffWords, isMostlyRewritten, summarizeDiff } from '@/domain/diff';
 
 /** Shared building blocks for every skill's results screen. */
 
@@ -117,9 +117,16 @@ interface ImprovedCardProps {
 }
 
 export function ImprovedCard({ goal, text, spoken, fromScratch = false, original }: ImprovedCardProps) {
-  const canCompare = !fromScratch && !!original?.trim();
+  const compareWith = fromScratch || !original?.trim() ? null : original;
+  const canCompare = compareWith !== null;
+  // Computed once here for both the opening view and the marked changes.
+  const diff = useMemo(() => {
+    if (compareWith === null) return null;
+    const parts = diffWords(compareWith, text);
+    return { parts, summary: summarizeDiff(parts) };
+  }, [compareWith, text]);
   // When most words are new, the marked view is a wall of colour; start on the clean copy instead.
-  const rewritten = canCompare && isMostlyRewritten(original ?? '', text);
+  const rewritten = !!diff && isMostlyRewritten(diff.summary);
   const [view, setView] = useState<'changes' | 'clean'>(canCompare && !rewritten ? 'changes' : 'clean');
 
   return (
@@ -143,8 +150,8 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
               : 'Your ideas, rewritten at your goal level.'}{' '}
         {spoken ? 'Read it aloud once to hear how it flows.' : 'Notice how each paragraph covers one point.'}
       </p>
-      {canCompare && view === 'changes' && original ? (
-        <DiffView before={original} after={text} />
+      {diff && view === 'changes' ? (
+        <DiffView parts={diff.parts} summary={diff.summary} />
       ) : (
         <blockquote className="transcript">{text}</blockquote>
       )}
