@@ -14,7 +14,8 @@ export function SpeechModelBadge({ status }: { status: ModelStatus }) {
 
   return (
     <p className={`model-badge is-${status.state}`} aria-live="polite">
-      <Icon name={status.state === 'error' ? 'warning' : status.state === 'ready' ? 'check' : 'pending'} /> {text}
+      {status.state === 'error' && <Icon name="warning" />}
+      {text}
     </p>
   );
 }
