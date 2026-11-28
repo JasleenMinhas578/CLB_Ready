@@ -26,7 +26,7 @@
   border: var(--line); border-radius: var(--radius-card); box-shadow: var(--sticker);
   text-decoration: none; overflow: hidden; transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-a.skill-card:hover { transform: translate(-2px, -3px) rotate(-0.6deg); box-shadow: 7px 8px 0 var(--grape); color: var(--grape); }
+a.skill-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); color: var(--grape); }
 .skill-card h3 { font-size: var(--step-2); margin-bottom: var(--gap-1); }
 .skill-card p { margin-bottom: var(--gap-3); }
 .skill-emoji {
@@ -102,7 +102,7 @@ a.skill-card::after {
 /* Hover lifts the card like a button instead of tinting it, so a hovered card never looks selected.
    Touch screens keep hover after a tap, so only devices that really hover get it. */
 @media (hover: hover) {
-  .task-row:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--grape); color: var(--grape); }
+  .task-row:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); color: var(--grape); }
 }
 .task-number {
   flex: none; display: grid; place-items: center; width: 44px; height: 44px;
@@ -464,7 +464,7 @@ a.skill-card::after {
 /* The feedback demo card */
 .demo-card {
   margin: 0; padding: var(--gap-3); background: var(--white); border: var(--line); border-radius: var(--radius-card);
-  box-shadow: 8px 8px 0 var(--grape); transform: rotate(1.2deg);
+  box-shadow: var(--shadow-hover); transform: rotate(1.2deg);
 }
 .demo-head { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; color: var(--grape-soft); font-size: var(--step--1); margin-bottom: var(--gap-2); }
 .demo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--bubblegum); box-shadow: 16px 0 0 var(--lemon), 32px 0 0 var(--mint); margin-right: 32px; }
