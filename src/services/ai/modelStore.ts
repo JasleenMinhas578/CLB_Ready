@@ -97,7 +97,9 @@ export abstract class ModelStore<E extends LoadableModel> {
       this.setStatus({ state: 'loading', progress: 0, model: this.displayName(plan), error: null });
       this.loadingEngine = engine;
       try {
-        await engine.load((progress) => this.setStatus({ progress: progress.fraction }));
+        await engine.load((progress) => {
+          if (!cancelled()) this.setStatus({ progress: progress.fraction });
+        });
         // unload() ran while this was downloading (say, a tier change in Settings): drop it.
         if (cancelled()) throw new Error(UNLOADED_MESSAGE);
       } catch (error) {
