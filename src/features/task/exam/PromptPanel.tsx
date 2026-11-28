@@ -14,7 +14,8 @@ interface PromptPanelProps {
 /** The task instructions, bullet points, picture and options, test-style. */
 export function PromptPanel({ task, prompt, selected = null, onSelect, optionsLocked = false }: PromptPanelProps) {
   return (
-    <section className="exam-panel prompt-panel" aria-label="Task instructions">
+    <section className="exam-panel prompt-panel" aria-labelledby="prompt-panel-label">
+      <h2 id="prompt-panel-label" className="exam-panel-label">Task</h2>
       <p className="exam-prompt">{prompt.text}</p>
       {prompt.points && (
         <ul className="exam-points">

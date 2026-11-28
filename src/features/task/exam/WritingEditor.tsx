@@ -91,7 +91,8 @@ export function WritingEditor({ value, onChange, disabled = false, wordRange }: 
   ];
 
   return (
-    <section className="exam-panel editor-panel" aria-label="Your answer">
+    <section className="exam-panel editor-panel" aria-labelledby="answer-label">
+      <h2 id="answer-label" className="exam-panel-label">Your answer</h2>
       <div className="editor-toolbar" role="toolbar" aria-label="Editing tools">
         {tools.map((tool) => (
           <button
@@ -108,9 +109,9 @@ export function WritingEditor({ value, onChange, disabled = false, wordRange }: 
         ))}
       </div>
 
-      <label className="sr-only" htmlFor="answer">Your answer</label>
       <textarea
         id="answer"
+        aria-labelledby="answer-label"
         ref={area}
         className="exam-textarea"
         value={value}

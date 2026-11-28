@@ -18,7 +18,7 @@ The locked system. Every Hallmark run reads this first and every screen shares i
   --ink: oklch(25% 0.035 265);  --ink-soft: oklch(38% 0.03 265);  --border: oklch(52% 0.025 265);  --border-soft: oklch(85% 0.025 350);
   --accent: oklch(89% 0.06 355);  --accent-hover: oklch(85.5% 0.08 355);  --accent-edge: oklch(69% 0.12 355);  --accent-ink: var(--ink);  --link: oklch(42% 0.17 258);  --focus: var(--link);
   --<rose|peach|butter|mint|sky|lilac>-tint / -ink;  (tints at L 92.5-94%, inks at L 39-40%: rose 355, lilac 315, sky 235/250, mint 165/160 for ok, butter 90/80 for warn; peach unused)  --<speaking|writing|reading|listening>-tint / -ink (rose, lilac, sky, periwinkle oklch(91.5% 0.05 278) / oklch(39% 0.16 275));  --ok (mint), --warn (butter), --bad oklch(41% 0.15 25) on oklch(94% 0.035 25), --info (sky);
-  --exam-bg, --exam-surface, --exam-sunk, --exam-line, --exam-line-strong, --exam-ink, --exam-soft, --exam-accent, --exam-rec;  (--exam-soft: oklch(39% 0.02 295);  --exam-line-strong: oklch(56% 0.016 295);  --exam-line: oklch(80% 0.012 295))
+  --exam-bg, --exam-surface, --exam-sunk, --exam-line, --exam-line-strong, --exam-ink, --exam-soft, --exam-accent, --exam-rec, --exam-rec-ink (timer text in red, 7:1 or more);  (--exam-soft: oklch(39% 0.02 295);  --exam-line-strong: oklch(56% 0.016 295);  --exam-line: oklch(80% 0.012 295))
   --font-display: 'Fredoka';  --font-body: 'Nunito';  (self-hosted in public/fonts, no CDN)
   --radius-sm: 10px;  --radius-md: 16px (card stock);  --radius-lg: 24px (cards, sheets);  --radius-pill: small pills only;
   --stock-edge: 4px;  --stock-edge-up: 6px;  --stock-edge-down: 1px;  --shadow-card;  --grain;
@@ -41,6 +41,8 @@ Spacing is `--gap-1` to `--gap-6` (8, 16, 24, 40, 64, 96px). Type is `--step--1`
 
 ## Exam screens
 - `--exam-*` only: grey ground, near-white panels, `--exam-accent` bar and primary. No card stock, no grain, no tints, no Pip, no motion. Override `.btn` there to a flat fill with no edge or transform.
+- One capped column (`--exam-width`, 75rem) for the bar's contents, panels and notes; the page does not stretch, so the notes and disclaimer sit right under the panels.
+- Every panel starts with a small `.exam-panel-label` (Task, Your answer, Before you start, Timers, Passage, Questions, Recording). One primary action per state: speaking's Start sits in the Before you start panel with the timers previewed above it; the bar holds Skip, Finish answer or Next only once the task is running.
 
 ## Motion
 - State only: `transform`, `box-shadow`, `background-color` at `--dur-fast`. No reveals, no loops near scores or timers. Reduced motion ends everything at once (base.css).
