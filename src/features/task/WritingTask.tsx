@@ -11,7 +11,7 @@ import { ruleChecker } from '@/services/grammar/ruleChecker';
 import type { GrammarChecker } from '@/domain/grammar';
 import { getFeedbackEngine } from '@/services/ai/feedbackEngine';
 import { useCountdown } from './useCountdown';
-import { ExamBar, TimeRemaining } from './exam/ExamBar';
+import { ExamBar, TimeRemaining, WarnIcon } from './exam/ExamBar';
 import { PromptPanel } from './exam/PromptPanel';
 import { WritingEditor } from './exam/WritingEditor';
 import { ModelPlanBadge } from './ModelPlanBadge';
@@ -117,6 +117,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
         status={<TimeRemaining seconds={secondsLeft} totalSeconds={task.timing.minutes * 60} warnBelow={300} />}
         action={
           <button type="button" className="exam-next" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'} aria-busy={state === 'checking'}>
+            {state === 'checking' && <span className="spinner" aria-hidden="true" />}
             {state === 'checking' ? 'Checking…' : 'Next'}
           </button>
         }
@@ -128,10 +129,17 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
       </div>
 
       {timeUp && !text.trim() && (
-        <p className="exam-alert" role="alert">Time is up and nothing was written. Exit to try again.</p>
+        <p className="exam-alert" role="alert"><WarnIcon /> Time is up and nothing was written. Exit to try again.</p>
       )}
       <div className="exam-meta">
-        <span>Press Next when you finish. Then we check your writing.</span>
+        {state === 'checking' ? (
+          <span className="busy-status" role="status">
+            <span className="spinner" aria-hidden="true" />
+            Checking your writing on this device…
+          </span>
+        ) : (
+          <span>Press Next when you finish. Then we check your writing.</span>
+        )}
         <ModelPlanBadge />
       </div>
     </div>
