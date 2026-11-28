@@ -93,6 +93,33 @@
   background: var(--surface-sunk); border-radius: var(--radius-sm); color: var(--ink);
 }
 .example-tip .icon { flex: none; margin-top: 0.2rem; color: var(--speaking-ink); }
+/* Goal picker in the next-task card: one tap sets the level feedback aims at. */
+.home-goal-pick { margin: 0; padding: 0; border: 0; min-width: 0; }
+.home-goal-pick legend { padding: 0; margin-bottom: var(--gap-1); font-weight: 800; font-size: var(--step--1); color: var(--ink); }
+.goal-chips { display: flex; flex-wrap: wrap; gap: var(--gap-1); }
+.goal-chip {
+  position: relative; display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0 var(--gap-1);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface);
+  font-weight: 800; color: var(--ink); cursor: pointer;
+}
+.goal-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.goal-chip:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.goal-chip.is-selected { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.home-goal-pick .home-goal { margin: var(--gap-1) 0 0; }
+/* The example: numbered points on the left match numbered parts of the card. */
+.example-intro { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-3); }
+.example-intro .home-intro { margin: 0; }
+.example-points { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-3); }
+.example-points li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-2); align-items: start; }
+.example-points h3 { margin: 0 0 var(--gap-1); font-size: var(--step-1); }
+.example-points p { margin: 0; color: var(--ink-soft); max-width: var(--text-width); }
+.example-marker {
+  display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 50%;
+  font-weight: 800; font-size: var(--step--1); color: var(--accent-ink); background: var(--accent);
+}
+.example-part { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-2); align-items: start; }
+.example-part + .example-part { margin-top: var(--gap-3); }
+.example-scores { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-2); }
 
 /* Practise more, worry less: two short facts side by side under the next-task card, each led by a small icon */
 .fact-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3); }
