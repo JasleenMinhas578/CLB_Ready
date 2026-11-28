@@ -60,8 +60,7 @@ export function useCountdown(
     }, 200);
     return () => {
       window.clearInterval(id);
-      // Stopped early (Next, Skip, Finish): that ends it too. Closing the screen doesn't.
-      if (!closing.current) sounds?.end();
+      sounds?.stop(closing.current);
     };
     // `beeps` is read once per run; it only changes along with `resetKey`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
