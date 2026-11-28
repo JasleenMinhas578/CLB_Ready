@@ -13,7 +13,7 @@ export function HomeScreen() {
   const progress = useProgress();
   const next = nextTask(progress);
   const isNew = Object.keys(progress).length === 0;
-  const where = `${getModuleSummary(next.moduleId)?.title} · ${getSkill(next.task.skill)?.name} task ${next.task.order} · ${next.task.title}`;
+  const nextSkill = getSkill(next.task.skill);
 
   return (
     <>
@@ -23,14 +23,19 @@ export function HomeScreen() {
           <p className="home-lede">
             Speak, write, read and listen under test timers. Then see your estimated CLB level and what to work on next.
           </p>
-          <div className="home-start">
-            <LinkButton to={taskPath(next)}>
-              {isNew ? 'Start practising' : 'Continue practising'} <Icon name="arrow-right" />
-            </LinkButton>
-            <p className="home-next">
-              Next: {where}
-            </p>
-          </div>
+        </div>
+
+        {/* The one-click start, shown as the task it opens. */}
+        <div className={`next-card skill-${next.task.skill}`}>
+          <Pip size={84} className="next-pip" />
+          <span className="skill-badge"><Icon name={next.task.skill} size="lg" /></span>
+          <p className="next-title">{next.task.title}</p>
+          <p className="next-where">
+            {nextSkill?.name} task {next.task.order}, {getModuleSummary(next.moduleId)?.title}
+          </p>
+          <LinkButton to={taskPath(next)} className="next-start">
+            {isNew ? 'Start practising' : 'Continue practising'} <Icon name="arrow-right" />
+          </LinkButton>
           <p className="home-goal">
             {goal ? (
               <>Feedback is aimed at CLB {goal}. <a href={href('/goal')}>Change goal</a></>
@@ -39,18 +44,16 @@ export function HomeScreen() {
             )}
           </p>
         </div>
-
-        <aside className="pip-intro" aria-label="Pip, your AI coach">
-          <Pip size={112} />
-          <div>
-            <h2>Pip, your AI coach</h2>
-            <p>
-              Pip turns your spoken answers into text, checks your writing and shows a stronger version at your goal level.
-              Pip runs inside this browser, so nobody else hears or reads your answers.
-            </p>
-          </div>
-        </aside>
       </section>
+
+      <aside className="pip-intro" aria-label="Pip, your AI coach">
+        <Pip size={128} />
+        <h2>Pip, your AI coach</h2>
+        <p>
+          Pip turns your spoken answers into text, checks your writing and shows a stronger version at your goal level.
+          Pip runs inside this browser, so nobody else hears or reads your answers.
+        </p>
+      </aside>
 
       <section className="home-section" aria-labelledby="skills-title">
         <h2 id="skills-title">Or pick a skill</h2>
