@@ -1,10 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
+import { loadModule } from '../src/content/modules';
 import { feedbackJobFor, type FeedbackDeps, type Job } from '../src/features/results/useFeedback';
 import { FeedbackEngineStore } from '../src/services/ai/feedbackEngine';
 import { measureWriting } from '../src/domain/measure/writingMetrics';
 import type { SpeakingAttempt, WritingAttempt } from '../src/domain/attempt';
 import type { ModelPlan } from '../src/services/device/tier';
 import type { FeedbackModel } from '../src/services/ai/types';
+
+vi.mock('../src/content/modules', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../src/content/modules')>();
+  return { ...real, loadModule: vi.fn(real.loadModule) };
+});
 
 const SCORES_REPLY = JSON.stringify({
   checklist: [{ item: 'Says why', met: true }],
@@ -126,6 +132,24 @@ describe('feedback job paths', () => {
     expect(deps.getEngine).not.toHaveBeenCalled();
     expect(job.progress.phase).toBe('done');
     expect(job.progress.answer.state).toBe('off');
+  });
+
+  it('settles a job whose module content fails to download, and tries again next time', async () => {
+    const { deps } = setup();
+    nextId += 1;
+    const attempt = {
+      skill: 'speaking', id: `job-test-${nextId}`, moduleId: 'module-1', taskTypeId: 'speaking-1',
+      taskTitle: 'Speaking task 1', promptText: 'Give advice.', checklist: [], goal: 9, goalChosen: true,
+      transcript: 'Join a club.', words: [], recordedSeconds: 5, transcribeMs: 1,
+      metrics: { wordCount: 3, answerSeconds: 90 },
+    } as unknown as SpeakingAttempt;
+    vi.mocked(loadModule).mockRejectedValueOnce(new Error('offline'));
+    const job = feedbackJobFor(attempt, deps);
+    expect(await job.promise).toEqual({ kind: 'code', reason: 'error', message: 'offline' });
+    expect(job.progress.phase).toBe('done');
+    const retry = feedbackJobFor(attempt, deps);
+    expect(retry).not.toBe(job);
+    expect(await retry.promise).toEqual({ kind: 'sample' });
   });
 
   it('falls back to code-only feedback in light mode', async () => {

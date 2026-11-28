@@ -4,6 +4,7 @@ import { KokoroTextToSpeech } from '../src/services/tts/kokoroClient';
 import { SpeechEngineStore } from '../src/services/ai/speechEngine';
 import { VoiceEngineStore } from '../src/services/tts/voiceEngine';
 import { LIGHT_VOICE, planModels, type DeviceSignals } from '../src/services/device/tier';
+import { WorkerRpc } from '../src/services/workerRpc';
 
 const GB = 1024 ** 3;
 const laptop: DeviceSignals = { ramGb: 8, cpuCores: 8, webgpu: true, shaderF16: true, maxBufferBytes: 4 * GB, isMobile: false };
@@ -27,7 +28,8 @@ class FakeWorker extends EventTarget {
   }
 
   postMessage(request: { id: number; type: string }) {
-    if (this.broken) return;
+    // 'hang' stands in for long work, like scoring, that never replies during the test.
+    if (this.broken || request.type === 'hang') return;
     const reply = { load: 'loaded', unload: 'unloaded' }[request.type] ?? 'error';
     setTimeout(() => this.dispatchEvent(new MessageEvent('message', { data: { id: request.id, type: reply, message: 'unexpected' } })), 0);
   }
@@ -85,5 +87,16 @@ describe('worker clients when the worker fails to load', () => {
     const store = new VoiceEngineStore(async () => planModels(laptop), (plan) => new KokoroTextToSpeech(plan.voice ?? LIGHT_VOICE));
     await expect(store.ensureLoaded()).rejects.toThrow('could not start');
     expect(store.getStatus().state).toBe('error');
+  });
+});
+
+describe('unloading a worker', () => {
+  it('rejects requests still waiting, then stops the worker', async () => {
+    const rpc = new WorkerRpc<{ id: number; type: string }, { id: number; type: string }>(() => new FakeWorker() as unknown as Worker, 'could not start');
+    const waiting = rpc.send({ type: 'hang' });
+    await rpc.unload();
+    await expect(waiting).rejects.toThrow('unloaded');
+    expect(FakeWorker.created[0].terminated).toBe(true);
+    expect(rpc.running).toBe(false);
   });
 });
