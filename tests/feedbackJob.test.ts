@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { loadModule } from '../src/content/modules';
-import { feedbackJobFor, type Job } from '../src/features/results/useFeedback';
+import { STALL_MESSAGE, STALL_MS, STEP_LABELS, feedbackJobFor, stepStates, withStallTimeout, type Job } from '../src/features/results/useFeedback';
 import { FeedbackEngineStore } from '../src/services/ai/feedbackEngine';
 import { measureWriting } from '../src/domain/measure/writingMetrics';
 import type { SpeakingAttempt, WritingAttempt } from '../src/domain/attempt';
@@ -50,7 +50,7 @@ function gate() {
 }
 
 /** A store with a fake model. Replies come in order; `log` records what the model was asked to do. */
-function setup(options: { replies?: string[]; load?: Promise<void>; generating?: Promise<void>; light?: boolean } = {}) {
+function setup(options: { replies?: string[]; load?: Promise<void>; generating?: Promise<void>; light?: boolean; fail?: Error } = {}) {
   const replies = [...(options.replies ?? [SCORES_REPLY, ANSWER_REPLY])];
   const log: string[] = [];
   const prompts: string[] = [];
@@ -60,6 +60,7 @@ function setup(options: { replies?: string[]; load?: Promise<void>; generating?:
       log.push('generate');
       prompts.push(user);
       await options.generating;
+      if (options.fail) throw options.fail;
       return { text: replies.shift() ?? '', stats: STATS };
     },
     interrupt() { log.push('interrupt'); },
@@ -187,5 +188,75 @@ describe('cancelling a feedback job', () => {
     expect(log.filter((entry) => entry === 'generate')).toHaveLength(1);
     // Nothing updates the screen after a cancel.
     expect(job.progress.phase).toBe('scoring');
+  });
+});
+
+describe('when scoring fails', () => {
+  /** What the speed card says for each step once the job has settled. */
+  async function settledLabels(job: Job) {
+    const outcome = await job.promise;
+    const steps = stepStates(job.progress, outcome);
+    return { outcome, scores: STEP_LABELS[steps.scores], answer: STEP_LABELS[steps.answer] };
+  }
+
+  it('settles with the error state when the model throws, and never says it is still writing', async () => {
+    const { getEngine } = setup({ fail: new Error('GPUDevice was lost') });
+    const result = await settledLabels(feedbackJobFor(writing(LONG_TEXT), getEngine));
+    expect(result.outcome).toEqual({ kind: 'code', reason: 'error', message: 'GPUDevice was lost' });
+    expect(result).toMatchObject({ scores: 'Did not finish', answer: 'Not started' });
+  });
+
+  it('settles with the error state when both replies are unreadable', async () => {
+    const { getEngine, log } = setup({ replies: ['{"checklist": [', 'not json'] });
+    const result = await settledLabels(feedbackJobFor(writing(LONG_TEXT), getEngine));
+    expect(result.outcome).toMatchObject({ kind: 'code', reason: 'error', message: 'The AI reply could not be read.' });
+    expect(log.filter((entry) => entry === 'generate')).toHaveLength(2);
+    expect(result.answer).not.toBe('Writing…');
+  });
+});
+
+describe('speed card labels', () => {
+  const progress = (phase: 'scoring' | 'done', answer: 'off' | 'waiting' | 'writing' | 'failed' | 'done') =>
+    ({ phase, modelProgress: null, written: 0, answer: { state: answer, text: '' }, perf: null });
+
+  it('says "Writing…" only for a step that is writing now', () => {
+    expect(stepStates(progress('scoring', 'off'), null)).toEqual({ scores: 'running', answer: 'not-started' });
+    expect(stepStates(progress('done', 'writing'), { kind: 'ai', run: {} as never }).answer).toBe('running');
+    expect(stepStates(progress('done', 'waiting'), { kind: 'ai', run: {} as never }).answer).toBe('starting');
+    expect(stepStates(progress('done', 'failed'), { kind: 'ai', run: {} as never }).answer).toBe('failed');
+    expect(stepStates(progress('done', 'writing'), { kind: 'sample' }).scores).toBe('not-needed');
+  });
+});
+
+describe('a model that goes quiet', () => {
+  it('is stopped and fails after the stall time, but not while words keep coming', async () => {
+    vi.useFakeTimers();
+    try {
+      const stop = vi.fn();
+      let write = (_soFar: string) => {};
+      const step = withStallTimeout((onText) => { write = onText; return new Promise<string>(() => {}); }, () => {}, stop);
+      const failed = expect(step).rejects.toThrow(STALL_MESSAGE);
+      vi.advanceTimersByTime(STALL_MS - 1);
+      write('Some words');
+      vi.advanceTimersByTime(STALL_MS - 1);
+      expect(stop).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(1);
+      expect(stop).toHaveBeenCalledTimes(1);
+      await failed;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe('an answer that is not about the task', () => {
+  it('gets an example answer written from scratch, not a rewrite', async () => {
+    const offTask = JSON.stringify({ ...JSON.parse(SCORES_REPLY), on_task: false, on_task_reason: 'The task asks for an email to the store' });
+    const { getEngine, prompts } = setup({ replies: [offTask, ANSWER_REPLY] });
+    const job = feedbackJobFor(writing(LONG_TEXT), getEngine);
+    expect(await job.promise).toMatchObject({ kind: 'ai', run: { reply: { onTask: false } } });
+    await until(answerDone(job));
+    expect(prompts[1]).not.toContain('Fixes to apply');
+    expect(prompts[1]).not.toContain('kettle');
   });
 });

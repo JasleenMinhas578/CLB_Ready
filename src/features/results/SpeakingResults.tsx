@@ -39,7 +39,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
               progress={progress}
             />
             <TipsCard goal={attempt.goal} tips={codeTips(attempt.metrics, attempt.goal).slice(0, 3)} />
-            {progress?.perf && <PerfCard perf={progress.perf} transcribeMs={attempt.transcribeMs} />}
+            {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} transcribeMs={attempt.transcribeMs} />}
           </div>
           <div className="results-main">
             <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken fromScratch />
@@ -81,10 +81,10 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             <h2>What we measured</h2>
             <MeasureTiles metrics={attempt.metrics} />
           </div>
-          {progress?.perf && <PerfCard perf={progress.perf} transcribeMs={attempt.transcribeMs} />}
+          {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} transcribeMs={attempt.transcribeMs} />}
         </div>
         <div className="results-main">
-          <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken original={attempt.transcript} />
+          <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken original={attempt.transcript} offTask={ai?.onTask === false} />
           {sample}
           <div className="results-card">
             <h2>What we heard</h2>

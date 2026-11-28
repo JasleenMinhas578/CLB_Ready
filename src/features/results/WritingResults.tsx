@@ -76,7 +76,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
               progress={progress}
             />
             <TipsCard goal={attempt.goal} tips={writingTips(attempt.metrics, attempt.goal, attempt.options).slice(0, 3)} />
-            {progress?.perf && <PerfCard perf={progress.perf} />}
+            {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} />}
           </div>
           <div className="results-main">
             <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} fromScratch />
@@ -117,10 +117,10 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             <h2>What we measured</h2>
             <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />
           </div>
-          {progress?.perf && <PerfCard perf={progress.perf} />}
+          {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} />}
         </div>
         <div className="results-main">
-          <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} original={attempt.text} />
+          <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} original={attempt.text} offTask={ai?.onTask === false} />
           <div className="results-card">
             <h2>Your writing, checked</h2>
             <EssayView text={attempt.text} issues={attempt.issues} />

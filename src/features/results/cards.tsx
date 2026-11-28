@@ -12,7 +12,7 @@ import { Icon } from '@/components/Icon';
 import { Pip } from '@/components/Pip';
 import { friendlyModelError } from '@/services/ai/errorText';
 import type { FeedbackReply } from '@/services/ai/feedbackPrompt';
-import type { AiPerf, AnswerStream, FeedbackOutcome, FeedbackProgress, StepPerf } from './useFeedback';
+import { STEP_LABELS, stepStates, type AiPerf, type AnswerStream, type FeedbackOutcome, type FeedbackProgress, type StepPerf } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
 import { DiffView } from './DiffView';
 import { diffWords, isMostlyRewritten, summarizeDiff } from '@/domain/diff';
@@ -154,11 +154,13 @@ interface ImprovedCardProps {
   spoken: boolean;
   /** True for a model answer written from scratch (nothing to compare). */
   fromScratch?: boolean;
+  /** Written from scratch because the learner's answer wasn't about the task. */
+  offTask?: boolean;
   /** The learner's own answer, to show what changed. */
   original?: string;
 }
 
-export function ImprovedCard({ goal, text, spoken, fromScratch = false, original }: ImprovedCardProps) {
+export function ImprovedCard({ goal, text, spoken, fromScratch = false, offTask = false, original }: ImprovedCardProps) {
   const compareWith = fromScratch || !original?.trim() ? null : original;
   const canCompare = compareWith !== null;
   // Computed once here for both the opening view and the marked changes.
@@ -183,13 +185,15 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
         )}
       </div>
       <p className="fine-print">
-        {fromScratch
-          ? 'Written by Pip, your AI coach, for this task, as an example to learn from.'
-          : view === 'changes'
-            ? 'Your answer, edited to your goal level. Added words are in green. Words cut or replaced are crossed out in red.'
-            : rewritten
-              ? 'Most of your answer was rewritten, so this shows the clean copy first. Choose Changes to see what changed.'
-              : 'Your ideas, rewritten at your goal level.'}{' '}
+        {offTask
+          ? 'Your answer was not about this task, so Pip, your AI coach, wrote this example instead of rewriting yours.'
+          : fromScratch
+            ? 'Written by Pip, your AI coach, for this task, as an example to learn from.'
+            : view === 'changes'
+              ? 'Your answer, edited to your goal level. Added words are in green. Words cut or replaced are crossed out in red.'
+              : rewritten
+                ? 'Most of your answer was rewritten, so this shows the clean copy first. Choose Changes to see what changed.'
+                : 'Your ideas, rewritten at your goal level.'}{' '}
         {spoken ? 'Read it aloud once to hear how it flows.' : 'Notice how each paragraph covers one point.'}
       </p>
       {diff && view === 'changes' ? (
@@ -205,15 +209,18 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
  * The improved (or model) answer, which arrives after the scores. Shows it
  * word by word while it's written, then the full card with changes marked.
  */
-export function AnswerCard({ answer, goal, spoken, original, fromScratch = false }: {
+export function AnswerCard({ answer, goal, spoken, original, fromScratch: scratch = false, offTask = false }: {
   answer: AnswerStream | undefined;
   goal: number;
   spoken: boolean;
   original?: string;
   fromScratch?: boolean;
+  /** Pip said the answer isn't about the task, so it wrote an example instead of a rewrite. */
+  offTask?: boolean;
 }) {
+  const fromScratch = scratch || offTask;
   if (!answer || answer.state === 'off') return null;
-  if (answer.state === 'done') return <ImprovedCard goal={goal} text={answer.text} spoken={spoken} original={original} fromScratch={fromScratch} />;
+  if (answer.state === 'done') return <ImprovedCard goal={goal} text={answer.text} spoken={spoken} original={original} fromScratch={fromScratch} offTask={offTask} />;
   const heading = fromScratch ? `An example answer at CLB ${goal}` : `Your answer at CLB ${goal}`;
   if (answer.state === 'failed') {
     return (
@@ -385,14 +392,15 @@ function stepRows(label: string, step: StepPerf): [string, string][] {
  * How fast the AI ran on this device: useful for testing and for
  * explaining the app's performance. Collapsed by default.
  */
-export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: number }) {
+export function PerfCard({ perf, progress, outcome, transcribeMs }: { perf: AiPerf; progress: FeedbackProgress; outcome: FeedbackOutcome | null; transcribeMs?: number }) {
+  const steps = stepStates(progress, outcome);
   const speed = perf.answer?.tokensPerSecond ?? perf.scoring?.tokensPerSecond;
   const rows: [string, string][] = [
     ['Pip’s model', perf.model ?? 'Unknown'],
     ['Model load', perf.loadMs == null ? 'Already loaded' : seconds(perf.loadMs)],
     ...(transcribeMs != null ? ([['Speech-to-text', seconds(transcribeMs)]] as [string, string][]) : []),
-    ...(perf.scoresWaitMs != null ? ([['Scores on screen after', seconds(perf.scoresWaitMs)]] as [string, string][]) : []),
-    ['Full answer on screen after', perf.answerWaitMs != null ? seconds(perf.answerWaitMs) : 'Still writing…'],
+    ['Scores on screen after', perf.scoresWaitMs != null ? seconds(perf.scoresWaitMs) : STEP_LABELS[steps.scores]],
+    ['Full answer on screen after', perf.answerWaitMs != null ? seconds(perf.answerWaitMs) : STEP_LABELS[steps.answer]],
     ...(speed != null ? ([['Writing speed', `${speed.toFixed(1)} tokens/s`]] as [string, string][]) : []),
     ...(perf.scoring ? stepRows('Scores', perf.scoring) : []),
     ...(perf.answer ? stepRows('Answer', perf.answer) : []),
