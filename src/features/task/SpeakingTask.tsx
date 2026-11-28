@@ -22,7 +22,7 @@ import { useAnswerRecorder } from './useAnswerRecorder';
 import { MicCheck } from './MicCheck';
 import { SpeechModelBadge } from './SpeechModelBadge';
 import { ModelPlanBadge } from './ModelPlanBadge';
-import { ExamBar, TimeWarning } from './exam/ExamBar';
+import { ExamBar, TimeWarning, WarnIcon } from './exam/ExamBar';
 import { speakingActionLabel, speakingExitWarning, type SpeakingFlow } from './exam/speakingStatus';
 import { PromptPanel } from './exam/PromptPanel';
 import { PhaseTimer } from './exam/PhaseTimer';
@@ -193,7 +193,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     const text = problem ?? MIC_PROBLEM_TEXT[recorder.problem ?? 'unknown'];
     panel = (
       <div className="exam-message" role="alert">
-        <h2>{text.title}</h2>
+        <h2><WarnIcon /> {text.title}</h2>
         <p>{text.help}</p>
         <Button onClick={restart}>Try again</Button>
       </div>
@@ -201,11 +201,11 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   } else if (state === 'transcribing') {
     panel = (
       <div className="exam-message" aria-live="polite">
-        <h2>Saving your response…</h2>
-        <p className="ai-voice-status">
+        <h2>
           <span className="spinner" aria-hidden="true" />
-          Your answer is being turned into text on this device. This usually takes a few seconds.
-        </p>
+          Saving your response…
+        </h2>
+        <p>Your answer is being turned into text on this device. This usually takes a few seconds. Your results open by themselves.</p>
         {/* "Ready" would read as nothing happening; loading progress and errors still help. */}
         {speechStatus.state !== 'ready' && <SpeechModelBadge status={speechStatus} />}
       </div>
@@ -215,7 +215,8 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
       <div className="exam-message">
         <h2>Press Start when you’re ready</h2>
         <p>
-          Read the task first. When you press Start, {phases[0].id === 'select' ? 'the choosing time' : 'the preparation time'} begins.
+          Read the task first. When you press Start, {micReady ? '' : 'we check your microphone, then '}
+          {phases[0].id === 'select' ? 'the choosing time' : 'the preparation time'} begins.
           Recording starts by itself after that. Keep speaking until the recording time ends.
         </p>
         <Button onClick={begin}>Start</Button>
@@ -258,6 +259,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
             disabled={state === 'transcribing' || state === 'mic-check' || state === 'problem'}
             aria-busy={state === 'transcribing'}
           >
+            {state === 'transcribing' && <span className="spinner" aria-hidden="true" />}
             {speakingActionLabel(state, phase.id)}
           </button>
         }

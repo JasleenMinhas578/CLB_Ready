@@ -8,7 +8,8 @@ describe('speaking exam bar', () => {
     expect(speakingActionLabel('transcribing', 'answer')).toBe('Saving…');
     expect(speakingActionLabel('running', 'answer')).toBe('Finish answer');
     expect(speakingActionLabel('running', 'prep')).toBe('Skip');
-    expect(speakingActionLabel('ready', 'prep')).toBe('Next');
+    expect(speakingActionLabel('ready', 'prep')).toBe('Start');
+    expect(speakingActionLabel('mic-check', 'prep')).toBe('Next');
   });
 
   it('warns before Exit while recording or while the answer is being saved', () => {
