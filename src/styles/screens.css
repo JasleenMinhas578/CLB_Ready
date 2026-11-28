@@ -91,7 +91,6 @@ a.skill-card::after {
 }
 .module-tab.is-current { background: var(--grape); color: var(--milk); }
 .module-tab.is-current:hover { color: var(--milk); }
-.module-tab.is-soon { opacity: 0.5; border-style: dashed; cursor: not-allowed; }
 .module-tab small { font-weight: 700; }
 
 .task-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-2); }

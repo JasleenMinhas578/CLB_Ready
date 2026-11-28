@@ -5,7 +5,7 @@ import { getSkill } from '@/domain/skills';
 import { formatSeconds } from '@/domain/timer';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
-import { MODULE_CATALOG, getModuleSummary, moduleHasSkill, skillTaskIds } from '@/content/modules/catalog';
+import { MODULE_CATALOG, getModuleSummary } from '@/content/modules/catalog';
 import { LinkButton } from '@/components/Button';
 import { Emoji } from '@/components/Emoji';
 import { NotFound } from '@/components/NotFound';
@@ -43,8 +43,9 @@ export function SkillScreen({ params }: { params: RouteParams }) {
     );
   }
 
-  const available = new Set(skillTaskIds(practiceModule, skill.id));
-  const tasks = getTaskTypesForSkill(skill.id).filter((task) => available.has(task.id));
+  // Every module has every task, so the counts beside module names use the same ids.
+  const tasks = getTaskTypesForSkill(skill.id);
+  const taskIds = tasks.map((task) => task.id);
 
   return (
     <section>
@@ -60,23 +61,17 @@ export function SkillScreen({ params }: { params: RouteParams }) {
       )}
 
       <nav className="module-tabs" aria-label="Practice modules">
-        {MODULE_CATALOG.map((item) =>
-          moduleHasSkill(item, skill.id) ? (
-            <a
-              key={item.id}
-              href={href(`/practice/${skill.id}/${item.id}`)}
-              className={`module-tab ${item.id === practiceModule.id ? 'is-current' : ''}`}
-              aria-current={item.id === practiceModule.id ? 'page' : undefined}
-            >
-              {item.title}
-              <ModuleCount done={countDone(progress, item.id, skillTaskIds(item, skill.id))} total={skillTaskIds(item, skill.id).length} />
-            </a>
-          ) : (
-            <span key={item.id} className="module-tab is-soon" aria-disabled="true">
-              {item.title} <small>soon</small>
-            </span>
-          ),
-        )}
+        {MODULE_CATALOG.map((item) => (
+          <a
+            key={item.id}
+            href={href(`/practice/${skill.id}/${item.id}`)}
+            className={`module-tab ${item.id === practiceModule.id ? 'is-current' : ''}`}
+            aria-current={item.id === practiceModule.id ? 'page' : undefined}
+          >
+            {item.title}
+            <ModuleCount done={countDone(progress, item.id, taskIds)} total={taskIds.length} />
+          </a>
+        ))}
       </nav>
 
       <ol className="task-list">
