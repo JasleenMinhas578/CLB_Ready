@@ -6,6 +6,7 @@ import { MODULES, moduleTaskIds } from './fixtures/modules';
 import { TASK_TYPES, getTaskType } from '../src/domain/tasks/catalog';
 import { SKILLS } from '../src/domain/skills';
 import { checkGrammar } from '../src/services/grammar/ruleChecker';
+import { targetSpokenWords } from '../src/domain/scoring/sufficiency';
 
 // Guards for content added later: every module must be valid and have every task,
 // since the skill screens list every task for every module.
@@ -81,7 +82,7 @@ describe('content integrity', () => {
           if (!task || task.skill !== 'speaking') continue;
           expect(!!prompt.modelAnswer, prompt.id).toBe(true);
           const words = (prompt.modelAnswer ?? '').split(/\s+/).filter(Boolean).length;
-          const target = (task.timing.answerSeconds * 140) / 60;
+          const target = targetSpokenWords(task.timing.answerSeconds);
           expect(words >= target * 0.75 && words <= target * 1.25, `${prompt.id}: ${words} words`).toBe(true);
           expect(checkGrammar(prompt.modelAnswer ?? ''), `${prompt.id} grammar`).toEqual([]);
         }
