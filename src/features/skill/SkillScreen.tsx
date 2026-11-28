@@ -7,7 +7,7 @@ import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
 import { MODULE_CATALOG, getModuleSummary } from '@/content/modules/catalog';
 import { LinkButton } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
 import { NotFound } from '@/components/NotFound';
 import { countDone, taskKey, useProgress } from '@/services/progress/progress';
 
@@ -35,7 +35,6 @@ export function SkillScreen({ params }: { params: RouteParams }) {
   if (skill.status !== 'available') {
     return (
       <section className="empty-state">
-        <Emoji symbol={skill.emoji} size="xl" motion="float" />
         <h1>{skill.name} practice is coming soon</h1>
         <p>This skill isn’t ready yet. Please check again soon.</p>
         <LinkButton to="/">Back to skills</LinkButton>
@@ -50,13 +49,13 @@ export function SkillScreen({ params }: { params: RouteParams }) {
   return (
     <section>
       <div className="screen-head align-left">
-        <h1><Emoji symbol={skill.emoji} size="lg" /> {skill.name} practice</h1>
+        <h1><Icon name={skill.id} size="lg" /> {skill.name} practice</h1>
         <p>{skill.blurb}</p>
       </div>
 
       {!goal && (
         <p className="nudge">
-          <Emoji symbol="🎯" /> <a href={href('/goal')}>Set your CLB goal</a> so feedback aims at the right level.
+          <Icon name="goal" /> <a href={href('/goal')}>Set your CLB goal</a> so feedback aims at the right level.
         </p>
       )}
 
@@ -89,10 +88,10 @@ export function SkillScreen({ params }: { params: RouteParams }) {
               </span>
               {progress[taskKey(practiceModule.id, task.id)] ? (
                 <span className="task-done" title={`Finished ${new Date(progress[taskKey(practiceModule.id, task.id)]).toLocaleDateString()}`}>
-                  <span aria-hidden="true">✓</span> Done
+                  <Icon name="tick" size="sm" /> Done
                 </span>
               ) : (
-                <span className="task-go" aria-hidden="true">▸</span>
+                <span className="task-go"><Icon name="arrow-right" /></span>
               )}
             </a>
           </li>
@@ -107,7 +106,7 @@ function ModuleCount({ done, total }: { done: number; total: number }) {
   if (!done || !total) return null;
   return (
     <small className={`module-count ${done === total ? 'is-complete' : ''}`} aria-label={`${done} of ${total} done`}>
-      {done === total ? '✓' : `${done}/${total}`}
+      {done === total ? <Icon name="tick" size="sm" /> : `${done}/${total}`}
     </small>
   );
 }

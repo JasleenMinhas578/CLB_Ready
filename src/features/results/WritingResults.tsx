@@ -38,7 +38,7 @@ function writingTiles(m: WritingMetrics, options?: [string, string]): Tile[] {
     },
   ];
   if (m.email) {
-    const parts = [m.email.hasGreeting ? 'greeting ✓' : 'no greeting', m.email.hasClosing ? 'closing ✓' : 'no closing'];
+    const parts = [m.email.hasGreeting ? 'has a greeting' : 'no greeting', m.email.hasClosing ? 'has a closing' : 'no closing'];
     tiles.push({
       label: 'Email format', value: m.email.hasGreeting && m.email.hasClosing ? 'Complete' : 'Missing parts', note: parts.join(', '),
       tone: m.email.hasGreeting && m.email.hasClosing ? 'good' : 'work',

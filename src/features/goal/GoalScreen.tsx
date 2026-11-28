@@ -1,7 +1,6 @@
 import { GOAL_OPTIONS } from '@/domain/goals';
 import { useSession } from '@/app/session';
 import { navigate } from '@/app/router';
-import { Emoji } from '@/components/Emoji';
 
 export function GoalScreen() {
   const { goal, setGoal } = useSession();
@@ -9,7 +8,6 @@ export function GoalScreen() {
   return (
     <section className="narrow">
       <div className="screen-head">
-        <Emoji symbol="🎯" size="xl" motion="float" />
         <h1>What CLB level are you aiming for?</h1>
         <p>Feedback and improved answers will be written for this level. You can change it any time.</p>
       </div>

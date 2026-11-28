@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { Icon } from '@/components/Icon';
 import { normalizeWord, type SpeakingMetrics, type MetricWord } from '@/domain/measure/speakingMetrics';
 
 interface TranscriptViewProps {
@@ -17,7 +18,7 @@ export function TranscriptView({ text, words, metrics }: TranscriptViewProps) {
   const pauseAfter = new Map(metrics.longPauses.map((pause) => [pause.afterWord, pause.seconds]));
   const pauseChip = (seconds: number) => (
     <span className="pause-chip" title="Long pause">
-      <span aria-hidden="true">⏸</span> {seconds.toFixed(1)}s
+      <Icon name="pause" size="sm" /> {seconds.toFixed(1)}s
     </span>
   );
 

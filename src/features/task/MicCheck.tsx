@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
 import { LevelMeter } from '@/components/LevelMeter';
 import { openMicrophone } from '@/services/audio/recorder';
 import { useMicLevel } from '@/services/audio/useMicLevel';
@@ -54,7 +54,7 @@ export function MicCheck({ onReady, onCancel }: MicCheckProps) {
     const text = MIC_PROBLEM_TEXT[problem];
     return (
       <div className="mic-check" role="alert">
-        <Emoji symbol="🙉" size="xl" />
+        <Icon name="mic-off" size="xl" />
         <h2>{text.title}</h2>
         <p>{text.help}</p>
         <div className="row-actions center">
@@ -67,7 +67,7 @@ export function MicCheck({ onReady, onCancel }: MicCheckProps) {
 
   return (
     <div className="mic-check">
-      <Emoji symbol="🎙️" size="xl" />
+      <Icon name="mic" size="xl" />
       <h2>Quick microphone check</h2>
       {!stream ? (
         <>

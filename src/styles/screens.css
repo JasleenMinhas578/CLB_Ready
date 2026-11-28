@@ -8,7 +8,6 @@
 .screen-head p { margin-left: auto; margin-right: auto; color: var(--grape-soft); }
 .screen-head.align-left { text-align: left; }
 .screen-head.align-left p { margin-left: 0; }
-.screen-head .emoji-xl { margin-bottom: var(--gap-1); }
 
 /* Home hero: the one bold moment */
 .hero {
@@ -29,7 +28,7 @@
 a.skill-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); color: var(--grape); }
 .skill-card h3 { font-size: var(--step-2); margin-bottom: var(--gap-1); }
 .skill-card p { margin-bottom: var(--gap-3); }
-.skill-emoji {
+.skill-icon {
   display: inline-grid; place-items: center; width: 64px; height: 64px; margin-bottom: var(--gap-2);
   background: var(--white); border: var(--line); border-radius: 50%;
 }

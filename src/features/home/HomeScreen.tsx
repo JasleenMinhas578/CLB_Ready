@@ -2,19 +2,19 @@ import { SKILLS } from '@/domain/skills';
 import { CONTENT_COUNTS as counts, MODULE_CATALOG } from '@/content/modules/catalog';
 import { useSession } from '@/app/session';
 import { LinkButton } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
+import { Icon, type IconName } from '@/components/Icon';
 import { SkillCard } from './SkillCard';
 import { FeedbackDemo } from './FeedbackDemo';
 
 const firstModuleId = MODULE_CATALOG[0].id;
 
-const INSIDE = [
-  { emoji: '🎤', title: 'Speaking with a coach', text: `${counts.speaking} timed tasks. Your answer is turned into text, you see your pace, pauses and filler words, and you get a better version at your goal level.` },
-  { emoji: '🔊', title: 'Sample answers you can hear', text: `${counts.samples} CLB 10+ answers, each with notes on why it works and a button to hear it read aloud.` },
-  { emoji: '✏️', title: 'Writing, marked like a teacher would', text: `${counts.writing} email and survey tasks in a test-style editor with a live word count, grammar marks and an improved version.` },
-  { emoji: '📖', title: 'Reading with every answer explained', text: `${counts.reading} questions about messages, charts and articles. Each answer shows the line in the text that proves it.` },
-  { emoji: '🎧', title: 'Listening that plays once', text: `${counts.listening} questions with AI voices. Each recording plays once, like test day. Then you can read every word that was said.` },
-  { emoji: '🎯', title: 'Aimed at your CLB goal', text: 'Pick CLB 7 to 12. Every score, tip and example answer is aimed at the level you need.' },
+const INSIDE: { icon: IconName; title: string; text: string }[] = [
+  { icon: 'speaking', title: 'Speaking with a coach', text: `${counts.speaking} timed tasks. Your answer is turned into text, you see your pace, pauses and filler words, and you get a better version at your goal level.` },
+  { icon: 'volume', title: 'Sample answers you can hear', text: `${counts.samples} CLB 10+ answers, each with notes on why it works and a button to hear it read aloud.` },
+  { icon: 'writing', title: 'Writing, marked like a teacher would', text: `${counts.writing} email and survey tasks in a test-style editor with a live word count, grammar marks and an improved version.` },
+  { icon: 'reading', title: 'Reading with every answer explained', text: `${counts.reading} questions about messages, charts and articles. Each answer shows the line in the text that proves it.` },
+  { icon: 'listening', title: 'Listening that plays once', text: `${counts.listening} questions with AI voices. Each recording plays once, like test day. Then you can read every word that was said.` },
+  { icon: 'goal', title: 'Aimed at your CLB goal', text: 'Pick CLB 7 to 12. Every score, tip and example answer is aimed at the level you need.' },
 ];
 
 const STEPS = [
@@ -83,7 +83,7 @@ export function HomeScreen() {
         <div className="inside-grid">
           {INSIDE.map((item) => (
             <article className="inside-card" key={item.title}>
-              <Emoji symbol={item.emoji} size="lg" />
+              <Icon name={item.icon} size="lg" />
               <h3>{item.title}</h3>
               <p>{item.text}</p>
             </article>
@@ -121,9 +121,9 @@ export function HomeScreen() {
           </p>
         </div>
         <ul className="private-points">
-          <li><Emoji symbol="🔒" /> Your recordings and writing are never uploaded</li>
-          <li><Emoji symbol="🍭" /> No account, so nothing to sell or leak</li>
-          <li><Emoji symbol="⚡" /> The AI downloads once, then loads from your browser</li>
+          <li><Icon name="lock" /> Your recordings and writing are never uploaded</li>
+          <li><Icon name="shield" /> No account, so nothing to sell or leak</li>
+          <li><Icon name="download" /> The AI downloads once, then loads from your browser</li>
         </ul>
       </section>
 

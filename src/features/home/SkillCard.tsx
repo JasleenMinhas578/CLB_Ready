@@ -1,7 +1,7 @@
 import type { Skill } from '@/domain/skills';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { href } from '@/app/router';
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
 
 interface SkillCardProps {
   skill: Skill;
@@ -18,7 +18,7 @@ export function SkillCard({ skill, moduleId }: SkillCardProps) {
 
   const body = (
     <>
-      <span className="skill-emoji"><Emoji symbol={skill.emoji} size="lg" /></span>
+      <span className="skill-icon"><Icon name={skill.id} size="lg" /></span>
       <h3>{skill.name}</h3>
       <p>{skill.blurb}</p>
       <span className="skill-meta">{available ? `${taskCount} ${skill.id === 'reading' || skill.id === 'listening' ? 'parts' : 'tasks'}` : 'Coming soon'}</span>

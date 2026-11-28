@@ -1,4 +1,5 @@
 import { href } from '@/app/router';
+import { Icon } from './Icon';
 
 const PRACTICE_LINKS = [
   { label: 'Speaking practice', to: '/practice/speaking/module-1' },
@@ -25,7 +26,7 @@ export function Footer() {
           </a>
           <p className="footer-tagline">Free, private AI coaching for CELPIP-style practice in all four skills.</p>
           <p className="footer-privacy">
-            <span aria-hidden="true">🔒</span> Your answers never leave this device.
+            <Icon name="lock" size="sm" /> Your answers never leave this device.
           </p>
         </div>
 

@@ -5,6 +5,7 @@ import { partQuestions, type ChoiceQuestion, type ListeningClip } from '@/conten
 import { correctForGoal, estimateObjective } from '@/domain/scoring/objective';
 import { href } from '@/app/router';
 import { NotFound } from '@/components/NotFound';
+import { Icon } from '@/components/Icon';
 import { numberQuestions } from '@/features/task/objective/numbering';
 import { ResultsActions } from './cards';
 
@@ -83,7 +84,7 @@ function AnswerRow({ question, number, chosen }: { question: ChoiceQuestion; num
   return (
     <li className={`answer-row ${right ? 'is-right' : 'is-wrong'}`} value={number}>
       <p className="answer-question">
-        <span aria-hidden="true">{right ? '✅' : '⭕'}</span> {question.text || `Blank ${number}`}
+        <Icon name={right ? 'check' : 'missed'} /> {question.text || `Blank ${number}`}
         <span className="sr-only">{right ? 'Correct' : 'Incorrect'}</span>
       </p>
       {!right && (

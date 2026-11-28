@@ -136,10 +136,10 @@
 .status-panel .mic-check { align-items: flex-start; text-align: left; }
 .status-panel .mic-check .row-actions { justify-content: flex-start; }
 .status-panel .mic-check .btn { box-shadow: none; border-width: 2px; border-radius: 8px; }
-/* Exam screens stay plain: grape buttons and body-font headings, no candy pink or big emoji. */
+/* Exam screens stay plain: grape buttons and body-font headings, no pastels or big icons. */
 .status-panel .mic-verdict { align-self: stretch; text-align: left; }
 .status-panel .mic-check h2 { margin: 0; font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; }
-.status-panel .mic-check .emoji { display: none; }
+.status-panel .mic-check > .icon-xl { display: none; }
 .status-panel .btn-primary, .status-panel .btn-primary:hover { color: #fff; background: var(--grape); border-color: var(--grape); }
 .status-panel .btn:hover { transform: none; box-shadow: none; }
 .status-panel .model-badge { background: #f6f4f9; border-width: 1px; }
@@ -215,6 +215,7 @@
 .listening-intro { font-size: 1.1rem; line-height: 1.6; margin: 0 0 1rem; max-width: none; }
 .exam-play {
   min-height: 46px; padding: 0.5rem 1.4rem; font: 800 1rem var(--font-body); color: #fff;
+  display: inline-flex; align-items: center; gap: 0.5rem;
   background: var(--grape); border: 0; border-radius: 8px; cursor: pointer;
 }
 .exam-play:hover { background: #523063; }

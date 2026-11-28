@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { href } from '@/app/router';
 import { useSession } from '@/app/session';
 import { Footer } from './Footer';
+import { Icon } from './Icon';
 
 function Header() {
   const { goal } = useSession();
@@ -13,7 +14,7 @@ function Header() {
       </a>
       <nav aria-label="Main" className="header-nav">
         <a className="icon-link" href={href('/settings')} aria-label="AI models and privacy settings" title="AI models and privacy">
-          <span aria-hidden="true">⚙️</span>
+          <Icon name="settings" />
         </a>
         <a className="goal-chip" href={href('/goal')}>
           {goal ? `Goal: CLB ${goal}` : 'Set your goal'}

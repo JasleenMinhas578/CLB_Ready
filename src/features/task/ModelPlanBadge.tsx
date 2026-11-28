@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { href } from '@/app/router';
+import { Icon } from '@/components/Icon';
 import { getModelPlan, getTierChoice, onPlanChange } from '@/services/device/plan';
 import type { ModelPlan } from '@/services/device/tier';
 
@@ -22,7 +23,7 @@ export function ModelPlanBadge() {
 
   return (
     <p className="plan-badge">
-      <span aria-hidden="true">🧠</span> {text} <a href={href('/settings')}>Change</a>
+      <Icon name="sparkle" /> {text} <a href={href('/settings')}>Change</a>
     </p>
   );
 }

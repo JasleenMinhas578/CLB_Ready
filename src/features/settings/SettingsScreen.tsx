@@ -1,7 +1,6 @@
 import { clearProgress, useProgress } from '@/services/progress/progress';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
 import type { DeviceReport } from '@/services/device/detectDevice';
 import {
   getDetectedTier,
@@ -107,7 +106,6 @@ export function SettingsScreen() {
   return (
     <section className="narrow">
       <div className="screen-head">
-        <Emoji symbol="🧠" size="xl" />
         <h1>AI models and privacy</h1>
         <p>Everything runs on this device. These settings reset when you close the tab.</p>
       </div>
