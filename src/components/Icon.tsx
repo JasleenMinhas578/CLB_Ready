@@ -119,6 +119,7 @@ const PATHS = {
     </>
   ),
   lab: <path d="M9.5 3.5h5M10.5 3.5V9l-5.3 9.2a1.5 1.5 0 0 0 1.3 2.3h11a1.5 1.5 0 0 0 1.3-2.3L13.5 9V3.5M7.5 15h9" />,
+  code: <path d="M8.5 7.5L4 12l4.5 4.5M15.5 7.5L20 12l-4.5 4.5M13.5 5l-3 14" />,
   'arrow-right': <path d="M5 12h14M13 6l6 6-6 6" />,
   'arrow-left': <path d="M19 12H5M11 6l-6 6 6 6" />,
 } satisfies Record<string, ReactNode>;

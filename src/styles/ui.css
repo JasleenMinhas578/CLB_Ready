@@ -56,7 +56,9 @@ main:focus { outline: none; }
 .footer-col h2 { margin: var(--gap-1) 0; font-family: var(--font-body); font-size: var(--step--1); font-weight: 800; letter-spacing: 0; color: var(--ink-soft); }
 .footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; }
 /* Links in a labelled nav group: bold ink, underlined on hover, the blue focus ring from base.css. */
-.footer-col a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); font-weight: 700; text-decoration: none; }
+/* Padding, not centring, keeps each icon on the first line when a label wraps on phones; rows stay 44px or taller. */
+.footer-col a { display: inline-flex; align-items: flex-start; gap: var(--gap-1); min-height: 44px; padding-block: 8px; line-height: 28px; color: var(--ink); font-weight: 700; text-decoration: none; }
+.footer-col a .icon { margin-top: calc((28px - var(--icon-sm)) / 2); }
 .footer-col a:hover { color: var(--link); text-decoration: underline; text-underline-offset: 0.2em; }
 .footer-legal {
   max-width: var(--page-width); margin: var(--gap-4) auto 0; padding-top: var(--gap-2);
