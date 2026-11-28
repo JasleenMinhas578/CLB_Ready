@@ -2,6 +2,9 @@ import { useMemo, useState, type ReactNode } from 'react';
 import type { Criterion } from '@/domain/criteria';
 import { MAX_LEVEL } from '@/domain/scoring/estimate';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
+import { getSkill } from '@/domain/skills';
+import { getModuleSummary } from '@/content/modules/catalog';
+import { nextTask, taskKey, taskPath, useProgress } from '@/services/progress/progress';
 import type { AnyAttempt, Attempt } from '@/domain/attempt';
 import { href } from '@/app/router';
 import { LinkButton } from '@/components/Button';
@@ -20,24 +23,36 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   if (outcome?.kind === 'code') {
     const why =
       outcome.reason === 'light-mode'
-        ? 'Light mode is on, so Pip, your AI coach, is switched off. This feedback uses your measurements only.'
-        : `${friendlyModelError(outcome.message)} The feedback below uses your measurements only.`;
+        ? 'Light mode is on, so Pip, your AI coach, is off. These results use your measurements only.'
+        : `${friendlyModelError(outcome.message)} These results use your measurements only.`;
     return (
       <p className="ai-status is-code">
-        <Icon name="info" /> <span>{why} <a href={href('/settings')}>Settings</a></span>
+        <Icon name="info" /> <span>{why} <a href={href('/settings')}>Change this in Settings</a></span>
       </p>
     );
   }
-  const text =
-    progress?.phase === 'loading-model'
-      ? `Getting Pip, your AI coach, ready${progress.modelProgress != null ? ` (${Math.round(progress.modelProgress * 100)}%)` : ''}. The first time can take a few minutes.`
-      : progress?.phase === 'scoring'
-        ? `Pip, your AI coach, is checking your answer${progress.written ? ` (${progress.written} characters so far)` : ''}…`
-        : 'Starting Pip, your AI coach…';
+  const scoring = progress?.phase === 'scoring';
+  const percent = progress?.phase === 'loading-model' && progress.modelProgress != null ? Math.round(progress.modelProgress * 100) : null;
   return (
-    <p className="ai-status" aria-live="polite">
-      <Pip mood="thinking" size={44} /> {text}
-    </p>
+    <div className="ai-status is-checking">
+      <Pip mood="thinking" size={48} />
+      <div className="ai-status-body">
+        {/* Only the step is announced; the changing percentage stays out of the live region so it isn't read out on every tick. */}
+        <p className="ai-status-title" aria-live="polite">
+          {scoring ? 'Pip, your AI coach, is checking your answer…' : 'Pip, your AI coach, is getting ready…'}
+        </p>
+        <p className="ai-status-step">
+          {scoring
+            ? 'Step 2 of 2. The scores below are first estimates and will update when Pip is done.'
+            : 'Step 1 of 2. The first time, Pip downloads once, which can take a few minutes.'}
+        </p>
+        {percent !== null && (
+          <div className="bar" role="progressbar" aria-label="Pip download" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
+            <span className="bar-fill" style={{ width: `${percent}%` }} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -55,19 +70,18 @@ interface LevelCardProps {
 export function LevelCard({ attempt, criteria, scores, overall, final, status, notes = {} }: LevelCardProps) {
   const goal = attempt.goal;
   return (
-    <div className="results-card level-card">
+    <div className="results-card level-card" aria-busy={!final}>
       <div className="level-pair">
-        <div>
-          <span>Estimated level</span>
-          <strong>{final ? '' : '~'}CLB {overall}</strong>
+        <div className="is-level">
+          <span>{final ? 'Estimated level' : 'First estimate'}</span>
+          <strong>CLB {overall}</strong>
         </div>
         <div>
           <span>Your goal</span>
           <strong>CLB {goal}</strong>
         </div>
       </div>
-      {/* Single scores can sit above or below the level, because the level is their average. */}
-      <p className="fine-print">Your level is the average of the {criteria.length} scores below, rounded.</p>
+      <EstimateNote>{final ? 'Estimates' : 'First estimates from your measurements'} for practice only, not official CELPIP scores.</EstimateNote>
       {!attempt.goalChosen && (
         <p className="fine-print">
           No goal set, so we used CLB {goal}. <a href={href('/goal')}>Choose your goal</a>.
@@ -93,8 +107,18 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
           );
         })}
       </ul>
-      <p className="fine-print">{final ? 'Estimates' : 'First estimates from your measurements'} for practice only, not official CELPIP scores.</p>
+      {/* Single scores can sit above or below the level, because the level is their average. */}
+      <p className="fine-print">Your level is the average of the {criteria.length} scores above, rounded.</p>
     </div>
+  );
+}
+
+/** The quiet "this is an estimate" line that sits right under a level. */
+export function EstimateNote({ children }: { children: ReactNode }) {
+  return (
+    <p className="estimate-note">
+      <Icon name="info" size="sm" /> <span>{children}</span>
+    </p>
   );
 }
 
@@ -143,7 +167,7 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
       </div>
       <p className="fine-print">
         {fromScratch
-          ? 'Written by the AI coach for this task, as an example to learn from.'
+          ? 'Written by Pip, your AI coach, for this task, as an example to learn from.'
           : view === 'changes'
             ? 'Your answer, edited to your goal level. Green is new; red was cut or replaced.'
             : rewritten
@@ -185,10 +209,13 @@ export function AnswerCard({ answer, goal, spoken, original, fromScratch = false
   return (
     <div className="results-card improved-card is-writing" aria-busy="true">
       <h2>{heading}</h2>
-      <p className="ai-status" aria-live="polite">
-        <Icon name="writing" /> {answer.text ? 'Pip is writing it now…' : 'Pip is starting to write…'}
-        {!fromScratch && ' Changes will be marked when it’s done.'}
-      </p>
+      <div className="ai-status is-checking">
+        <Pip mood="thinking" size={40} />
+        <p className="ai-status-title" aria-live="polite">
+          {answer.text ? 'Pip, your AI coach, is writing it now…' : 'Pip, your AI coach, is starting to write…'}
+          {!fromScratch && ' Changes will be marked when it’s done.'}
+        </p>
+      </div>
       {answer.text && <blockquote className="transcript streaming-text">{answer.text}</blockquote>}
     </div>
   );
@@ -210,7 +237,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           const row = results?.[i];
           const met = row?.met ?? null;
           return (
-            <li key={item} className={met === true ? 'is-met' : met === false ? 'is-missed' : ''}>
+            <li key={item} className={met === true ? 'is-met' : met === false ? 'is-missed' : 'is-unchecked'}>
               <Icon name={met === true ? 'check' : met === false ? 'missed' : final ? 'dash' : 'pending'} />
               <span className="checklist-text">{item}</span>
               {row?.byCode && <span className="checked-by">checked automatically</span>}
@@ -224,21 +251,68 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
   );
 }
 
-export function ResultsActions({ attempt }: { attempt: Pick<AnyAttempt, 'skill' | 'moduleId' | 'taskTypeId'> }) {
+type ActionAttempt = Pick<AnyAttempt, 'skill' | 'moduleId' | 'taskTypeId'>;
+
+/**
+ * What to do after this result. The next unfinished task in the same skill is
+ * the main step; "Try again" leads instead when the answer was too short to score.
+ */
+export function ResultsActions({ attempt, compact = false, retryFirst = false }: {
+  attempt: ActionAttempt;
+  /** Leave out the "All tasks" link, for the copy at the top of the screen. */
+  compact?: boolean;
+  retryFirst?: boolean;
+}) {
+  const progress = useProgress();
+  const isDone = (moduleId: string, taskTypeId: string) => !!progress[taskKey(moduleId, taskTypeId)];
   const tasks = getTaskTypesForSkill(attempt.skill);
-  const next = tasks[tasks.findIndex((task) => task.id === attempt.taskTypeId) + 1];
-  const skillName = attempt.skill;
+  const later = tasks.slice(tasks.findIndex((task) => task.id === attempt.taskTypeId) + 1).find((task) => !isDone(attempt.moduleId, task.id));
+  const next = later ? { moduleId: attempt.moduleId, task: later } : nextTask(progress, attempt.skill);
+  // When every task in this skill is finished, nextTask loops back to one already done; there's no "next" then.
+  const hasNext = !isDone(next.moduleId, next.task.id);
+  const skillName = getSkill(attempt.skill)?.name ?? attempt.skill;
   const unit = attempt.skill === 'reading' || attempt.skill === 'listening' ? 'part' : 'task';
+  const where = next.moduleId === attempt.moduleId ? '' : `${getModuleSummary(next.moduleId)?.title ?? next.moduleId}, `;
+  const nextFirst = hasNext && !retryFirst;
+
   return (
-    <div className="row-actions center">
-      <LinkButton to={`/task/${attempt.moduleId}/${attempt.taskTypeId}`}>Try this {unit} again</LinkButton>
-      {next && (
-        <LinkButton to={`/task/${attempt.moduleId}/${next.id}`} variant="secondary">
-          Next: {skillName} {unit} {next.order}
+    <div className={`results-actions${compact ? ' is-compact' : ''}`}>
+      {nextFirst && <NextLink to={taskPath(next)} label={`Next: ${where}${skillName} ${unit} ${next.task.order}`} primary />}
+      <LinkButton to={`/task/${attempt.moduleId}/${attempt.taskTypeId}`} variant={nextFirst ? 'secondary' : 'primary'}>
+        Try this {unit} again
+      </LinkButton>
+      {hasNext && !nextFirst && <NextLink to={taskPath(next)} label={`Next: ${where}${skillName} ${unit} ${next.task.order}`} />}
+      {!compact && (
+        <LinkButton to={`/practice/${attempt.skill}/${attempt.moduleId}`} variant="quiet">
+          All {skillName} {unit}s
         </LinkButton>
       )}
-      <LinkButton to={`/practice/${attempt.skill}/${attempt.moduleId}`} variant="quiet">All {skillName} {unit}s</LinkButton>
     </div>
+  );
+}
+
+function NextLink({ to, label, primary = false }: { to: string; label: string; primary?: boolean }) {
+  return (
+    <LinkButton to={to} variant={primary ? 'primary' : 'secondary'}>
+      {label} <Icon name="arrow-right" />
+    </LinkButton>
+  );
+}
+
+/** The results heading: what was practised, with the next step beside it so it's seen before scrolling. */
+export function ResultsHead({ attempt, title, retryFirst = false }: {
+  attempt: ActionAttempt & { taskTitle: string };
+  title: string;
+  retryFirst?: boolean;
+}) {
+  return (
+    <header className="results-head">
+      <div>
+        <h1>{title}</h1>
+        <p>{attempt.taskTitle}</p>
+      </div>
+      <ResultsActions attempt={attempt} compact retryFirst={retryFirst} />
+    </header>
   );
 }
 

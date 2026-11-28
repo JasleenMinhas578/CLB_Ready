@@ -5,7 +5,7 @@ import { finalScores } from '@/domain/scoring/finalScores';
 import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstimate';
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
 import { useFeedback } from './useFeedback';
-import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, ResultsHead, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { EssayView } from './EssayView';
 import { mergeChecklist } from '@/domain/scoring/autoChecks';
 import { TileList, type Tile } from './MeasureTiles';
@@ -63,17 +63,10 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
   const scorable = isScorable('writing', attempt.metrics.wordCount);
   const { outcome, progress } = useFeedback(attempt);
   const ai = outcome?.kind === 'ai' ? outcome.run.reply : null;
-  const header = (
-    <div className="screen-head">
-      <h1>Your feedback</h1>
-      <p>{attempt.taskTitle}</p>
-    </div>
-  );
-
   if (!scorable) {
     return (
-      <section className="results">
-        {header}
+      <section className="results results-writing">
+        <ResultsHead attempt={attempt} title="Your feedback" retryFirst />
         <div className="results-grid">
           <div className="results-side">
             <TooShortCard
@@ -94,7 +87,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             </div>
           </div>
         </div>
-        <ResultsActions attempt={attempt} />
+        <ResultsActions attempt={attempt} retryFirst />
       </section>
     );
   }
@@ -107,11 +100,8 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
   const final = outcome !== null;
 
   return (
-    <section className="results">
-      <div className="screen-head">
-        <h1>Your feedback</h1>
-        <p>{attempt.taskTitle}</p>
-      </div>
+    <section className="results results-writing">
+      <ResultsHead attempt={attempt} title="Your feedback" />
       <div className="results-grid">
         <div className="results-side">
           <LevelCard

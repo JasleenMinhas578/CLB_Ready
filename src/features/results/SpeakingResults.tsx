@@ -6,7 +6,7 @@ import { finalScores } from '@/domain/scoring/finalScores';
 import { codeTips } from '@/domain/scoring/codeTips';
 import { matchAiChecklist } from '@/domain/scoring/autoChecks';
 import { useFeedback } from './useFeedback';
-import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, ResultsHead, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { MIN_SCORABLE_SPEAKING_WORDS, expectedSpokenWords, isScorable } from '@/domain/scoring/sufficiency';
 import { TranscriptView } from './TranscriptView';
 import { MeasureTiles } from './MeasureTiles';
@@ -27,11 +27,8 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
 
   if (!scorable) {
     return (
-      <section className="results">
-        <div className="screen-head">
-          <h1>Your feedback</h1>
-          <p>{attempt.taskTitle}</p>
-        </div>
+      <section className="results results-speaking">
+        <ResultsHead attempt={attempt} title="Your feedback" retryFirst />
         <div className="results-grid">
           <div className="results-side">
             <TooShortCard
@@ -54,7 +51,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             </div>
           </div>
         </div>
-        <ResultsActions attempt={attempt} />
+        <ResultsActions attempt={attempt} retryFirst />
       </section>
     );
   }
@@ -66,11 +63,8 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
   const final = outcome !== null;
 
   return (
-    <section className="results">
-      <div className="screen-head">
-        <h1>Your feedback</h1>
-        <p>{attempt.taskTitle}</p>
-      </div>
+    <section className="results results-speaking">
+      <ResultsHead attempt={attempt} title="Your feedback" />
       <div className="results-grid">
         <div className="results-side">
           <LevelCard
