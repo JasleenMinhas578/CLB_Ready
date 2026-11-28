@@ -90,10 +90,12 @@ a:not([class]):focus-visible { border-radius: 4px; }
 }
 .skip-link:focus { top: var(--gap-2); }
 
+/* Reduced motion: every state change lands at once. "transition: none" rather than a tiny duration,
+   which would make every property on every element (focus rings included) transition. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition: none !important;
   }
 }
