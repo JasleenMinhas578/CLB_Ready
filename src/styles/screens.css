@@ -100,20 +100,19 @@
 .skill-progress small { font-size: var(--step--1); font-weight: 800; color: var(--skill-ink); }
 .skill-go { display: inline-flex; align-items: center; gap: var(--gap-1); font-weight: 800; color: var(--skill-ink); }
 
-/* Good to know: a ruled list, the point on the left and the detail on the right */
-.home-facts dl { margin: 0; border-top: 1px solid var(--border-soft); }
-.home-facts dl > div {
-  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--gap-1) var(--gap-4);
-  padding: var(--gap-3) 0; border-bottom: 1px solid var(--border-soft);
-}
-.home-facts dt { font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.15; letter-spacing: var(--tracking-display); }
-.home-facts dd { margin: 0; color: var(--ink-soft); max-width: var(--text-width); text-wrap: pretty; font-size: 1.125rem; }
+/* Good to know: two short facts side by side, each heading led by a small icon */
+.fact-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3) var(--gap-4); }
+.fact-list li { padding-top: var(--gap-2); border-top: 2px solid var(--border-soft); }
+.fact-list h3 { display: flex; align-items: center; gap: var(--gap-1); margin: 0 0 var(--gap-1); }
+.fact-list h3 .icon { flex: none; }
+.fact-list h3 { font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.2; }
+.fact-list p { margin: 0; color: var(--ink-soft); max-width: var(--text-width); text-wrap: pretty; }
 
 @media (max-width: 900px) {
   .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-4); padding: var(--gap-3) 0 var(--gap-5); }
   .example-card { grid-template-columns: minmax(0, 1fr); }
   .example-card .level-pair { margin-bottom: var(--gap-2); }
-  .home-facts dl > div { grid-template-columns: minmax(0, 1fr); }
+  .fact-list { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   .home-hero { padding: var(--gap-2) 0 var(--gap-4); gap: var(--gap-4); }
