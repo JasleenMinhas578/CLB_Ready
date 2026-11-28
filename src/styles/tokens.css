@@ -1,26 +1,57 @@
-/* CLB Ready design tokens: a candy shop with grape ink.
-   Bright candy colours are for fills; text always uses grape for contrast. */
+/* CLB Ready design tokens. Soft and warm for home, practice and results;
+   calm and neutral for exam screens (the --exam-* set).
+   Pastel tints are fills only. Text sits on them in --ink, --ink-soft or the
+   matching *-ink colour; every pair below is at least 4.5:1. */
 :root {
-  /* Base */
-  --milk: #fff6fa;          /* strawberry-milk page background */
-  --milk-deep: #ffe9f3;
-  --white: #ffffff;
-  --grape: #3b1f4a;         /* ink: text, outlines, sticker shadows */
-  --grape-soft: #6b5380;    /* secondary text, ~6:1 on milk */
-  --blush: #ffb3cf;
+  /* Surfaces */
+  --bg: #fff8f3;            /* warm cream page */
+  --surface: #ffffff;       /* cards and fields */
+  --surface-sunk: #fbf0ea;  /* wells, tracks, code */
 
-  /* Candy flavours */
-  --bubblegum: #ff6fa8;
-  --bubblegum-deep: #e0407f;   /* borders and marks only: 3.8:1 on milk is too light for text */
-  --bubblegum-ink: #b8285f;    /* pink text and focus rings, 5.6:1 on milk */
-  --lemon: #ffd84d;
-  --mint: #5fdcc0;
-  --mint-deep: #17806b;
-  --blueberry: #8c9bff;
-  --blueberry-deep: #5b6cf0;   /* bar fills, 3.7:1 on milk-deep */
-  --grape-candy: #bfa8ff;
+  /* Ink */
+  --ink: #2e2340;           /* text, 14:1 on --bg */
+  --ink-soft: #5e5270;      /* secondary text, 5.6:1 or more on every tint */
+  --border: #8e8299;        /* control outlines, 3.4:1 on --bg */
+  --border-soft: #eadfe6;   /* decorative card edges and dividers */
 
-  /* Type */
+  /* Primary action: soft rose fill with ink text (6.8:1) */
+  --accent: #ff9fb2;
+  --accent-hover: #ff8aa1;
+  --accent-ink: #a3264d;    /* rose text, links on hover and focus rings, 6.8:1 on --bg */
+  --focus: var(--accent-ink);
+
+  /* Pastel tints and their text colours (text is 5.3:1 or more on its tint and on --bg) */
+  --rose-tint: #ffe0e8;    --rose-ink: #a3264d;
+  --peach-tint: #ffe1d1;   --peach-ink: #9a4317;
+  --butter-tint: #fff1bf;  --butter-ink: #7a5a00;
+  --mint-tint: #d4f3e6;    --mint-ink: #17694f;
+  --sky-tint: #d9ecff;     --sky-ink: #1f5d99;
+  --lilac-tint: #e9e0ff;   --lilac-ink: #5b3fa8;
+
+  /* Meaning. Always pair with an icon or words, never colour alone. */
+  --ok: var(--mint-ink);     --ok-bg: var(--mint-tint);
+  --warn: var(--butter-ink); --warn-bg: var(--butter-tint);
+  --bad: var(--rose-ink);    --bad-bg: var(--rose-tint);
+  --info: var(--sky-ink);    --info-bg: var(--sky-tint);
+
+  /* One tint per skill, used for its icon badge and card */
+  --speaking-tint: var(--peach-tint);  --speaking-ink: var(--peach-ink);
+  --writing-tint: var(--butter-tint);  --writing-ink: var(--butter-ink);
+  --reading-tint: var(--sky-tint);     --reading-ink: var(--sky-ink);
+  --listening-tint: var(--lilac-tint); --listening-ink: var(--lilac-ink);
+
+  /* Exam screens: neutral grey, like test day. No tints, no shadows. */
+  --exam-bg: #f1f0f4;
+  --exam-surface: #ffffff;
+  --exam-sunk: #f6f5f8;
+  --exam-line: #cdc9d4;         /* panel edges */
+  --exam-line-strong: #8f8a99;  /* field outlines, 3.3:1 on white */
+  --exam-ink: #23202a;
+  --exam-soft: #565262;         /* 6.6:1 on --exam-bg */
+  --exam-accent: #3d3550;       /* top bar, selected tab, primary button; white text 11.5:1 */
+  --exam-rec: #c8324f;          /* recording dot and answer timer, 5.2:1 on white */
+
+  /* Type: Fredoka for rounded headings, Nunito for body (open shapes read well for slow readers) */
   --font-display: 'Fredoka', 'Nunito', ui-rounded, system-ui, sans-serif;
   --font-body: 'Nunito', ui-rounded, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --step--1: 0.875rem;
@@ -30,13 +61,27 @@
   --step-3: clamp(2rem, 4vw, 2.5rem);
   --step-4: clamp(2.4rem, 6vw, 3.6rem);
 
-  /* Shape: stickers have thick outlines and a solid offset shadow */
-  --line: 3px solid var(--grape);
-  --sticker: 5px 5px 0 var(--grape);
-  --sticker-small: 3px 3px 0 var(--grape);
-  --radius-card: 28px;
-  --radius-field: 18px;
+  /* Shape */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
   --radius-pill: 999px;
+
+  /* Soft, ink-tinted shadows: a small offset and a wide blur */
+  --shadow-1: 0 1px 2px rgb(46 35 64 / 0.06), 0 2px 8px rgb(46 35 64 / 0.06);
+  --shadow-2: 0 2px 4px rgb(46 35 64 / 0.05), 0 8px 24px rgb(46 35 64 / 0.08);
+  --shadow-hover: 0 4px 8px rgb(46 35 64 / 0.06), 0 14px 32px rgb(46 35 64 / 0.12);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+
+  /* Icons */
+  --icon-sm: 1rem;
+  --icon-md: 1.25rem;
+  --icon-lg: 1.75rem;
+  --icon-xl: 2.5rem;
 
   /* Space */
   --gap-1: 0.5rem;
@@ -48,4 +93,27 @@
   /* Side gutters grow with the screen: 16px on phones, up to 64px on wide monitors. */
   --gutter: clamp(16px, 4vw, 64px);
   --text-width: 64ch;
+
+  /* Old names still used by screens that have not been rebuilt yet.
+     They point at the new palette; drop each once nothing uses it. */
+  --milk: var(--bg);
+  --milk-deep: var(--surface-sunk);
+  --white: var(--surface);
+  --grape: var(--ink);
+  --grape-soft: var(--ink-soft);
+  --blush: #ffc9d6;
+  --bubblegum: var(--accent);
+  --bubblegum-deep: #e0607e;   /* marks and borders only */
+  --bubblegum-ink: var(--accent-ink);
+  --lemon: #ffe9a8;
+  --mint: #a8e8cf;
+  --mint-deep: var(--mint-ink);
+  --blueberry: #b9c7ff;
+  --blueberry-deep: #4f63d9;   /* bar fills, 4.5:1 on --surface-sunk */
+  --grape-candy: #d6c8ff;
+  --line: 2px solid var(--border);
+  --sticker: var(--shadow-2);
+  --sticker-small: var(--shadow-1);
+  --radius-card: var(--radius-lg);
+  --radius-field: var(--radius-md);
 }

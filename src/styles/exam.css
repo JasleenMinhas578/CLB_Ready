@@ -1,10 +1,6 @@
 /* Test-style task screens. Calm and plain on purpose: no candy, stickers or
    motion, so practice feels like test day. Brand shows only in the grape bar. */
 .exam-page {
-  --exam-bg: #efedf3;
-  --exam-line: #cfc8d8;
-  --exam-ink: #2a1d33;
-  --exam-soft: #5d5269;
   min-height: 100vh; display: flex; flex-direction: column;
   background: var(--exam-bg); color: var(--exam-ink);
 }

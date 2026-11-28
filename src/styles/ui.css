@@ -72,8 +72,8 @@ main:focus { outline: none; }
   cursor: pointer; text-decoration: none; color: var(--grape);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--grape); color: var(--grape); }
-.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--grape); }
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); color: var(--grape); }
+.btn:active { transform: translateY(1px); box-shadow: var(--shadow-1); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: var(--sticker-small); }
 .btn-primary { background: var(--bubblegum); }
 .btn-secondary { background: var(--white); }
