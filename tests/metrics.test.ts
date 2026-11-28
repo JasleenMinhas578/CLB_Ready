@@ -51,6 +51,17 @@ describe('measureSpeaking', () => {
     expect(m.linkingWords).toEqual(['also', 'for example']);
   });
 
+  it('counts time used up to the last word, not silence until the timer ends', () => {
+    const words = timed('I think you should join a club'); // Last word ends at 3.2 s.
+    const m = measureSpeaking({ text: '', words, answerSeconds: 60, recordedSeconds: 60 });
+    expect(m.timeUsed).toBeCloseTo(3.2 / 60);
+  });
+
+  it('falls back to the recording length without word timings', () => {
+    const m = measureSpeaking({ text: 'hello there', words: [], answerSeconds: 60, recordedSeconds: 30 });
+    expect(m.timeUsed).toBe(0.5);
+  });
+
   it('caps time used at 100%', () => {
     const m = measureSpeaking({ text: 'hello there', words: [], answerSeconds: 60, recordedSeconds: 62 });
     expect(m.timeUsed).toBe(1);
