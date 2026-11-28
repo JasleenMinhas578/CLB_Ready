@@ -4,7 +4,7 @@ import { getCriteria } from '@/domain/criteria';
 import { GOAL_OPTIONS } from '@/domain/goals';
 import { getTaskType } from '@/domain/tasks/catalog';
 import { isWritingTask } from '@/domain/tasks/types';
-import { expectedSpokenWords, isScorable } from '@/domain/scoring/sufficiency';
+import { expectedSpokenWords, isScorable, targetSpokenWords } from '@/domain/scoring/sufficiency';
 import { getPrompt, loadModule } from '@/content/modules';
 import { GenerationInterruptedError, getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
 import { answerTokenBudget, buildFeedbackPrompt, buildModelAnswerPrompt, buildRewritePrompt } from '@/services/ai/feedbackPrompt';
@@ -117,7 +117,7 @@ function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string
   if (tips) {
     // Speaking: fill the speaking time. Writing: at least the minimum word count.
     const targetWords = attempt.skill === 'speaking'
-      ? expectedSpokenWords(attempt.metrics.answerSeconds)
+      ? targetSpokenWords(attempt.metrics.answerSeconds)
       : task && isWritingTask(task) && attempt.metrics.wordCount < task.wordRange.min ? task.wordRange.min : undefined;
     const prompt = buildRewritePrompt({
       taskTitle: attempt.taskTitle, promptText: attempt.promptText, goal: attempt.goal, goalLabel: goalLabel(attempt.goal),
