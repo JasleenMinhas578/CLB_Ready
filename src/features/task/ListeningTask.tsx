@@ -98,7 +98,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
             <div className="audio-progress" aria-live="polite">
               <Icon name="volume" /> <span>Playing…</span>
               <div className="phase-bar" role="progressbar" aria-label="Recording progress" aria-valuenow={Math.round(player.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
-                <span style={{ width: `${player.progress * 100}%` }} />
+                <span style={{ transform: `scaleX(${player.progress})` }} />
               </div>
             </div>
           )}
