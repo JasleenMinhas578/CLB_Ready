@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getObjectivePart } from '../src/content/modules';
-import { MODULES, moduleHasSkill } from './fixtures/modules';
+import { MODULES } from './fixtures/modules';
 import { clozeIds, partQuestions, VOICES } from '../src/content/objective';
 import { getTaskTypesForSkill } from '../src/domain/tasks/catalog';
 import { isListeningTask, isReadingTask } from '../src/domain/tasks/types';
@@ -40,7 +40,6 @@ describe('reading and listening content', () => {
 
   for (const practiceModule of MODULES) {
     for (const skill of ['reading', 'listening'] as const) {
-      if (!moduleHasSkill(practiceModule, skill)) continue;
       describe(`${practiceModule.id} ${skill}`, () => {
         it('has every part with the right number of questions', () => {
           for (const task of getTaskTypesForSkill(skill)) {

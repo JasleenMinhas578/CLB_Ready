@@ -32,15 +32,6 @@ export function loadModule(id: string): Promise<PracticeModule | undefined> {
   return promise;
 }
 
-/** Task type ids this module has content for. */
-export function moduleTaskIds(practiceModule: PracticeModule): string[] {
-  return [
-    ...practiceModule.prompts.map((prompt) => prompt.taskTypeId),
-    ...(practiceModule.reading ?? []).map((part) => part.taskTypeId),
-    ...(practiceModule.listening ?? []).map((part) => part.taskTypeId),
-  ];
-}
-
 export function getObjectivePart(practiceModule: PracticeModule | undefined, taskTypeId: string): ReadingPart | ListeningPart | undefined {
   return [...(practiceModule?.reading ?? []), ...(practiceModule?.listening ?? [])].find((part) => part.taskTypeId === taskTypeId);
 }

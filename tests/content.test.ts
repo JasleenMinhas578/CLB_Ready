@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { loadModule, moduleTaskIds } from '../src/content/modules';
+import { loadModule } from '../src/content/modules';
 import { CONTENT_COUNTS, MODULE_CATALOG } from '../src/content/modules/catalog';
 import { partQuestions } from '../src/content/objective';
-import { MODULES, moduleHasSkill } from './fixtures/modules';
-import { TASK_TYPES, getTaskType, getTaskTypesForSkill } from '../src/domain/tasks/catalog';
+import { MODULES, moduleTaskIds } from './fixtures/modules';
+import { TASK_TYPES, getTaskType } from '../src/domain/tasks/catalog';
 import { SKILLS } from '../src/domain/skills';
 import { checkGrammar } from '../src/services/grammar/ruleChecker';
 
-// Guards for content added later: every module must be valid, and any
-// skill a module has started must be complete for that skill.
+// Guards for content added later: every module must be valid and have every task,
+// since the skill screens list every task for every module.
 describe('content integrity', () => {
   it('has unique task type ids', () => {
     const ids = TASK_TYPES.map((task) => task.id);
@@ -36,9 +36,8 @@ describe('content integrity', () => {
   it('lists every module in the catalogue as its content describes it', async () => {
     expect(MODULE_CATALOG.map((item) => item.id)).toEqual(MODULES.map((item) => item.id));
     for (const practiceModule of MODULES) {
-      const { id, number, title, status } = practiceModule;
-      const skills = SKILLS.filter((skill) => moduleHasSkill(practiceModule, skill.id)).map((skill) => skill.id);
-      expect(MODULE_CATALOG.find((item) => item.id === id)).toEqual({ id, number, title, status, skills });
+      const { id, number, title } = practiceModule;
+      expect(MODULE_CATALOG.find((item) => item.id === id)).toEqual({ id, number, title });
       expect(await loadModule(id)).toBe(practiceModule);
     }
     expect(await loadModule('module-99')).toBeUndefined();
@@ -57,20 +56,10 @@ describe('content integrity', () => {
     });
   });
 
-  it('has a complete module 1 for practice', () => {
-    expect(moduleTaskIds(MODULES[0]).sort()).toEqual(TASK_TYPES.map((task) => task.id).sort());
-  });
-
   for (const practiceModule of MODULES) {
     describe(practiceModule.title, () => {
-      it('has exactly one prompt per task type for each skill it has started', () => {
-        for (const skill of SKILLS.filter((item) => moduleHasSkill(practiceModule, item.id))) {
-          const expected = getTaskTypesForSkill(skill.id).map((task) => task.id).sort();
-          const covered = moduleTaskIds(practiceModule)
-            .filter((id) => getTaskType(id)?.skill === skill.id)
-            .sort();
-          expect(covered, `${practiceModule.id} ${skill.id}`).toEqual(expected);
-        }
+      it('has exactly one prompt or part per task type', () => {
+        expect(moduleTaskIds(practiceModule).sort()).toEqual(TASK_TYPES.map((task) => task.id).sort());
       });
 
       it('references real task types and has a checklist', () => {

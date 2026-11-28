@@ -6,7 +6,7 @@ import { Emoji } from '@/components/Emoji';
 import { SkillCard } from './SkillCard';
 import { FeedbackDemo } from './FeedbackDemo';
 
-const firstModuleId = MODULE_CATALOG.find((module) => module.status === 'available')?.id ?? 'module-1';
+const firstModuleId = MODULE_CATALOG[0].id;
 
 const INSIDE = [
   { emoji: '🎤', title: 'Speaking with a coach', text: `${counts.speaking} timed tasks. Your answer is turned into text, you see your pace, pauses and filler words, and you get a better version at your goal level.` },
