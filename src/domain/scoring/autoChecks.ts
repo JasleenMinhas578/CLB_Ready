@@ -62,7 +62,3 @@ export function mergeChecklist(
     return { met: typeof fromAi === 'boolean' ? fromAi : null, byCode: false };
   });
 }
-
-export function hasAutoCheck(item: string): boolean {
-  return item in AUTO_CHECKS;
-}

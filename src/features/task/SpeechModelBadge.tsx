@@ -1,8 +1,8 @@
-import type { SpeechStatus } from '@/services/ai/speechEngine';
+import type { ModelStatus } from '@/services/ai/modelStore';
 import { friendlyModelError } from '@/services/ai/errorText';
 
 /** Small status line so learners know the AI is getting ready. */
-export function SpeechModelBadge({ status }: { status: SpeechStatus }) {
+export function SpeechModelBadge({ status }: { status: ModelStatus }) {
   if (status.state === 'idle' || status.state === 'unavailable') return null;
   const percent = status.progress == null ? null : Math.round(status.progress * 100);
   const text = {

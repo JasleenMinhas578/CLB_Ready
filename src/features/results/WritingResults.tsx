@@ -1,15 +1,15 @@
 import type { WritingAttempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
-import { blendScores, overallLevel, DEFAULT_WRITING_WEIGHTS, type Scores, type WritingCriterionId } from '@/domain/scoring/estimate';
+import { overallLevel } from '@/domain/scoring/estimate';
+import { finalScores } from '@/domain/scoring/finalScores';
 import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstimate';
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
 import { useFeedback } from './useFeedback';
 import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { EssayView } from './EssayView';
-import { dropOutlierScores } from '@/domain/scoring/outliers';
 import { mergeChecklist } from '@/domain/scoring/autoChecks';
 import { TileList, type Tile } from './MeasureTiles';
-import { MIN_SCORABLE_WRITING_WORDS, MIN_SENTENCES_FOR_VARIETY, MIN_WORDS_FOR_VARIETY, isScorable, lengthCeiling, plural } from '@/domain/scoring/sufficiency';
+import { MIN_SCORABLE_WRITING_WORDS, MIN_SENTENCES_FOR_VARIETY, MIN_WORDS_FOR_VARIETY, isScorable, plural } from '@/domain/scoring/sufficiency';
 
 function writingTiles(m: WritingMetrics, options?: [string, string]): Tile[] {
   const { min, max } = m.wordRange;
@@ -99,13 +99,9 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
     );
   }
 
-  const codeScores = codeEstimatesWriting(attempt.metrics);
-  const rawModel: Partial<Scores<WritingCriterionId>> | null = ai
-    ? { content: ai.scores.content, vocabulary: ai.scores.vocabulary, readability: ai.scores.delivery, task: ai.scores.task }
-    : null;
-  const checked = rawModel ? dropOutlierScores(rawModel, codeScores) : null;
-  const ceiling = lengthCeiling(attempt.metrics.wordCount, attempt.metrics.wordRange.min);
-  const scores = blendScores(codeScores, checked?.scores ?? null, DEFAULT_WRITING_WEIGHTS, ceiling);
+  const { scores, ignored } = finalScores(
+    'writing', codeEstimatesWriting(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, attempt.metrics.wordRange.min,
+  );
   const checklist = mergeChecklist(attempt.checklist, ai?.checklist ?? null, attempt.text, attempt.metrics);
   const overall = overallLevel(scores);
   const final = outcome !== null;
@@ -125,7 +121,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             overall={overall}
             final={final}
             status={<AiStatus outcome={outcome} progress={progress} />}
-            notes={outlierNotes(checked?.ignored ?? [])}
+            notes={outlierNotes(ignored)}
           />
           <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, writingTips(attempt.metrics, attempt.goal, attempt.options), !!ai)} />
           <ChecklistCard items={attempt.checklist} results={checklist} final={final} />

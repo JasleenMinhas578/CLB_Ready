@@ -1,6 +1,6 @@
 import type { ModelPlan } from '@/services/device/tier';
 import { LIGHT_VOICE } from '@/services/device/tier';
-import { ModelStore, useModelStatus, type ModelStatus } from '@/services/ai/modelStore';
+import { ModelStore } from '@/services/ai/modelStore';
 import type { SpokenLine, TextToSpeech } from './types';
 
 /**
@@ -35,8 +35,4 @@ export async function getVoiceEngine(): Promise<VoiceEngineStore> {
     shared ??= new VoiceEngineStore(getModelPlan, (plan) => new KokoroTextToSpeech(plan.voice ?? LIGHT_VOICE));
   }
   return shared;
-}
-
-export function useVoiceStatus(store: VoiceEngineStore | null): ModelStatus {
-  return useModelStatus(store);
 }

@@ -9,7 +9,7 @@ import {
 } from './text';
 
 // Re-exported so existing imports keep working.
-export { LINKING_PHRASES, normalizeWord, vocabularyVariety };
+export { normalizeWord, vocabularyVariety };
 
 /**
  * Everything about a spoken answer that can be counted, measured in plain
