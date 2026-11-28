@@ -35,7 +35,7 @@ export function PhaseTimer({ kind, secondsLeft, totalSeconds, active, done = fal
         </strong>
       </div>
       <div className="phase-bar" aria-hidden="true">
-        <span style={{ width: `${Math.min(1, Math.max(0, fraction)) * 100}%` }} />
+        <span style={{ transform: `scaleX(${Math.min(1, Math.max(0, fraction))})` }} />
       </div>
       {recording && <LevelMeter level={level} />}
     </div>

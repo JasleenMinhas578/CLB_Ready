@@ -64,6 +64,11 @@
   --exam-soft: oklch(44% 0.02 295);          /* 6.6:1 on --exam-bg */
   --exam-accent: oklch(34% 0.04 295);        /* top bar, selected tab, primary button; light text 11:1 */
   --exam-rec: oklch(53% 0.18 15);            /* recording dot and answer timer, 5:1 on the surface */
+  /* Light lines on the dark exam bar, and the dim behind the exit dialog */
+  --exam-bar-line: oklch(100% 0 0 / 0.6);    /* Exit outline and a disabled Next's text */
+  --exam-bar-faint: oklch(100% 0 0 / 0.35);  /* a disabled Next's outline */
+  --exam-bar-hover: oklch(100% 0 0 / 0.12);
+  --exam-scrim: oklch(24% 0.014 295 / 0.5);
 
   /* Type: Fredoka for rounded heads, Nunito for body (open shapes read well for slow readers) */
   --font-display: 'Fredoka', 'Nunito', ui-rounded, system-ui, sans-serif;

@@ -16,10 +16,11 @@
 
 /* Shared buttons turn flat and square-ish here: no pill, no shadow, no lift. */
 .exam-page .btn {
-  min-height: 46px; border-width: 1px; border-radius: 8px; box-shadow: none;
+  min-height: 48px; border: 1px solid transparent; border-radius: 8px;
   font-family: var(--font-body); font-weight: 800; font-size: 1rem; color: var(--exam-ink);
 }
-.exam-page .btn:hover, .exam-page .btn:active { transform: none; box-shadow: none; }
+/* No card-stock edge, lift or press here: test-day buttons are flat. */
+.exam-page .btn, .exam-page .btn:hover, .exam-page .btn:active, .exam-page .btn:disabled { box-shadow: none; transform: none; }
 .exam-page .btn-primary, .exam-page .btn-primary:hover { color: var(--exam-surface); background: var(--exam-accent); border-color: var(--exam-accent); }
 .exam-page .btn-secondary { background: var(--exam-surface); border-color: var(--exam-line-strong); }
 .exam-page .btn-secondary:hover { background: var(--exam-sunk); color: var(--exam-ink); }
@@ -41,9 +42,9 @@
 .exam-exit {
   flex: none; display: inline-flex; align-items: center; min-height: 44px;
   padding: 0.3rem 0.75rem; font-size: 0.85rem; font-weight: 800; text-decoration: none; color: var(--exam-surface);
-  border: 1.5px solid rgb(255 255 255 / 0.6); border-radius: 8px;
+  border: 1.5px solid var(--exam-bar-line); border-radius: 8px;
 }
-.exam-exit:hover { background: rgb(255 255 255 / 0.12); color: var(--exam-surface); }
+.exam-exit:hover { background: var(--exam-bar-hover); color: var(--exam-surface); }
 .exam-bar-right { display: flex; align-items: center; gap: 1rem; flex: none; }
 .exam-time { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
 .exam-time span { font-size: 0.75rem; font-weight: 700; opacity: 0.85; }
@@ -58,16 +59,16 @@
   background: var(--exam-surface); border: 0; border-radius: 8px; cursor: pointer;
 }
 .exam-next:hover:not(:disabled) { background: var(--exam-sunk); }
-.exam-next:disabled { background: transparent; color: rgb(255 255 255 / 0.6); box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.35); cursor: not-allowed; }
+.exam-next:disabled { background: transparent; color: var(--exam-bar-line); box-shadow: inset 0 0 0 1.5px var(--exam-bar-faint); cursor: not-allowed; }
 /* Busy is not the same as unavailable: it stays solid, with a spinner, so "Saving…" reads as work in progress. */
 .exam-next[aria-busy='true']:disabled { color: var(--exam-accent); background: var(--exam-surface); box-shadow: none; cursor: progress; }
 
 /* Exit confirm: plain like the rest of the exam, opened with showModal(). */
 .exam-dialog {
-  width: min(26rem, calc(100vw - 32px)); padding: 20px 22px;
+  width: 26rem; max-width: calc(100% - 2 * var(--gap-2)); padding: var(--gap-3);
   color: var(--exam-ink); background: var(--exam-surface); border: 1px solid var(--exam-line); border-radius: 10px;
 }
-.exam-dialog::backdrop { background: rgb(35 32 42 / 0.5); }
+.exam-dialog::backdrop { background: var(--exam-scrim); }
 .exam-dialog h2 { margin: 0 0 0.5rem; font-family: var(--font-body); font-size: 1.2rem; font-weight: 800; }
 .exam-dialog p { margin: 0 0 1rem; max-width: none; }
 .exam-dialog-actions { display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
@@ -76,7 +77,7 @@
 .exam-body { flex: 1; display: grid; gap: 20px; width: 100%; margin: 0 auto; padding: 20px var(--gutter); align-items: start; align-content: start; }
 .exam-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .exam-stack { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.exam-panel { background: var(--exam-surface); border: 1px solid var(--exam-line); border-radius: 10px; padding: 20px 22px; }
+.exam-panel { background: var(--exam-surface); border: 1px solid var(--exam-line); border-radius: 10px; padding: var(--gap-3); }
 
 .exam-prompt { font-size: 1.1rem; line-height: 1.6; margin-bottom: 0.75rem; max-width: none; }
 .exam-points { margin: 0 0 0.75rem; padding-left: 1.3rem; display: grid; gap: 0.3rem; font-size: 1.05rem; }
@@ -103,8 +104,8 @@
 }
 
 /* Writing editor */
-.editor-panel { display: flex; flex-direction: column; gap: 10px; }
-.editor-toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+.editor-panel { display: flex; flex-direction: column; gap: 12px; }
+.editor-toolbar { display: flex; flex-wrap: wrap; gap: var(--gap-1); }
 .exam-tool {
   min-height: 44px; padding: 0.25rem 0.85rem; font: 700 0.9rem var(--font-body); color: var(--exam-ink);
   background: var(--exam-sunk); border: 1px solid var(--exam-line-strong); border-radius: 6px; cursor: pointer;
@@ -112,7 +113,7 @@
 .exam-tool:hover:not(:disabled) { background: var(--exam-bg); }
 .exam-tool:disabled { color: var(--exam-soft); border-color: var(--exam-line); cursor: not-allowed; }
 .exam-textarea {
-  width: 100%; min-height: 420px; resize: vertical; padding: 12px 14px;
+  width: 100%; min-height: 420px; resize: vertical; padding: 12px var(--gap-2);
   font: 400 1.05rem/1.6 var(--font-body); color: var(--exam-ink); caret-color: var(--exam-accent);
   background: var(--exam-surface); border: 1px solid var(--exam-line-strong); border-radius: 6px;
 }
@@ -128,8 +129,8 @@
 
 /* Speaking timers */
 .status-panel { min-height: 160px; }
-.phase-timers { display: grid; gap: 14px; }
-.phase-timer { padding: 12px 14px; border: 1px solid var(--exam-line); border-radius: 8px; background: var(--exam-sunk); color: var(--exam-soft); }
+.phase-timers { display: grid; gap: var(--gap-2); }
+.phase-timer { padding: 12px var(--gap-2); border: 1px solid var(--exam-line); border-radius: 8px; background: var(--exam-sunk); color: var(--exam-soft); }
 .phase-timer.is-active { color: var(--exam-ink); background: var(--exam-surface); border-color: var(--exam-accent); }
 .phase-timer-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 8px; }
 .phase-timer-label { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 800; }
@@ -137,17 +138,18 @@
 .phase-timer.is-active .phase-timer-head strong { font-size: 1.5rem; }
 .phase-timer.is-low .phase-timer-head strong, .kind-answer.is-active .phase-timer-head strong { color: var(--exam-rec); }
 .phase-bar { height: 12px; background: var(--exam-line); border-radius: 6px; overflow: hidden; }
-.phase-bar span { display: block; height: 100%; background: var(--exam-accent); transition: width 0.2s linear; }
+/* The fill scales from the left (the width is set inline as a scaleX), so the browser never re-lays out the bar. */
+.phase-bar span { display: block; width: 100%; height: 100%; background: var(--exam-accent); transform-origin: left; transition: transform 0.2s linear; }
 /* Phases that are waiting or finished are dimmed with colour, not opacity, so their text stays readable. */
 .phase-timer:not(.is-active) .phase-bar span { background: var(--exam-line-strong); }
 .kind-answer.is-active .phase-bar span { background: var(--exam-rec); }
-.phase-timer .level-meter { margin-top: 10px; height: 28px; }
+.phase-timer .level-meter { margin-top: 12px; height: 28px; }
 .phase-timer .level-meter span { width: 9px; }
 /* Steady, not blinking: no looping motion beside a timer. */
 .rec-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--exam-rec); }
 
 /* Microphone level: one quiet colour; the bars' height already shows loudness. */
-.level-meter { display: flex; align-items: flex-end; gap: 5px; height: 44px; }
+.level-meter { display: flex; align-items: flex-end; gap: 4px; height: 44px; }
 .level-meter span {
   width: 12px; background: var(--exam-surface); border: 1px solid var(--exam-line-strong); border-radius: 4px;
   transition: background 0.08s linear;
@@ -170,7 +172,7 @@
 
 /* A problem that stops the task, under the panels. */
 .exam-alert {
-  display: flex; align-items: center; gap: 0.5rem; margin: 0 var(--gutter) 12px; padding: 12px 14px; max-width: none;
+  display: flex; align-items: center; gap: 0.5rem; margin: 0 var(--gutter) 12px; padding: 12px var(--gap-2); max-width: none;
   font-weight: 800; color: var(--exam-ink); background: var(--exam-surface); border: 1px solid var(--exam-rec); border-radius: 8px;
 }
 .exam-alert .warn-icon { color: var(--exam-rec); }
@@ -185,7 +187,7 @@
 @media (max-width: 860px) { /* Same as NARROW in ReadingTask.tsx */
   .exam-columns, .exam-stack { grid-template-columns: 1fr; }
   .exam-bar { padding: 0.6rem 16px; }
-  .exam-body { padding: 14px 16px; }
+  .exam-body { padding: var(--gap-2); }
   .exam-meta { padding: 0 16px 12px; }
   .exam-alert { margin: 0 16px 12px; }
   .exam-textarea { min-height: 300px; }
@@ -206,43 +208,43 @@
 }
 
 /* Picture tasks before the picture is drawn: the scene in words. */
-.exam-scene { margin: 0; padding: 14px 16px; background: var(--exam-sunk); border: 1px dashed var(--exam-line-strong); border-radius: 8px; }
+.exam-scene { margin: 0; padding: var(--gap-2); background: var(--exam-sunk); border: 1px dashed var(--exam-line-strong); border-radius: 8px; }
 .exam-scene figcaption { font-size: 0.85rem; font-weight: 700; color: var(--exam-soft); margin-bottom: 0.4rem; }
 .exam-scene p { margin: 0; font-size: 1.05rem; line-height: 1.6; max-width: none; }
 
 /* Reading and listening */
-.exam-instructions { margin: 0; padding: 14px var(--gutter) 0; font-weight: 700; max-width: none; }
+.exam-instructions { margin: 0; padding: var(--gap-2) var(--gutter) 0; font-weight: 700; max-width: none; }
 .exam-instructions-inline { margin: 0 0 0.75rem; font-weight: 700; max-width: none; }
 .objective-columns { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
 .passage-panel { position: sticky; top: 84px; max-height: calc(100vh - 104px); overflow: auto; }
 .exam-panel[hidden] { display: none; }
 /* Passage / questions tabs, only on narrow screens (ReadingTask). */
-.exam-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 12px 16px 0; scroll-margin-top: 4.5rem; }
+.exam-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-1); padding: 12px var(--gap-2) 0; scroll-margin-top: 4.5rem; }
 .exam-tabs [role='tab'] {
   min-height: 44px; font: 800 1rem var(--font-body); color: var(--exam-ink);
   background: var(--exam-surface); border: 1px solid var(--exam-line-strong); border-radius: 8px; cursor: pointer;
 }
 .exam-tabs [role='tab']:hover { background: var(--exam-sunk); }
 .exam-tabs [role='tab'][aria-selected='true'] { color: var(--exam-surface); background: var(--exam-accent); border-color: var(--exam-accent); }
-.passage { display: grid; gap: 18px; }
+.passage { display: grid; gap: 20px; }
 /* Grid items would otherwise grow to fit a wide table or dropdown and push the passage off screen. */
 .passage > * { min-width: 0; }
 .passage-block h2 { margin: 0 0 0.5rem; font: 800 1.05rem var(--font-body); }
 .passage-block p { margin: 0 0 0.8rem; line-height: 1.7; max-width: none; white-space: pre-line; }
-.passage-block.is-cloze { padding: 14px 16px; background: var(--exam-sunk); border: 1px solid var(--exam-line); border-radius: 8px; }
+.passage-block.is-cloze { padding: var(--gap-2); background: var(--exam-sunk); border: 1px solid var(--exam-line); border-radius: 8px; }
 .passage-table-wrap { overflow-x: auto; }
 .passage-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-.passage-table th, .passage-table td { padding: 8px 10px; border: 1px solid var(--exam-line); text-align: left; vertical-align: top; }
+.passage-table th, .passage-table td { padding: var(--gap-1) 12px; border: 1px solid var(--exam-line); text-align: left; vertical-align: top; }
 .passage-table thead th { background: var(--exam-bg); }
 .passage-table tbody th { font-weight: 800; background: var(--exam-sunk); }
 .passage-note { font-size: 0.85rem; color: var(--exam-soft); margin-top: 0.5rem; }
 .cloze-blank { display: inline-flex; align-items: center; gap: 4px; margin: 2px 2px; max-width: 100%; }
 .cloze-number { font-size: 0.75rem; font-weight: 800; color: var(--exam-soft); }
-.cloze-blank select { min-width: 0; max-width: 100%; min-height: 44px; padding: 3px 6px; font: 600 0.95rem var(--font-body); color: var(--exam-ink); border: 1px solid var(--exam-line-strong); border-radius: 6px; background: var(--exam-surface); }
+.cloze-blank select { min-width: 0; max-width: 100%; min-height: 44px; padding: 4px var(--gap-1); font: 600 0.95rem var(--font-body); color: var(--exam-ink); border: 1px solid var(--exam-line-strong); border-radius: 6px; background: var(--exam-surface); }
 .cloze-blank select:focus { outline: 2px solid var(--exam-accent); outline-offset: 1px; }
-.question-list { display: grid; gap: 18px; }
-.choice-field { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
-.choice-field legend { margin-bottom: 6px; font-weight: 700; line-height: 1.5; }
+.question-list { display: grid; gap: 20px; }
+.choice-field { border: 0; margin: 0; padding: 0; display: grid; gap: var(--gap-1); }
+.choice-field legend { margin-bottom: var(--gap-1); font-weight: 700; line-height: 1.5; }
 .choice-number { font-weight: 800; color: var(--exam-soft); }
 .choice-field .exam-option { grid-template-columns: auto 1fr; }
 .listening-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -253,7 +255,7 @@
   background: var(--exam-accent); border: 0; border-radius: 8px; cursor: pointer;
 }
 .exam-play:hover { background: var(--exam-ink); }
-.audio-progress { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 10px; font-weight: 800; }
+.audio-progress { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--gap-1) 12px; font-weight: 800; }
 .audio-progress .icon { color: var(--exam-accent); }
 .audio-progress .phase-bar { grid-column: 1 / -1; }
 @media (max-width: 860px) { /* Same as NARROW in ReadingTask.tsx */
@@ -263,7 +265,7 @@
 }
 
 /* Work in progress (saving, checking, getting voices ready): a spinner and words, never the spinner alone. */
-.busy-status { display: flex; align-items: center; gap: 10px; margin: 0; font-weight: 700; color: var(--exam-soft); max-width: none; }
+.busy-status { display: flex; align-items: center; gap: 12px; margin: 0; font-weight: 700; color: var(--exam-soft); max-width: none; }
 .spinner {
   flex: none; display: inline-block; width: 1.25em; height: 1.25em; border-radius: 50%;
   border: 3px solid var(--exam-line); border-top-color: var(--exam-accent); animation: spin 0.9s linear infinite;
