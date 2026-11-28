@@ -1,14 +1,19 @@
 # CLB Ready
 
-**Free CELPIP practice with Pip, an AI coach that runs in your browser.**
+**Practise for CELPIP for free, and see the CLB level each answer would earn.**
 
-CLB Ready is for adults preparing for the CELPIP test for Canadian immigration or citizenship. You practise
-all four skills under real test timers. Then Pip, your AI coach, checks that you answered the task and shows
-your estimated CLB level next to your goal, with what to change to reach it. There is no account and no
-payment, and nothing you say or write leaves your device.
+CLB Ready is for adults taking the CELPIP test for Canadian immigration or citizenship. Practise speaking,
+writing, reading and listening with the real test timers. After each answer, Pip, your AI coach, shows:
 
-**Try it:** [clbready.vercel.app](https://clbready.vercel.app) · also on
-[GitHub Pages](https://jasleenminhas578.github.io/CLB_Ready/). Chrome or Edge on a laptop works best.
+- your estimated CLB level next to the level you need
+- what to change to close the gap
+- your answer rewritten at your goal level, with every change marked
+
+Pip runs inside your browser. There's no account and no payment, and nothing you say or write leaves your
+device.
+
+**[Start practising at clbready.vercel.app →](https://clbready.vercel.app)** (or use the
+[GitHub Pages copy](https://jasleenminhas578.github.io/CLB_Ready/)). Chrome or Edge on a laptop works best.
 
 <p align="center"><img src="docs/screenshots/01-home.png" alt="CLB Ready home page: start your next task, pick a CLB goal, and see progress for each skill" width="760"></p>
 
@@ -27,6 +32,19 @@ payment, and nothing you say or write leaves your device.
 - 🧭 **Pick up where you left off.** One click starts your next unfinished task, and each skill shows how
   many tasks you have done.
 - 🆓 **Practise as much as you like.** No account, no payment, no limit, and your answers stay on your device.
+
+## ✅ What you need
+
+| | Works | Notes |
+| --- | --- | --- |
+| **Best** | Chrome or Edge on a laptop or desktop | WebGPU is on by default, so Pip can run. |
+| **Also works** | Safari and Firefox with WebGPU turned on | They don't report memory, so CLB Ready picks the Balanced models. |
+| **Light mode** | Any browser without WebGPU | Speech to text still works; Pip is off (see below). |
+| **Phones** | Recent phones | Uses the Lightest models, or light mode if the phone's browser has no WebGPU. |
+
+You also need a microphone for speaking, and room for the models in browser storage (several hundred MB to
+a few GB, depending on the model size). The first download needs a good connection; after that the models
+come from the browser cache.
 
 ## 🧭 How it works
 
@@ -91,6 +109,31 @@ Each row shows the test-style task on the left and the feedback you get on the r
 
 </details>
 
+## 📊 How scores are estimated
+
+Scores are estimates to guide practice, not a prediction of your test result.
+
+**Speaking and writing** are scored on CELPIP's four criteria (content and coherence, vocabulary,
+listenability or readability, and task fulfillment), each from CLB 4 to 12.
+
+1. **Code measures what it can count**: pace, pauses, fillers, word variety, linking words, length and
+   possible grammar mistakes. Code alone never gives a level above CLB 10, and it never scores content or
+   task fulfillment on screen, because it can't judge meaning.
+2. **Pip judges what needs understanding**: whether the answer is on task, how well it is organised, and a
+   score for each criterion.
+3. **The two are blended.** Pip's share is largest for content (70%) and smallest for listenability (30%)
+   or readability (40%).
+4. **Safety checks.** A score from Pip that is far from both its other scores and what code measured is
+   ignored, because small models sometimes slip. Short answers are capped. An answer to a different
+   question is capped at CLB 5, however fluent it is.
+5. **Your level for the answer** is the rounded average of the four criteria. No level shows without Pip.
+
+**Reading and listening** are marked against the answer key, and your score is turned into a level with
+CELPIP's approximate score chart.
+
+The scoring rules are plain TypeScript in [`src/domain/scoring/`](src/domain/scoring/), and a calibration
+test checks that strong, middle and weak sample answers land in the expected bands.
+
 ## 🔒 Private by design
 
 CLB Ready has no server of its own: the site is static files. It downloads small open AI models into your
@@ -103,7 +146,6 @@ browser once, then runs everything on your own computer:
 | Listening voices and read-aloud | Kokoro 82M via kokoro-js | Web Worker, WebGPU or CPU |
 | Measurements and grammar checks | Plain TypeScript (pace, pauses, fillers, learner grammar rules) | Main thread |
 | Reading and listening marks | Answer key and CELPIP's approximate score chart | Main thread |
-| Storage | Model files are cached; answers are never saved (a writing draft stays in the tab until you submit) | Browser |
 
 ```mermaid
 flowchart LR
@@ -137,6 +179,43 @@ The app checks the device (memory, CPU cores, WebGPU support) without asking for
 sizes to match. Devices without WebGPU get light mode, where Pip is off: results show the measured scores
 (vocabulary and how clear your answer is) and say that a level needs Pip.
 
+### Models for each device
+
+| Setting | Chosen when | Feedback (Pip) | Speech to text | Voices |
+| --- | --- | --- | --- | --- |
+| Largest | 8 GB memory or more, 8+ cores and a strong GPU | Qwen2.5 3B | Whisper small.en (GPU) | Kokoro, full precision on the GPU (about 330 MB) |
+| Balanced | Most laptops, and browsers that don't report memory | Qwen2.5 1.5B | Whisper base.en (GPU) | Kokoro 8-bit on the CPU (about 90 MB) |
+| Lightest | Phones, or 4 GB memory or less | Llama 3.2 1B | Whisper tiny.en (GPU) | Kokoro 8-bit on the CPU |
+| Light mode | No WebGPU | Off | Whisper tiny.en (CPU) | Kokoro 8-bit on the CPU |
+
+Pip's models are 4-bit, using 16-bit floats where the GPU supports them. If a model fails to load, CLB
+Ready steps down one size and tells you. You can pick a size yourself in Settings.
+
+### What is saved in your browser
+
+| What | Where | How to clear it |
+| --- | --- | --- |
+| Model files | Browser cache | Settings → Delete downloaded models |
+| Which tasks you finished, and the date (never answers, recordings or scores) | localStorage | Settings → Clear my progress, or Reset progress on a module |
+| Timer sounds on or off | localStorage | Settings → Sounds |
+| Writing draft, until you submit it | sessionStorage, cleared when the tab closes | Submit or close the tab |
+
+Recordings stay in memory only while Pip checks them. Nothing is uploaded.
+
+## 🛠️ Troubleshooting
+
+- **Pip's first check is slow.** The model downloads once, then loads from the cache. Keep the tab open
+  until the progress panel finishes.
+- **The microphone doesn't record.** Allow the microphone for the site in the browser's address
+  bar, then try the task again. Speaking needs a secure page (https or localhost).
+- **Pip is off or results say a level needs Pip.** The browser has no WebGPU. Use an up-to-date Chrome or
+  Edge, or check that hardware acceleration is on in the browser's settings.
+- **A model won't load.** CLB Ready steps down a size by itself. If the tab still runs out of memory,
+  choose Lightest in Settings and close other heavy tabs.
+- **Progress ticks disappear.** Private windows and strict privacy settings can block storage. Practice
+  still works, but ticks last only until the tab closes.
+- **Running low on disk space.** Settings shows how much the models use and can delete them.
+
 ## 🏫 For teachers and settlement programs
 
 Share one link. There's nothing to install, no accounts to manage and no student data to protect, because
@@ -157,7 +236,27 @@ npm run build      # production build in dist/
 npm run audio      # optional: pre-record listening audio (see below)
 ```
 
-Every push to `main` runs the tests and publishes the site to GitHub Pages (GitHub Actions).
+The dev server has no Content Security Policy, because Vite uses inline scripts there. `npm run build`
+adds it, so check anything network-related with `npm run build && npm run preview`.
+
+### Tech stack
+
+React 19, TypeScript and Vite, with no router library and plain CSS (design tokens in
+`src/styles/tokens.css`). WebLLM, Transformers.js and kokoro-js each run in their own Web Worker. Tests use
+Vitest.
+
+## 🚀 Deploying your own copy
+
+The build in `dist/` is plain static files with relative paths, so it works on any static host and under a
+sub-path.
+
+- **GitHub Pages:** fork the repo, turn on Pages with "GitHub Actions" as the source, and push to `main`.
+  [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs the tests, builds and publishes. It
+  installs with `--ignore-scripts` and pins every action to a commit.
+- **Other hosts (Vercel, Netlify and so on):** build command `npm run build`, output folder `dist`.
+
+The Content Security Policy is a `<meta>` tag added at build time (see `vite.config.ts`), because GitHub
+Pages can't send headers.
 
 ## 🔊 Listening recordings
 
@@ -184,7 +283,11 @@ src/
   features/     one folder per screen: home, goal, skill, task, results, settings, lab
   styles/       design tokens and CSS
 tests/          unit tests for logic and content integrity
+scripts/        make-audio.ts for pre-recorded listening clips
 ```
+
+The tests cover scoring and calibration, timers, the device tiers, model pins, progress, worker messages
+and content integrity. They run in Node, without a browser or models.
 
 ## ➕ Adding things
 
