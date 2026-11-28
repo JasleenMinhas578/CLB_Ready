@@ -6,9 +6,12 @@ import { WorkerRpc } from '@/services/workerRpc';
 
 /** Main-thread wrapper that turns Kokoro worker messages into promises. */
 export class KokoroTextToSpeech implements TextToSpeech {
+  onCrash?: (error: Error) => void;
+
   private rpc = new WorkerRpc<KokoroRequest, KokoroResponse>(
     () => new Worker(new URL('./kokoro.worker.ts', import.meta.url), { type: 'module' }),
     'The voice model could not start in this browser.',
+    (error) => this.onCrash?.(error),
   );
 
   constructor(private readonly plan: VoicePlan) {}
