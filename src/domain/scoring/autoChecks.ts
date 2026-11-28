@@ -48,6 +48,14 @@ export interface ChecklistResult {
   byCode: boolean;
 }
 
+/**
+ * The AI's checklist, or null when it doesn't have one row per item. Rows carry
+ * no item text, so with any other count they can't be matched to the right item.
+ */
+export function matchAiChecklist<T>(items: string[], aiResults: T[] | null): T[] | null {
+  return aiResults && aiResults.length === items.length ? aiResults : null;
+}
+
 /** Merges code checks over the AI's checklist. Code wins when it's sure. */
 export function mergeChecklist(
   items: string[],
@@ -55,10 +63,11 @@ export function mergeChecklist(
   text: string,
   metrics: WritingMetrics,
 ): ChecklistResult[] {
+  const matched = matchAiChecklist(items, aiResults);
   return items.map((item, index) => {
     const fromCode = AUTO_CHECKS[item]?.(text, metrics) ?? null;
     if (fromCode !== null) return { met: fromCode, byCode: true };
-    const fromAi = aiResults?.[index]?.met;
+    const fromAi = matched?.[index]?.met;
     return { met: typeof fromAi === 'boolean' ? fromAi : null, byCode: false };
   });
 }

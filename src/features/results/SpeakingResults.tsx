@@ -4,6 +4,7 @@ import { getCriteria } from '@/domain/criteria';
 import { codeEstimates, overallLevel } from '@/domain/scoring/estimate';
 import { finalScores } from '@/domain/scoring/finalScores';
 import { codeTips } from '@/domain/scoring/codeTips';
+import { matchAiChecklist } from '@/domain/scoring/autoChecks';
 import { useFeedback } from './useFeedback';
 import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
 import { MIN_SCORABLE_SPEAKING_WORDS, isScorable } from '@/domain/scoring/sufficiency';
@@ -82,7 +83,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             notes={outlierNotes(ignored)}
           />
           <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
-          <ChecklistCard items={attempt.checklist} results={ai ? ai.checklist.map((row) => ({ met: row.met })) : null} final={final} />
+          <ChecklistCard items={attempt.checklist} results={matchAiChecklist(attempt.checklist, ai?.checklist ?? null)?.map((row) => ({ met: row.met })) ?? null} final={final} />
           <div className="results-card">
             <h2>What we measured</h2>
             <MeasureTiles metrics={attempt.metrics} />
