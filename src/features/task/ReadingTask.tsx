@@ -10,7 +10,7 @@ import { ExamBar, TimeRemaining } from './exam/ExamBar';
 import { PassageView, QuestionList, type Answers } from './objective/Questions';
 import { numberQuestions } from './objective/numbering';
 
-// Matches the breakpoint where exam columns stack (exam.css).
+// Matches the breakpoint where exam columns stack (both 860px media queries in exam.css).
 const NARROW = '(max-width: 860px)';
 const watchNarrow = (onChange: () => void) => {
   const query = window.matchMedia(NARROW);
@@ -54,7 +54,8 @@ export function ReadingTask({ task, part, moduleId }: { task: ReadingTaskType; p
   const onTabKey = (event: KeyboardEvent) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const next: Tab = tab === 'passage' ? 'questions' : 'passage';
+    // Home and End go to the first and last tab; the arrows switch between the two.
+    const next: Tab = event.key === 'Home' ? 'passage' : event.key === 'End' ? 'questions' : tab === 'passage' ? 'questions' : 'passage';
     showTab(next);
     document.getElementById(`reading-tab-${next}`)?.focus();
   };

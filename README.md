@@ -83,7 +83,8 @@ Every push to `main` runs the tests and publishes the site (GitHub Actions to Gi
 By default, Kokoro makes the listening voices in the learner's browser, a line at a time while the
 recording plays. `npm run audio` can instead pre-record clips as MP3 files in `public/audio/`; the app
 plays a recording when one exists. It needs internet the first time (about 330 MB for the model) and
-ffmpeg (`brew install ffmpeg` on a Mac).
+ffmpeg (`brew install ffmpeg` on a Mac). To skip onnxruntime-node's GPU (CUDA) download, install
+with `ONNXRUNTIME_NODE_INSTALL_CUDA=skip npm install`.
 
 Open `#/lab` (the "Model lab" link in the footer) to measure load time, transcription time, tokens per
 second and memory on your device.

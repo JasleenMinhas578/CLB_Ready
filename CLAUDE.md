@@ -11,7 +11,7 @@ Free, private CELPIP-style practice coach. Static site; all AI runs in the visit
 ## Commands
 - `npm run dev` / `npm run build` / `npm run preview`
 - `npm test`, `npm run typecheck`
-- `npm run audio`: regenerates `public/audio/` with Kokoro on Node (needs onnxruntime-node)
+- `npm run audio`: regenerates `public/audio/` with Kokoro on Node (needs onnxruntime-node; install with `ONNXRUNTIME_NODE_INSTALL_CUDA=skip npm install` to skip its GPU download)
 
 ## Layout
 - `src/app`: shell, routes, session
