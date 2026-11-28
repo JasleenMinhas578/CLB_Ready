@@ -22,11 +22,9 @@ import { MicCheck } from './MicCheck';
 import { SpeechModelBadge } from './SpeechModelBadge';
 import { ModelPlanBadge } from './ModelPlanBadge';
 import { ExamBar, TimeWarning } from './exam/ExamBar';
-import { hasUnsavedWork } from './exam/unsavedWork';
+import { speakingActionLabel, speakingExitWarning, type SpeakingFlow } from './exam/speakingStatus';
 import { PromptPanel } from './exam/PromptPanel';
 import { PhaseTimer } from './exam/PhaseTimer';
-
-type FlowState = 'ready' | 'mic-check' | 'running' | 'transcribing' | 'problem';
 
 const PROBLEM_TEXT: Record<Exclude<RecordingProblem, null>, { title: string; help: string }> = {
   'too-short': { title: 'That answer was very short', help: 'Try again and keep speaking until the timer ends.' },
@@ -48,7 +46,7 @@ interface SpeakingTaskProps {
 export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   const { goal, micReady, setMicReady, setLastAttempt } = useSession();
   const phases = buildSpeakingPhases(task.timing);
-  const [state, setState] = useState<FlowState>('ready');
+  const [state, setState] = useState<SpeakingFlow>('ready');
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [problem, setProblem] = useState<{ title: string; help: string } | null>(null);
   const [selected, setSelected] = useState<0 | 1 | null>(null);
@@ -60,6 +58,22 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
   const recorder = useAnswerRecorder();
   const level = useMicLevel(recorder.stream);
   const recordingStarted = useRef(false);
+  const statusPanel = useRef<HTMLElement>(null);
+  // Saving outlives the screen if the learner exits, so it checks this before showing results.
+  const mounted = useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  // On narrow screens the status panel sits below the task text, so bring "Saving…" into view.
+  // 'nearest' leaves the page alone when the panel is already visible.
+  useEffect(() => {
+    if (state === 'transcribing') statusPanel.current?.scrollIntoView({ block: 'nearest' });
+  }, [state]);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,6 +113,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
       }
       const store = engine ?? (await getSpeechEngine());
       const transcript = await store.transcribe(audio);
+      if (!mounted.current) return;
       const metrics = measureSpeaking({
         text: transcript.text,
         words: transcript.words,
@@ -123,6 +138,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
       });
       navigate('/results');
     } catch (error) {
+      if (!mounted.current) return;
       setProblem({
         title: 'We couldn’t turn your answer into text',
         help: friendlyModelError(error, 'Please try again. If it happens again, reload the page.'),
@@ -148,8 +164,6 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     setState('ready');
   };
 
-  const nextLabel = !running ? 'Next' : phase.id === 'answer' ? 'Finish answer' : 'Skip';
-
   let panel: ReactNode;
   if (state === 'mic-check') {
     panel = (
@@ -174,8 +188,12 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     panel = (
       <div className="exam-message" aria-live="polite">
         <h2>Saving your response…</h2>
-        <p>Your answer is being turned into text on this device. This usually takes a few seconds.</p>
-        <SpeechModelBadge status={speechStatus} />
+        <p className="ai-voice-status">
+          <span className="spinner" aria-hidden="true" />
+          Your answer is being turned into text on this device. This usually takes a few seconds.
+        </p>
+        {/* "Ready" would read as nothing happening; loading progress and errors still help. */}
+        {speechStatus.state !== 'ready' && <SpeechModelBadge status={speechStatus} />}
       </div>
     );
   } else if (state === 'ready') {
@@ -217,15 +235,16 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
         position={`Speaking Task ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/speaking/${moduleId}`}
-        exitWarning={hasUnsavedWork({ recording: recorder.stream !== null }) ? 'You are recording an answer. If you leave now, the recording is lost.' : undefined}
+        exitWarning={speakingExitWarning(state, recorder.stream !== null)}
         action={
           <button
             type="button"
             className="exam-next"
             onClick={running ? advance : () => setState(micReady ? 'running' : 'mic-check')}
             disabled={state === 'transcribing' || state === 'mic-check' || state === 'problem'}
+            aria-busy={state === 'transcribing'}
           >
-            {nextLabel}
+            {speakingActionLabel(state, phase.id)}
           </button>
         }
       />
@@ -238,7 +257,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
           onSelect={setSelected}
           optionsLocked={running && phase.id !== 'select'}
         />
-        <section className="exam-panel status-panel" aria-label="Timers">
+        <section ref={statusPanel} className="exam-panel status-panel" aria-label="Timers">
           {panel}
           <TimeWarning secondsLeft={secondsLeft} totalSeconds={phase.seconds} muted={phase.id === 'answer'} />
         </section>

@@ -22,6 +22,14 @@ function warnBeforeLeaving(event: BeforeUnloadEvent) {
   event.preventDefault();
 }
 
+/**
+ * Resolves after the browser has painted. The grammar check blocks the page,
+ * so without this "Checking…" would never show before the results open.
+ */
+function afterPaint(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+}
+
 interface WritingTaskProps {
   task: WritingTaskType;
   prompt: PracticePrompt;
@@ -69,6 +77,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
     if (state === 'checking') return;
     setState('checking');
     const answer = textRef.current;
+    await afterPaint();
     const issues = await grammar.check(answer);
     const metrics = measureWriting({
       text: answer,
@@ -112,7 +121,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
         exitWarning={unsaved ? 'Your writing is kept in this tab and comes back if you open this task again, but the timer starts over.' : undefined}
         status={<TimeRemaining seconds={secondsLeft} totalSeconds={task.timing.minutes * 60} warnBelow={300} />}
         action={
-          <button type="button" className="exam-next" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'}>
+          <button type="button" className="exam-next" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'} aria-busy={state === 'checking'}>
             {state === 'checking' ? 'Checking…' : 'Next'}
           </button>
         }
