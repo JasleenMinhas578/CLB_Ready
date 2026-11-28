@@ -1,57 +1,55 @@
-import { describe, expect, it } from 'vitest';
-import { clearDraft, hasUnsavedWork, loadDraft, saveDraft, type DraftStorage } from '../src/features/task/exam/unsavedWork';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { clearDraft, hasUnsavedWork, loadDraft, saveDraft } from '../src/features/task/exam/unsavedWork';
 
-function fakeStorage(): DraftStorage & { items: Map<string, string> } {
+/** Stands in for this tab's sessionStorage. */
+function fakeStorage() {
   const items = new Map<string, string>();
-  return {
-    items,
-    getItem: (key) => items.get(key) ?? null,
-    setItem: (key, value) => void items.set(key, value),
-    removeItem: (key) => void items.delete(key),
-  };
+  vi.stubGlobal('sessionStorage', {
+    getItem: (key: string) => items.get(key) ?? null,
+    setItem: (key: string, value: string) => void items.set(key, value),
+    removeItem: (key: string) => void items.delete(key),
+  });
+  return items;
 }
 
 describe('hasUnsavedWork', () => {
-  it('is true while recording', () => {
-    expect(hasUnsavedWork({ recording: true })).toBe(true);
-    expect(hasUnsavedWork({ recording: false })).toBe(false);
-  });
-
   it('is true only while writing something that is not blank', () => {
-    expect(hasUnsavedWork({ writing: true, text: 'Dear Sir' })).toBe(true);
-    expect(hasUnsavedWork({ writing: true, text: '  \n ' })).toBe(false);
-    expect(hasUnsavedWork({ writing: false, text: 'Dear Sir' })).toBe(false);
+    expect(hasUnsavedWork(true, 'Dear Sir')).toBe(true);
+    expect(hasUnsavedWork(true, '  \n ')).toBe(false);
+    expect(hasUnsavedWork(false, 'Dear Sir')).toBe(false);
   });
 });
 
 describe('writing drafts', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
   it('saves and restores a draft per module and task', () => {
-    const storage = fakeStorage();
-    saveDraft(storage, 'module-1', 'writing-1', 'Dear Sir');
-    saveDraft(storage, 'module-1', 'writing-2', 'I prefer A');
-    expect(loadDraft(storage, 'module-1', 'writing-1')).toBe('Dear Sir');
-    expect(loadDraft(storage, 'module-1', 'writing-2')).toBe('I prefer A');
-    expect(loadDraft(storage, 'module-2', 'writing-1')).toBe('');
+    fakeStorage();
+    saveDraft('module-1', 'writing-1', 'Dear Sir');
+    saveDraft('module-1', 'writing-2', 'I prefer A');
+    expect(loadDraft('module-1', 'writing-1')).toBe('Dear Sir');
+    expect(loadDraft('module-1', 'writing-2')).toBe('I prefer A');
+    expect(loadDraft('module-2', 'writing-1')).toBe('');
   });
 
   it('clears the draft on submit, and drops it when the editor is emptied', () => {
-    const storage = fakeStorage();
-    saveDraft(storage, 'module-1', 'writing-1', 'Dear Sir');
-    clearDraft(storage, 'module-1', 'writing-1');
-    expect(loadDraft(storage, 'module-1', 'writing-1')).toBe('');
-    saveDraft(storage, 'module-1', 'writing-1', 'Dear Sir');
-    saveDraft(storage, 'module-1', 'writing-1', '   ');
-    expect(storage.items.size).toBe(0);
+    const items = fakeStorage();
+    saveDraft('module-1', 'writing-1', 'Dear Sir');
+    clearDraft('module-1', 'writing-1');
+    expect(loadDraft('module-1', 'writing-1')).toBe('');
+    saveDraft('module-1', 'writing-1', 'Dear Sir');
+    saveDraft('module-1', 'writing-1', '   ');
+    expect(items.size).toBe(0);
   });
 
   it('treats storage that throws as no draft', () => {
-    const broken: DraftStorage = {
+    vi.stubGlobal('sessionStorage', {
       getItem: () => { throw new Error('blocked'); },
       setItem: () => { throw new Error('full'); },
       removeItem: () => { throw new Error('blocked'); },
-    };
-    expect(loadDraft(broken, 'module-1', 'writing-1')).toBe('');
-    expect(() => saveDraft(broken, 'module-1', 'writing-1', 'text')).not.toThrow();
-    expect(() => clearDraft(broken, 'module-1', 'writing-1')).not.toThrow();
+    });
+    expect(loadDraft('module-1', 'writing-1')).toBe('');
+    expect(() => saveDraft('module-1', 'writing-1', 'text')).not.toThrow();
+    expect(() => clearDraft('module-1', 'writing-1')).not.toThrow();
   });
 });

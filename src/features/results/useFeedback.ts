@@ -77,13 +77,6 @@ export interface Job {
  */
 const jobs = new Map<string, Job>();
 
-/** What a feedback job needs from outside, injected so tests can pass a store with a fake model. */
-export interface FeedbackDeps {
-  getEngine: () => Promise<FeedbackEngineStore>;
-}
-
-const defaultDeps: FeedbackDeps = { getEngine: getFeedbackEngine };
-
 /** Facts already measured in code, passed to the model so tips don't repeat them. */
 function measuredFacts(attempt: Attempt): string[] {
   if (attempt.skill === 'speaking') {
@@ -147,7 +140,7 @@ function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string
   return { ...prompt, maxTokens: answerTokenBudget(targetWords) };
 }
 
-function startJob(attempt: Attempt, deps: FeedbackDeps): Job {
+function startJob(attempt: Attempt, getEngine: () => Promise<FeedbackEngineStore>): Job {
   let cancelled = false;
   let store: FeedbackEngineStore | null = null;
   const job: Job = {
@@ -191,7 +184,7 @@ function startJob(attempt: Attempt, deps: FeedbackDeps): Job {
       if (!isScorable(attempt.skill, attempt.metrics.wordCount) && getPrompt(await loadModule(attempt.moduleId).catch(forget), attempt.taskTypeId)?.modelAnswer) {
         return { kind: 'sample' };
       }
-      store = await deps.getEngine();
+      store = await getEngine();
       const engine = store;
       const unsubscribe = engine.subscribe(() => {
         const status = engine.getStatus();
@@ -244,14 +237,17 @@ function startJob(attempt: Attempt, deps: FeedbackDeps): Job {
   return job;
 }
 
-/** The running job for this answer, or a new one. Older answers' jobs are stopped and forgotten. */
-export function feedbackJobFor(attempt: Attempt, deps: FeedbackDeps = defaultDeps): Job {
+/**
+ * The running job for this answer, or a new one. Older answers' jobs are stopped and forgotten.
+ * Tests pass `getEngine` to use a store with a fake model.
+ */
+export function feedbackJobFor(attempt: Attempt, getEngine = getFeedbackEngine): Job {
   let job = jobs.get(attempt.id);
   if (!job) {
     // Keep only the latest answer's feedback in memory, and stop work on older ones.
     jobs.forEach((old) => old.cancel());
     jobs.clear();
-    job = startJob(attempt, deps);
+    job = startJob(attempt, getEngine);
     jobs.set(attempt.id, job);
   }
   return job;

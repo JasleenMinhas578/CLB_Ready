@@ -3,55 +3,45 @@
  * would throw an answer away, and keeps a writing draft for this tab only
  * (sessionStorage clears when the tab closes, and nothing is uploaded).
  */
-export interface WorkInProgress {
-  /** The microphone is recording an answer. */
-  recording?: boolean;
-  /** A writing answer is open and not yet submitted. */
-  writing?: boolean;
-  text?: string;
+
+/** True while a writing answer is open and not blank. */
+export function hasUnsavedWork(writing: boolean, text: string): boolean {
+  return writing && text.trim() !== '';
 }
 
-export function hasUnsavedWork({ recording = false, writing = false, text = '' }: WorkInProgress): boolean {
-  return recording || (writing && text.trim() !== '');
+/** Asks the browser to confirm before closing or reloading mid-answer. */
+export function warnBeforeLeaving(event: BeforeUnloadEvent) {
+  event.preventDefault();
 }
-
-/** The parts of Storage a draft needs, so tests can pass a plain fake. */
-export type DraftStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
-
-/** This tab's sessionStorage, looked up on each call: even reading `window.sessionStorage` can throw when storage is blocked. */
-export const tabStorage: DraftStorage = {
-  getItem: (key) => window.sessionStorage.getItem(key),
-  setItem: (key, value) => window.sessionStorage.setItem(key, value),
-  removeItem: (key) => window.sessionStorage.removeItem(key),
-};
 
 function draftKey(moduleId: string, taskTypeId: string): string {
   return `clb-ready:draft:${moduleId}:${taskTypeId}`;
 }
 
-// Storage can throw (private mode, full, or blocked). A draft is a nice-to-have,
+// Storage can throw (private mode, full, or blocked), even when just looking up
+// `sessionStorage`. A draft is a nice-to-have,
 // so any failure just means no draft.
-export function loadDraft(storage: DraftStorage, moduleId: string, taskTypeId: string): string {
+export function loadDraft(moduleId: string, taskTypeId: string): string {
   try {
-    return storage.getItem(draftKey(moduleId, taskTypeId)) ?? '';
+    return sessionStorage.getItem(draftKey(moduleId, taskTypeId)) ?? '';
   } catch {
     return '';
   }
 }
 
-export function saveDraft(storage: DraftStorage, moduleId: string, taskTypeId: string, text: string): void {
+export function saveDraft(moduleId: string, taskTypeId: string, text: string): void {
   try {
     // An empty editor has nothing worth bringing back.
-    if (text.trim()) storage.setItem(draftKey(moduleId, taskTypeId), text);
-    else storage.removeItem(draftKey(moduleId, taskTypeId));
+    if (text.trim()) sessionStorage.setItem(draftKey(moduleId, taskTypeId), text);
+    else sessionStorage.removeItem(draftKey(moduleId, taskTypeId));
   } catch {
     // See above: no draft this time.
   }
 }
 
-export function clearDraft(storage: DraftStorage, moduleId: string, taskTypeId: string): void {
+export function clearDraft(moduleId: string, taskTypeId: string): void {
   try {
-    storage.removeItem(draftKey(moduleId, taskTypeId));
+    sessionStorage.removeItem(draftKey(moduleId, taskTypeId));
   } catch {
     // See above.
   }

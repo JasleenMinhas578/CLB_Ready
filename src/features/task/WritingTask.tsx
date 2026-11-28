@@ -15,12 +15,7 @@ import { ExamBar, TimeRemaining } from './exam/ExamBar';
 import { PromptPanel } from './exam/PromptPanel';
 import { WritingEditor } from './exam/WritingEditor';
 import { ModelPlanBadge } from './ModelPlanBadge';
-import { clearDraft, hasUnsavedWork, loadDraft, saveDraft, tabStorage } from './exam/unsavedWork';
-
-/** Asks the browser to confirm before closing or reloading mid-answer. */
-function warnBeforeLeaving(event: BeforeUnloadEvent) {
-  event.preventDefault();
-}
+import { clearDraft, hasUnsavedWork, loadDraft, saveDraft, warnBeforeLeaving } from './exam/unsavedWork';
 
 /**
  * Resolves after the browser has painted. The grammar check blocks the page,
@@ -47,13 +42,13 @@ interface WritingTaskProps {
 export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: WritingTaskProps) {
   const { goal, setLastAttempt } = useSession();
   // Brings back a draft if the learner left this task earlier in this tab.
-  const [text, setText] = useState(() => loadDraft(tabStorage, moduleId, task.id));
+  const [text, setText] = useState(() => loadDraft(moduleId, task.id));
   const [selected, setSelected] = useState<0 | 1 | null>(null);
   const [state, setState] = useState<'writing' | 'checking'>('writing');
   const [timeUp, setTimeUp] = useState(false);
   const textRef = useRef(text);
   textRef.current = text;
-  const unsaved = hasUnsavedWork({ writing: state === 'writing', text });
+  const unsaved = hasUnsavedWork(state === 'writing', text);
 
   const secondsLeft = useCountdown(task.timing.minutes * 60, state === 'writing' && !timeUp, () => setTimeUp(true));
   const total = getTaskTypesForSkill('writing').length;
@@ -64,7 +59,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
   }, []);
 
   useEffect(() => {
-    if (state === 'writing') saveDraft(tabStorage, moduleId, task.id, text);
+    if (state === 'writing') saveDraft(moduleId, task.id, text);
   }, [state, text, moduleId, task.id]);
 
   useEffect(() => {
@@ -101,7 +96,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
       options: prompt.options,
       metrics,
     });
-    clearDraft(tabStorage, moduleId, task.id);
+    clearDraft(moduleId, task.id);
     navigate('/results');
   };
 
