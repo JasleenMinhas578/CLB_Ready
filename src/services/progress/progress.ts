@@ -52,6 +52,16 @@ export function clearProgress() {
   write({});
 }
 
+/** Progress without the given tasks of one module, so a learner can redo just that module. */
+export function withoutTasks(progress: Progress, moduleId: string, taskIds: string[]): Progress {
+  const drop = new Set(taskIds.map((id) => taskKey(moduleId, id)));
+  return Object.fromEntries(Object.entries(progress).filter(([key]) => !drop.has(key)));
+}
+
+export function clearTasks(moduleId: string, taskIds: string[]) {
+  write(withoutTasks(read(), moduleId, taskIds));
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener);
   // Keep ticks in step when another tab finishes a task.
