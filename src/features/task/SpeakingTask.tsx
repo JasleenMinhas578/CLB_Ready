@@ -254,7 +254,7 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
         action={
           <button
             type="button"
-            className="exam-next"
+            className="exam-next exam-next-fixed exam-next-wide"
             onClick={running ? advance : begin}
             disabled={state === 'transcribing' || state === 'mic-check' || state === 'problem'}
             aria-busy={state === 'transcribing'}
