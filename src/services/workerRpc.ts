@@ -87,7 +87,11 @@ export class WorkerRpc<Req extends Message, Res extends Reply> {
    */
   async unload() {
     if (!this.worker) return;
-    await this.send({ type: 'unload' } as WithoutId<Req>);
-    this.fail(new Error('The model was unloaded before it finished.'));
+    // Stop the worker even if it reports an error while unloading, so its GPU memory is freed.
+    try {
+      await this.send({ type: 'unload' } as WithoutId<Req>);
+    } finally {
+      this.fail(new Error('The model was unloaded before it finished.'));
+    }
   }
 }

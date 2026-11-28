@@ -86,14 +86,20 @@ export function SettingsScreen() {
   const choose = async (next: TierChoice) => {
     setChoice(next);
     setMessage(null);
-    // Free the old models; the new ones load at the next task.
-    await unloadAllModels();
+    // Free the old models; the new ones load at the next task. The workers stop even if
+    // unloading reports an error, so the new choice still applies.
+    try {
+      await unloadAllModels();
+      setMessage('Saved for this visit. New models load when you open your next task.');
+    } catch {
+      setMessage('Saved for this visit. The old models did not close cleanly. If the next task is slow, reload the page.');
+    }
     setTierChoice(next);
-    setMessage('Saved for this visit. New models load when you open your next task.');
   };
 
   const deleteModels = async () => {
-    await unloadAllModels();
+    // The workers stop even if unloading reports an error, so deleting can go ahead.
+    await unloadAllModels().catch(() => undefined);
     try {
       const names = await caches.keys();
       await Promise.all(names.map((name) => caches.delete(name)));

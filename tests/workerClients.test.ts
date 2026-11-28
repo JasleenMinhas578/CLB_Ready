@@ -20,6 +20,8 @@ class FakeWorker extends EventTarget {
   static created: FakeWorker[] = [];
   /** How many of the next workers fail to load, like a 404 on the worker script. */
   static brokenCount = 0;
+  /** When true, the worker answers 'unload' with an error. */
+  static failUnload = false;
   readonly broken: boolean;
   terminated = false;
 
@@ -44,7 +46,8 @@ class FakeWorker extends EventTarget {
       send({ type: 'completed', text: 'Hello', truncated: false, promptTokens: 1, completionTokens: 2 });
       return;
     }
-    const reply = { load: 'loaded', unload: 'unloaded' }[request.type] ?? 'error';
+    const replies: Record<string, string> = { load: 'loaded', unload: FakeWorker.failUnload ? 'error' : 'unloaded' };
+    const reply = replies[request.type] ?? 'error';
     send({ type: reply, message: 'unexpected' });
   }
 
@@ -56,6 +59,7 @@ class FakeWorker extends EventTarget {
 beforeEach(() => {
   FakeWorker.created = [];
   FakeWorker.brokenCount = 0;
+  FakeWorker.failUnload = false;
   vi.stubGlobal('Worker', FakeWorker);
   vi.stubGlobal('document', { baseURI: 'http://localhost/' });
 });
@@ -132,6 +136,16 @@ describe('unloading a worker', () => {
     const rpc = new WorkerRpc<{ id: number; type: string }, { id: number; type: string }>(() => new FakeWorker() as unknown as Worker, 'could not start');
     const waiting = rpc.send({ type: 'hang' });
     await rpc.unload();
+    await expect(waiting).rejects.toThrow('unloaded');
+    expect(FakeWorker.created[0].terminated).toBe(true);
+    expect(rpc.running).toBe(false);
+  });
+
+  it('still stops the worker and rejects waiting requests when unload replies with an error', async () => {
+    FakeWorker.failUnload = true;
+    const rpc = new WorkerRpc<{ id: number; type: string }, { id: number; type: string }>(() => new FakeWorker() as unknown as Worker, 'could not start');
+    const waiting = rpc.send({ type: 'hang' });
+    await expect(rpc.unload()).rejects.toThrow('unexpected');
     await expect(waiting).rejects.toThrow('unloaded');
     expect(FakeWorker.created[0].terminated).toBe(true);
     expect(rpc.running).toBe(false);
