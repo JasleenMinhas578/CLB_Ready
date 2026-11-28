@@ -103,8 +103,8 @@ main:focus { outline: none; }
 /* Pip, the AI coach illustration */
 .pip { display: block; flex: none; }
 
-/* Bars (results and lab). The fill is sky ink, or mint ink once the goal is reached; both are 5.5:1 on the track. */
-.bar { position: relative; height: 12px; background: var(--surface-sunk); border-radius: var(--radius-pill); box-shadow: inset 0 0 0 1px var(--border-soft); }
+/* Bars (results and lab). The fill is sky ink, or mint ink once the goal is reached; both are 7:1 on the track, whose outline is 3:1 or more against the card. */
+.bar { position: relative; height: 12px; background: var(--surface-sunk); border-radius: var(--radius-pill); box-shadow: inset 0 0 0 1px var(--border); }
 .bar-fill { display: block; height: 100%; background: var(--info); border-radius: var(--radius-pill); }
 .bar-fill.is-reached { background: var(--ok); }
 .bar-goal { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 2px; }

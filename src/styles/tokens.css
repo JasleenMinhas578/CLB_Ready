@@ -10,38 +10,39 @@
 /* CLB Ready design tokens. Soft cut-paper for home, practice and results;
    calm and neutral for exam screens (the --exam-* set).
    Pastel tints are fills only. Text sits on them in --ink, --ink-soft or the
-   matching *-ink colour; every pair below is at least 4.5:1. */
+   matching *-ink colour; every text pair below is at least 7:1, and control
+   outlines are at least 3:1 against what they sit on. */
 :root {
   color-scheme: light;
 
   /* Paper: cream pulled toward pear, with a faint grain (see body in base.css) */
-  --bg: oklch(97% 0.014 95);           /* page, #f8f5eb */
-  --surface: oklch(99% 0.006 95);      /* cards and fields, #fdfcf7 */
-  --surface-sunk: oklch(94% 0.02 95);  /* wells, tracks, the footer sheet, #efebdd */
-  --edge: oklch(84% 0.035 90);         /* the card-stock edge under secondary controls */
+  --bg: oklch(96% 0.016 95);           /* page */
+  --surface: oklch(99.5% 0.005 95);    /* cards and fields */
+  --surface-sunk: oklch(92% 0.024 95); /* wells, tracks, the footer sheet */
+  --edge: oklch(78% 0.04 90);          /* the card-stock edge under secondary controls */
 
   /* Ink: blue-black */
-  --ink: oklch(25% 0.035 265);         /* text, 14.7:1 on --bg */
-  --ink-soft: oklch(46% 0.03 265);     /* secondary text, 5.5:1 or more on every tint */
-  --border: oklch(60% 0.025 265);      /* control outlines, 3.6:1 on --bg */
-  --border-soft: oklch(88% 0.02 95);   /* decorative card edges and dividers */
+  --ink: oklch(25% 0.035 265);         /* text, 14:1 or more on every surface */
+  --ink-soft: oklch(38% 0.03 265);     /* secondary text, 7.2:1 or more on every tint and the pear */
+  --border: oklch(52% 0.025 265);      /* control outlines and bar tracks, 4.3:1 or more */
+  --border-soft: oklch(83% 0.025 95);   /* card edges, wells and dividers that only separate surfaces */
 
   /* Primary action: pear card stock with ink text (11.6:1) */
   --accent: oklch(89% 0.11 98);
   --accent-hover: oklch(87% 0.125 97);
   --accent-edge: oklch(76% 0.12 90);   /* the pressed edge under the pear button */
   --accent-ink: var(--ink);            /* text on the accent */
-  /* Blue owns links and the focus ring: 6.3:1 on --bg */
-  --link: oklch(47% 0.15 255);
+  /* Blue owns links and the focus ring: 7.3:1 or more on paper and wells */
+  --link: oklch(40% 0.15 255);
   --focus: var(--link);
 
-  /* Pastel tints and their text colours (text is 5.5:1 or more on its tint and on --bg) */
-  --rose-tint: oklch(93% 0.04 15);     --rose-ink: oklch(48% 0.15 15);
-  --peach-tint: oklch(93% 0.045 55);   --peach-ink: oklch(48% 0.12 50);
-  --butter-tint: oklch(94% 0.07 95);   --butter-ink: oklch(47% 0.1 85);
-  --mint-tint: oklch(93% 0.05 160);    --mint-ink: oklch(46% 0.1 160);
-  --sky-tint: oklch(93% 0.035 240);    --sky-ink: oklch(47% 0.12 250);
-  --lilac-tint: oklch(92% 0.04 295);   --lilac-ink: oklch(47% 0.14 295);
+  /* Pastel tints and their text colours (text is 7.2:1 or more on its tint, the paper and the wells) */
+  --rose-tint: oklch(93% 0.04 15);     --rose-ink: oklch(40% 0.14 15);
+  --peach-tint: oklch(93% 0.045 55);   --peach-ink: oklch(40% 0.11 50);
+  --butter-tint: oklch(94% 0.07 95);   --butter-ink: oklch(39% 0.09 85);
+  --mint-tint: oklch(93% 0.05 160);    --mint-ink: oklch(39% 0.09 160);
+  --sky-tint: oklch(93% 0.035 240);    --sky-ink: oklch(39% 0.12 250);
+  --lilac-tint: oklch(92% 0.04 295);   --lilac-ink: oklch(40% 0.14 295);
 
   /* Meaning. Always pair with an icon or words, never colour alone. */
   --ok: var(--mint-ink);     --ok-bg: var(--mint-tint);
@@ -59,10 +60,10 @@
   --exam-bg: oklch(95.5% 0.006 295);
   --exam-surface: oklch(99.6% 0.002 295);
   --exam-sunk: oklch(97.2% 0.004 295);
-  --exam-line: oklch(84% 0.012 295);         /* panel edges */
-  --exam-line-strong: oklch(63% 0.016 295);  /* field outlines, 3.3:1 on the surface */
+  --exam-line: oklch(80% 0.012 295);         /* panel edges */
+  --exam-line-strong: oklch(56% 0.016 295);  /* field outlines, 4:1 or more */
   --exam-ink: oklch(24% 0.014 295);
-  --exam-soft: oklch(44% 0.02 295);          /* 6.6:1 on --exam-bg */
+  --exam-soft: oklch(39% 0.02 295);          /* 8.4:1 or more on every exam surface */
   --exam-accent: oklch(34% 0.04 295);        /* top bar, selected tab, primary button; light text 11:1 */
   --exam-rec: oklch(53% 0.18 15);            /* recording dot and answer timer, 5:1 on the surface */
   /* Light lines on the dark exam bar, and the dim behind the exit dialog */
