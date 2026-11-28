@@ -72,7 +72,7 @@ export function HomeScreen() {
           <ul className="fact-list">
             <li>
               <h3><Icon name="tick" />Free, with nothing to sign up for</h3>
-              <p>Start your first task in seconds. No account, no payment, no limit on practice. Teachers and settlement programs can share it with a whole class.</p>
+              <p>Start practising right away. No account, no payment, no limit on practice. Teachers and settlement programs can share it with a whole class.</p>
             </li>
             <li>
               <h3><Icon name="lock" />Your own coach, right in your browser</h3>
