@@ -1,7 +1,7 @@
 import { env } from '@huggingface/transformers';
 import { KokoroTTS } from 'kokoro-js';
 import type { KokoroRequest, KokoroResponse } from './kokoro.protocol';
-import { useLocalOnnxRuntime } from '@/services/ai/onnxRuntime';
+import { serveOnnxRuntimeLocally } from '@/services/ai/onnxRuntime';
 import { averageProgress, type ProgressEvent } from '@/services/ai/downloadProgress';
 import { KOKORO_MODEL, KOKORO_SHA } from '@/services/modelPins';
 
@@ -10,7 +10,7 @@ import { KOKORO_MODEL, KOKORO_SHA } from '@/services/modelPins';
  * page stays smooth while voices are made. The model is downloaded once
  * from Hugging Face and then served from the browser cache.
  */
-useLocalOnnxRuntime();
+serveOnnxRuntimeLocally();
 
 // kokoro-js drops the `revision` option, so pin the commit in the download path instead.
 // This worker only loads Kokoro, so changing it for the whole worker is safe.

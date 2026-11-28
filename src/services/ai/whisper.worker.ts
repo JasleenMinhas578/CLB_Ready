@@ -1,10 +1,10 @@
 import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
 import type { WhisperRequest, WhisperResponse } from './whisper.protocol';
-import { useLocalOnnxRuntime } from './onnxRuntime';
+import { serveOnnxRuntimeLocally } from './onnxRuntime';
 import { averageProgress, type ProgressEvent } from './downloadProgress';
 import { WHISPER_SHAS } from '@/services/modelPins';
 
-useLocalOnnxRuntime();
+serveOnnxRuntimeLocally();
 
 // Runs off the main thread so the page never freezes while transcribing.
 // Typed loosely: the DOM and WebWorker type libraries can't be mixed in one project.
