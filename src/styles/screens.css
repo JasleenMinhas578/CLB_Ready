@@ -68,7 +68,7 @@
 /* Skill tiles: each skill on its own pastel card stock, the edge a shade deeper */
 .skill-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3); }
 .skill-card {
-  --tile-edge: color-mix(in oklab, var(--skill-ink) 28%, var(--skill-tint));
+  --tile-edge: color-mix(in oklab, var(--skill-ink) 40%, var(--skill-tint));
   display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-2); align-items: start; height: 100%;
   padding: var(--gap-3);
   background: var(--skill-tint); color: var(--ink); border-radius: var(--radius-lg); text-decoration: none;
@@ -83,7 +83,7 @@
 .skill-text span { color: var(--ink); text-wrap: pretty; }
 .skill-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-1) var(--gap-3); }
 .skill-progress { flex: 1 1 12rem; max-width: 20rem; display: grid; gap: 0.35rem; }
-.skill-progress .bar { height: 8px; background: var(--surface); box-shadow: none; }
+.skill-progress .bar { height: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--skill-ink) 70%, var(--skill-tint)); }
 .skill-progress .bar-fill { background: var(--skill-ink); }
 .skill-progress small { font-size: var(--step--1); font-weight: 800; color: var(--skill-ink); }
 .skill-go { display: inline-flex; align-items: center; gap: var(--gap-1); font-weight: 800; color: var(--skill-ink); }
@@ -270,7 +270,7 @@
 .level-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-1); margin-bottom: var(--gap-1); }
 .level-pair > div {
   display: flex; flex-direction: column; align-items: center; gap: 0.15rem; padding: var(--gap-2);
-  background: var(--surface-sunk); border-radius: var(--radius-sm);
+  background: var(--surface-sunk); border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1px var(--border-soft);
 }
 .level-pair span { font-weight: 800; font-size: var(--step--1); text-align: center; color: var(--ink-soft); }
 .level-pair strong { font-family: var(--font-display); font-size: var(--step-3); line-height: 1.1; font-variant-numeric: tabular-nums; }
