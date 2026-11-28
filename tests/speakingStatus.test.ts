@@ -1,20 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { speakingActionLabel, speakingExitWarning } from '../src/features/task/exam/speakingStatus';
+import { afterMicOpened, speakingActionDisabled, speakingActionLabel, speakingExitWarning } from '../src/features/task/exam/speakingStatus';
 import { startUnlessLeft } from '../src/features/task/useAnswerRecorder';
 import type { RecordingSession } from '../src/services/audio/recorder';
 
 describe('speaking exam bar', () => {
-  it('says the answer is saving instead of showing a disabled Next', () => {
-    expect(speakingActionLabel('transcribing', 'answer')).toBe('Saving…');
+  it('says the answer is being checked instead of showing a disabled Next', () => {
+    expect(speakingActionLabel('transcribing', 'answer')).toBe('Checking…');
     expect(speakingActionLabel('running', 'answer')).toBe('Finish answer');
     expect(speakingActionLabel('running', 'prep')).toBe('Skip');
     expect(speakingActionLabel('ready', 'prep')).toBe('Start');
     expect(speakingActionLabel('mic-check', 'prep')).toBe('Next');
   });
 
-  it('warns before Exit while recording or while the answer is being saved', () => {
+  it('keeps Finish off until the mic is recording', () => {
+    expect(speakingActionDisabled('running', 'answer', false)).toBe(true);
+    expect(speakingActionDisabled('running', 'answer', true)).toBe(false);
+    expect(speakingActionDisabled('running', 'prep', false)).toBe(false);
+    expect(speakingActionDisabled('ready', 'prep', false)).toBe(false);
+    expect(speakingActionDisabled('transcribing', 'answer', false)).toBe(true);
+  });
+
+  it('turns the mic off when the answer ended while it was opening', () => {
+    expect(afterMicOpened(true, 'running')).toBe('record');
+    expect(afterMicOpened(true, 'transcribing')).toBe('stop');
+    expect(afterMicOpened(true, 'ready')).toBe('stop');
+    expect(afterMicOpened(false, 'running')).toBe('problem');
+  });
+
+  it('warns before Exit while recording or while the answer is being checked', () => {
     expect(speakingExitWarning('running', true)).toMatch(/recording/);
-    expect(speakingExitWarning('transcribing', false)).toMatch(/still being saved/);
+    expect(speakingExitWarning('transcribing', false)).toMatch(/still being checked/);
     expect(speakingExitWarning('running', false)).toBeUndefined();
     expect(speakingExitWarning('ready', false)).toBeUndefined();
   });
