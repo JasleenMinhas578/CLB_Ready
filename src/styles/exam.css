@@ -5,10 +5,13 @@
      margins grow, not the gap between the task and its controls. */
   --exam-width: 75rem;
   --exam-inset: max(var(--gutter), (100% - var(--exam-width)) / 2);
-  min-height: 100vh; background: var(--exam-bg); color: var(--exam-ink);
+  min-height: 100vh; min-height: 100dvh; background: var(--exam-bg); color: var(--exam-ink);
+  display: flex; flex-direction: column;
 }
-/* No stretching: the notes sit right under the task, not at the foot of an empty screen. */
-.exam-main { width: 100%; max-width: none; margin: 0; padding: 0; }
+/* The task fills the screen, so the notes and the disclaimer stay at the foot of the window. */
+.exam-main { flex: 1 0 auto; display: flex; flex-direction: column; width: 100%; max-width: none; margin: 0; padding: 0; }
+.exam-screen { flex: 1 0 auto; display: flex; flex-direction: column; }
+.exam-screen > .exam-meta { margin-top: auto; padding-top: var(--gap-3); }
 .exam-main:focus { outline: none; }
 .exam-body, .exam-meta, .exam-instructions, .exam-tabs, .exam-footnote { padding-inline: var(--exam-inset); }
 .exam-footnote {
