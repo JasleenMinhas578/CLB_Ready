@@ -70,8 +70,9 @@ code {
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
-  border-radius: 8px;
 }
+/* The ring follows each control's own corners; only bare links get a softened one. */
+a:not([class]):focus-visible { border-radius: 4px; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

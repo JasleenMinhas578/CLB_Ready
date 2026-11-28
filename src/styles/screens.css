@@ -104,11 +104,11 @@
 .goal-option {
   display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; text-align: left;
   padding: var(--gap-3); background: var(--surface); border: 0; border-radius: var(--radius-md); color: var(--ink); cursor: pointer;
-  box-shadow: inset 0 0 0 1px var(--border-soft), 0 var(--stock-edge) 0 0 var(--edge);
+  box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge) 0 0 var(--edge);
   transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
-.goal-option:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border-soft), 0 var(--stock-edge-up) 0 0 var(--edge); }
-.goal-option:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border-soft), 0 var(--stock-edge-down) 0 0 var(--edge); }
+.goal-option:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
+.goal-option:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
 .goal-option.is-selected { background: var(--mint-tint); box-shadow: inset 0 0 0 2px var(--mint-ink), 0 var(--stock-edge) 0 0 var(--mint-ink); }
 .goal-level { font-family: var(--font-display); font-size: var(--step-2); font-weight: 600; letter-spacing: var(--tracking-display); }
 .goal-label { font-weight: 800; }
@@ -130,13 +130,13 @@
 .module-tabs { display: flex; flex-wrap: wrap; gap: var(--gap-2) var(--gap-1); margin-bottom: var(--gap-4); }
 .module-tab {
   display: inline-flex; align-items: center; gap: var(--gap-1); min-height: 44px; padding: 0 var(--gap-2); white-space: nowrap;
-  font-weight: 800; color: var(--ink); text-decoration: none;
+  font-weight: 800; font-size: var(--step--1); color: var(--ink); text-decoration: none;
   background: var(--surface); border-radius: var(--radius-md);
-  box-shadow: inset 0 0 0 1px var(--border-soft), 0 var(--stock-edge) 0 0 var(--edge);
+  box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge) 0 0 var(--edge);
   transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
-.module-tab:hover { color: var(--ink); transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border-soft), 0 var(--stock-edge-up) 0 0 var(--edge); }
-.module-tab:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border-soft), 0 var(--stock-edge-down) 0 0 var(--edge); }
+.module-tab:hover { color: var(--ink); transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
+.module-tab:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
 .module-tab.is-current, .module-tab.is-current:hover { background: var(--ink); color: var(--bg); transform: translateY(3px); box-shadow: 0 var(--stock-edge-down) 0 0 var(--ink); }
 .module-count {
   padding: 0 var(--gap-1); font-size: 0.8125rem; font-weight: 800;
@@ -345,7 +345,8 @@
 .tier-option:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
 .tier-option:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
 .tier-option.is-selected, .tier-option.is-selected:hover:not(:disabled) { background: var(--mint-tint); box-shadow: inset 0 0 0 2px var(--mint-ink), 0 var(--stock-edge) 0 0 var(--mint-ink); }
-.tier-option:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: inset 0 0 0 1px var(--border); }
+/* Unavailable here: flat and sunk into the paper, text still readable, and the card says why. */
+.tier-option:disabled { cursor: not-allowed; background: var(--surface-sunk); box-shadow: inset 0 0 0 1px var(--border-soft); }
 .tier-option strong { font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; }
 .tier-option span { color: var(--ink-soft); }
 .tier-option small { font-weight: 800; font-size: var(--step--1); }
@@ -374,8 +375,8 @@
 .improved-head h2 { margin: 0; }
 .view-switch { display: inline-flex; padding: 4px; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-pill); }
 .view-switch button {
-  min-height: 44px; padding: 0.3rem 0.9rem; border: 0; border-radius: var(--radius-pill); background: transparent;
-  font: 800 0.9rem var(--font-body); color: var(--ink); cursor: pointer;
+  min-height: 44px; padding: 0 var(--gap-2); border: 0; border-radius: var(--radius-pill); background: transparent;
+  font: 800 var(--step--1) var(--font-body); color: var(--ink); cursor: pointer;
 }
 .view-switch button:hover { background: var(--surface-sunk); }
 .view-switch button[aria-pressed='true'] { background: var(--ink); color: var(--bg); }
@@ -458,7 +459,7 @@
 .sample-text { white-space: pre-line; }
 .sample-notes-title { margin: var(--gap-2) 0 var(--gap-1); font-family: var(--font-body); font-size: 1rem; font-weight: 800; }
 .sample-notes { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; }
-.btn-small { min-height: 44px; padding: 0.35rem 1rem; font-size: 0.95rem; }
+.btn-small { min-height: 44px; padding: 0 var(--gap-2); font-size: 1rem; }
 
 /* Notes under a list need a little air above them. */
 .checklist + .fine-print, .issue-groups + .fine-print { margin-top: var(--gap-2); }

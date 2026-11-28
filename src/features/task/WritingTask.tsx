@@ -116,7 +116,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
         exitWarning={unsaved ? 'Your writing is kept in this tab. It comes back when you open this task again, but the timer starts over.' : undefined}
         status={<TimeRemaining seconds={secondsLeft} totalSeconds={task.timing.minutes * 60} warnBelow={300} />}
         action={
-          <button type="button" className="exam-next" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'} aria-busy={state === 'checking'}>
+          <button type="button" className="exam-next exam-next-fixed" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'} aria-busy={state === 'checking'}>
             {state === 'checking' && <span className="spinner" aria-hidden="true" />}
             {state === 'checking' ? 'Checking…' : 'Next'}
           </button>
