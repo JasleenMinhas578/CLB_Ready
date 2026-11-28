@@ -15,6 +15,13 @@ export type Scores<K extends string = SpeakingCriterionId> = Record<K, number>;
 export const MIN_LEVEL = 4;
 export const MAX_LEVEL = 12;
 
+/**
+ * Criteria about meaning: does the answer say sensible things about this task?
+ * Code can count linking words and seconds but can't judge meaning, so only the
+ * AI model scores these on screen. Code's numbers for them are only blended in.
+ */
+export const MEANING_CRITERIA: readonly string[] = ['content', 'task'];
+
 /** Share of each final score that comes from the AI model (the rest from code). */
 export type ScoringWeights<K extends string = SpeakingCriterionId> = Record<K, number>;
 export const DEFAULT_SPEAKING_WEIGHTS: ScoringWeights = {

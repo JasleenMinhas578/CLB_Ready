@@ -15,87 +15,139 @@
   background: var(--skill-tint); color: var(--skill-ink);
 }
 
-/* Home: the headline on the left, the next task as a card-stock ticket on the right */
-.home-hero {
-  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--gap-5); align-items: center;
-  padding: var(--gap-5) 0 var(--gap-6);
+/* Home: two spreads on one two-column grid, so every left and right edge on the page lines up.
+   The first is the two ways in: the next task and the facts under the headline, the skills beside them.
+   The second is what you get: a short intro beside an example of feedback. Columns start at the top. */
+.home-spread {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-4) var(--gap-5); align-items: start;
 }
-.home-copy h1 { font-size: var(--step-4); line-height: 1.04; max-width: 14ch; margin-bottom: var(--gap-3); }
-.home-lede { font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 36ch; margin: 0; }
+/* The skills span both rows so the facts tuck under the next-task card. Source order stays
+   start, skills, facts, which is also the order on phones. */
+.home-top { grid-template-areas: 'start skills' 'facts skills'; grid-template-rows: auto 1fr; }
+.home-start { grid-area: start; }
+.home-skills { grid-area: skills; }
+.home-facts { grid-area: facts; }
+.home-top { padding: var(--gap-3) 0 var(--gap-5); }
+.home-more { padding-top: var(--gap-5); border-top: 1px solid var(--border-soft); }
+.home-spread h2 { font-size: var(--step-2); margin: 0 0 var(--gap-2); }
+.home-facts h2 { font-size: var(--step-1); }
+.home-start h1 {
+  font-size: var(--step-4); line-height: 1.06; margin-bottom: var(--gap-2);
+  text-wrap: balance; overflow-wrap: break-word; min-width: 0;
+}
+.home-lede { font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 40ch; margin: 0 0 var(--gap-3); }
+/* "Pick a skill" sits a little lower than the headline, so the tiles start level with the next-task card. */
+.home-skills { padding-top: var(--gap-1); }
 
 .next-card {
-  position: relative; display: grid; justify-items: start; gap: var(--gap-1);
-  padding: var(--gap-4) var(--gap-4) var(--gap-3);
+  display: grid; gap: var(--gap-3); padding: var(--gap-3);
   background: var(--surface); border-radius: var(--radius-lg);
   box-shadow: inset 0 0 0 1px var(--border-soft), 0 6px 0 0 var(--edge), var(--shadow-card);
 }
-.next-card .skill-badge { margin-bottom: var(--gap-1); }
-.next-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-3); line-height: 1.05; letter-spacing: var(--tracking-display); }
-.next-where { margin: 0 0 var(--gap-2); font-weight: 700; color: var(--ink-soft); }
-.next-start { min-height: 56px; padding-inline: var(--gap-4); font-size: 1.2rem; }
-.home-goal { margin: var(--gap-2) 0 0; padding-top: var(--gap-2); border-top: 1px solid var(--border-soft); justify-self: stretch; font-size: var(--step--1); color: var(--ink-soft); }
-
-/* Pip, your AI coach: one mint sheet, Pip beside the words */
-.pip-intro {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--gap-4); align-items: center;
-  padding: var(--gap-4) var(--gap-5);
-  background: var(--grain), var(--mint-tint); border-radius: var(--radius-lg);
+.next-head { display: flex; align-items: center; gap: var(--gap-2); }
+.next-pip { flex: none; margin-left: auto; }
+.next-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.1; letter-spacing: var(--tracking-display); }
+.next-where { margin: 0.2rem 0 0; font-weight: 700; color: var(--ink-soft); }
+.next-start { width: 100%; min-height: 56px; padding-inline: var(--gap-3); font-size: 1.2rem; }
+.next-foot {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-1) var(--gap-2);
+  padding-top: var(--gap-2); border-top: 1px solid var(--border-soft);
 }
-.pip-intro .pip { grid-row: span 2; }
-.pip-intro h2 { font-size: var(--step-3); margin: 0 0 var(--gap-1); align-self: end; }
-.pip-intro p { margin: 0; color: var(--ink); align-self: start; font-size: var(--step-1); line-height: 1.5; max-width: 52ch; }
+.next-foot p { margin: 0; font-size: var(--step--1); }
+.home-goal { color: var(--ink-soft); }
+.home-done { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 800; color: var(--ink); }
+.home-done .icon { color: var(--mint-ink); }
 
-.home-section { margin-top: var(--gap-6); }
-.home-section > h2 { font-size: var(--step-3); margin-bottom: var(--gap-4); }
-
-/* Skill tiles: each skill on its own pastel card stock, the edge a shade deeper */
-.skill-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3); }
+/* Skill tiles: a column of pastel card stock, one per skill, the edge a shade deeper */
+.skill-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-2); }
 .skill-card {
-  --tile-edge: color-mix(in oklab, var(--skill-ink) 28%, var(--skill-tint));
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--gap-1) var(--gap-2); align-items: center; height: 100%;
-  padding: var(--gap-3) var(--gap-4) var(--gap-3) var(--gap-3);
-  background: var(--skill-tint); color: var(--ink); border-radius: var(--radius-lg); text-decoration: none;
+  --tile-edge: color-mix(in oklab, var(--skill-ink) 40%, var(--skill-tint));
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-1) var(--gap-2); align-items: center;
+  padding: var(--gap-2) var(--gap-3);
+  background: var(--skill-tint); color: var(--ink); border-radius: var(--radius-md); text-decoration: none;
   box-shadow: 0 var(--stock-edge) 0 0 var(--tile-edge);
   transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 .skill-card:hover { color: var(--ink); transform: translateY(-1px); box-shadow: 0 var(--stock-edge-up) 0 0 var(--tile-edge); }
 .skill-card:active { transform: translateY(3px); box-shadow: 0 var(--stock-edge-down) 0 0 var(--tile-edge); }
-.skill-card .skill-badge { background: var(--surface); }
-.skill-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
-.skill-text strong { font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.15; letter-spacing: var(--tracking-display); }
+.skill-card .skill-badge { width: 48px; height: 48px; background: var(--surface); }
+.skill-text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.skill-text strong { font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.2; letter-spacing: var(--tracking-display); }
 .skill-text span { color: var(--ink); text-wrap: pretty; }
-.skill-text small { margin-top: var(--gap-1); font-size: var(--step--1); font-weight: 800; color: var(--skill-ink); }
-.skill-card > .icon { color: var(--skill-ink); width: var(--icon-lg); height: var(--icon-lg); }
+/* The foot lines up under the text, not under the badge. */
+.skill-foot { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap-1) var(--gap-3); }
+.skill-progress { flex: 1 1 10rem; max-width: 16rem; display: grid; gap: 0.3rem; }
+.skill-progress .bar { height: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--skill-ink) 70%, var(--skill-tint)); }
+.skill-progress .bar-fill { background: var(--skill-ink); }
+.skill-progress small { font-size: var(--step--1); font-weight: 800; color: var(--skill-ink); }
+.skill-go { display: inline-flex; align-items: center; gap: var(--gap-1); font-weight: 800; color: var(--skill-ink); }
 
-/* Good to know: a ruled list, the point on the left and the detail on the right */
-.home-facts dl { margin: 0; max-width: 1080px; border-top: 1px solid var(--border-soft); }
-.home-facts dl > div {
-  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--gap-1) var(--gap-4);
-  padding: var(--gap-3) 0; border-bottom: 1px solid var(--border-soft);
+/* What you see after each task: the intro on the left, the results card, level pair and bar at the size they have on results */
+.home-intro { font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: 36ch; margin: 0; }
+.example-card { margin: 0; }
+.example-card figcaption { margin-bottom: var(--gap-2); font-size: var(--step--1); font-weight: 800; color: var(--ink-soft); }
+.example-card .level-pair { margin-bottom: var(--gap-3); }
+.example-card .level-pair .is-level { background: var(--speaking-tint); }
+.example-card .example-tip {
+  display: flex; gap: var(--gap-1); align-items: flex-start; max-width: none; margin: var(--gap-3) 0 0; padding: var(--gap-2);
+  background: var(--surface-sunk); border-radius: var(--radius-sm); color: var(--ink);
 }
-.home-facts dt { font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.15; letter-spacing: var(--tracking-display); }
-.home-facts dd { margin: 0; color: var(--ink-soft); max-width: var(--text-width); text-wrap: pretty; font-size: 1.125rem; }
+.example-tip .icon { flex: none; margin-top: 0.2rem; color: var(--speaking-ink); }
+/* Goal picker in the next-task card: one tap sets the level feedback aims at. */
+.home-goal-pick { margin: 0; padding: 0; border: 0; min-width: 0; }
+.home-goal-pick legend { padding: 0; margin-bottom: var(--gap-1); font-weight: 800; font-size: var(--step--1); color: var(--ink); }
+.goal-chips { display: flex; flex-wrap: wrap; gap: var(--gap-1); }
+.goal-chip {
+  position: relative; display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0 var(--gap-1);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface);
+  font-weight: 800; color: var(--ink); cursor: pointer;
+}
+.goal-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.goal-chip:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.goal-chip.is-selected { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.home-goal-pick .home-goal { margin: var(--gap-1) 0 0; }
+/* The example: numbered points on the left match numbered parts of the card. */
+.example-intro { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-3); }
+.example-intro .home-intro { margin: 0; }
+.example-points { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-3); }
+.example-points li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-2); align-items: start; }
+.example-points h3 { margin: 0 0 var(--gap-1); font-size: var(--step-1); }
+.example-points p { margin: 0; color: var(--ink-soft); max-width: var(--text-width); }
+.example-marker {
+  display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 50%;
+  font-weight: 800; font-size: var(--step--1); color: var(--accent-ink); background: var(--accent);
+}
+.example-part { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gap-2); align-items: start; }
+.example-part + .example-part { margin-top: var(--gap-3); }
+.example-scores { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-2); }
+
+/* Practise more, worry less: two short facts side by side under the next-task card, each led by a small icon */
+.fact-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3); }
+.fact-list h3 {
+  display: flex; align-items: flex-start; gap: var(--gap-1); margin: 0 0 0.25rem;
+  font-family: var(--font-body); font-weight: 800; font-size: var(--step-0); line-height: 1.3;
+}
+.fact-list h3 .icon { flex: none; margin-top: 0.2rem; }
+.fact-list p { margin: 0; color: var(--ink-soft); text-wrap: pretty; }
 
 @media (max-width: 900px) {
-  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gap-4); padding: var(--gap-3) 0 var(--gap-5); }
-  .pip-intro { padding: var(--gap-4) var(--gap-3); column-gap: var(--gap-3); }
-  .home-facts dl > div { grid-template-columns: minmax(0, 1fr); }
+  .home-spread { grid-template-columns: minmax(0, 1fr); }
+  .home-top { grid-template-areas: 'start' 'skills' 'facts'; grid-template-rows: none; }
+  .home-skills { padding-top: 0; }
 }
 @media (max-width: 640px) {
-  .next-card { padding: var(--gap-3); }
-  .next-start { width: 100%; }
-  .pip-intro { grid-template-columns: minmax(0, 1fr); padding: var(--gap-3); }
-  .pip-intro .pip { grid-row: auto; width: 88px; height: 88px; margin-bottom: var(--gap-1); }
-  .pip-intro h2, .home-section > h2 { font-size: var(--step-2); }
-  .pip-intro p { font-size: var(--step-0); }
-  .skill-list { grid-template-columns: minmax(0, 1fr); gap: var(--gap-2); }
-  .skill-card { grid-template-columns: auto minmax(0, 1fr); align-items: start; padding: var(--gap-2) var(--gap-3) var(--gap-2) var(--gap-2); }
-  .skill-card .skill-badge { width: 48px; height: 48px; }
-  .skill-card > .icon { display: none; }
-  .home-section { margin-top: var(--gap-5); }
+  .home-top { padding: var(--gap-2) 0 var(--gap-4); }
+  .home-more { padding-top: var(--gap-4); }
+  .home-lede, .home-intro { font-size: var(--step-0); }
+  .home-lede { margin-bottom: var(--gap-2); }
+  .next-card { padding: var(--gap-2); gap: var(--gap-2); }
+  .next-head { gap: var(--gap-1) 0.75rem; }
+  .next-card .skill-badge, .next-pip { width: 44px; height: 44px; }
+  .skill-card { padding: var(--gap-2); }
+  .fact-list { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* Goal picker: card-stock options, the chosen one in mint */
+/* Goal picker: card-stock options, the chosen one in lavender and violet */
 .goal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-3) var(--gap-2); }
 .goal-option {
   display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; text-align: left;
@@ -105,11 +157,11 @@
 }
 .goal-option:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
 .goal-option:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
-.goal-option.is-selected { background: var(--mint-tint); box-shadow: inset 0 0 0 2px var(--mint-ink), 0 var(--stock-edge) 0 0 var(--mint-ink); }
+.goal-option.is-selected { background: var(--lilac-tint); box-shadow: inset 0 0 0 2px var(--lilac-ink), 0 var(--stock-edge) 0 0 var(--lilac-ink); }
 .goal-level { font-family: var(--font-display); font-size: var(--step-2); font-weight: 600; letter-spacing: var(--tracking-display); }
 .goal-label { font-weight: 800; }
 .goal-hint { font-size: var(--step--1); color: var(--ink-soft); }
-.goal-current { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: var(--gap-1); font-size: var(--step--1); font-weight: 800; color: var(--mint-ink); }
+.goal-current { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: var(--gap-1); font-size: var(--step--1); font-weight: 800; color: var(--lilac-ink); }
 .narrow > .fine-print { margin-top: var(--gap-4); }
 
 /* Skill screen */
@@ -144,9 +196,11 @@
   background: var(--mint-tint); border-radius: var(--radius-lg); font-weight: 700;
 }
 .module-done > .icon { color: var(--mint-ink); }
+.module-reset { margin-top: var(--gap-4); }
+.module-reset p { margin: 0 0 var(--gap-2); max-width: var(--text-width); }
 .module-done p { margin: 0; flex: 1 1 16rem; }
 
-/* Task rows: lighter paper with a hairline; the next task is pear card stock. */
+/* Task rows: lighter paper with a hairline; the next task is lavender card stock. */
 .task-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-2); }
 .task-row {
   display: flex; align-items: center; gap: var(--gap-2); height: 100%; padding: var(--gap-2) var(--gap-3);
@@ -172,8 +226,8 @@
 }
 .task-done { color: var(--mint-ink); background: var(--mint-tint); }
 .task-row.is-done .task-number { background: var(--mint-tint); color: var(--mint-ink); }
-/* The next unfinished task is the clear next step: pear card stock, a Start label. */
-.task-row.is-next { background: var(--accent); box-shadow: 0 var(--stock-edge) 0 0 var(--accent-edge); }
+/* The next unfinished task is the clear next step: lavender card stock on the violet edge, a Start label. */
+.task-row.is-next { background: var(--lilac-tint); box-shadow: 0 var(--stock-edge) 0 0 var(--accent-edge); }
 .task-row.is-next:hover { box-shadow: inset 0 0 0 2px var(--accent-edge), 0 var(--stock-edge) 0 0 var(--accent-edge); }
 .task-row.is-next .task-text > span { color: var(--ink); }
 .task-row.is-next .task-number, .task-start { background: var(--surface); color: var(--ink); }
@@ -248,9 +302,10 @@
 .level-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-1); margin-bottom: var(--gap-1); }
 .level-pair > div {
   display: flex; flex-direction: column; align-items: center; gap: 0.15rem; padding: var(--gap-2);
-  background: var(--surface-sunk); border-radius: var(--radius-sm);
+  background: var(--surface-sunk); border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1px var(--border-soft);
 }
 .level-pair span { font-weight: 800; font-size: var(--step--1); text-align: center; color: var(--ink-soft); }
+.level-pending { margin: 0; font-size: var(--step--1); text-align: center; color: var(--ink-soft); }
 .level-pair strong { font-family: var(--font-display); font-size: var(--step-3); line-height: 1.1; font-variant-numeric: tabular-nums; }
 .results-speaking .level-pair .is-level { background: var(--speaking-tint); }
 .results-writing .level-pair .is-level { background: var(--writing-tint); }
@@ -340,7 +395,7 @@
 }
 .tier-option:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-up) 0 0 var(--edge); }
 .tier-option:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--border), 0 var(--stock-edge-down) 0 0 var(--edge); }
-.tier-option.is-selected, .tier-option.is-selected:hover:not(:disabled) { background: var(--mint-tint); box-shadow: inset 0 0 0 2px var(--mint-ink), 0 var(--stock-edge) 0 0 var(--mint-ink); }
+.tier-option.is-selected, .tier-option.is-selected:hover:not(:disabled) { background: var(--lilac-tint); box-shadow: inset 0 0 0 2px var(--lilac-ink), 0 var(--stock-edge) 0 0 var(--lilac-ink); }
 /* Unavailable here: flat and sunk into the paper, text still readable, and the card says why. */
 .tier-option:disabled { cursor: not-allowed; background: var(--surface-sunk); box-shadow: inset 0 0 0 1px var(--border-soft); }
 .tier-option strong { font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; }
@@ -376,7 +431,7 @@
 }
 .view-switch button:hover { background: var(--surface-sunk); }
 .view-switch button[aria-pressed='true'] { background: var(--ink); color: var(--bg); }
-/* Added words: mint with mint ink (5.6:1). Cut words: rose with rose ink (5.8:1), struck through so colour isn't the only sign. */
+/* Added words: mint with mint ink. Cut words: rose with rose ink (both 7:1 or more), struck through so colour isn't the only sign. */
 .diff-text { white-space: pre-line; line-height: 1.85; }
 .diff-added, .fix-new { color: var(--ok); background: var(--ok-bg); text-decoration: none; padding: 0.05em 0.2em; border-radius: 5px; }
 .diff-removed, .fix-old { color: var(--bad); background: var(--bad-bg); text-decoration: line-through; text-decoration-thickness: 2px; padding: 0.05em 0.2em; border-radius: 5px; }
@@ -419,16 +474,46 @@
 @media (min-width: 1100px) {
   /* Score card on the left, so the level is the first thing read. */
   .results-grid { grid-template-columns: minmax(380px, 1fr) minmax(0, 1.6fr); }
-  .results-side .measure-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .results-side .perf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The detail cards run full width under the columns, so their tiles can sit in one or two rows. */
+  /* Even rows: speaking always has 6 tiles, writing 7 or 8. */
+  .results > .results-card .measure-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .results-speaking > .results-card .measure-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .results > .perf-card .perf-grid { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
   .task-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .narrow { max-width: 960px; }
 
+/* Scored results at desktop width: ResultsBody renders two even columns from 1100px, one stack below that. */
+.results-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gap-3); align-items: start; }
+.results-columns > div { min-width: 0; }
+
+/* Pip at work: a slow bob and three pulsing dots, transform and opacity only. Reduced motion: Pip still, no dots. */
+.pip-working { display: inline-flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: none; }
+.pip-working .pip { animation: pip-bob 2.4s ease-in-out infinite; }
+.pip-dots { display: flex; gap: 4px; }
+.pip-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--lilac-ink); animation: pip-dot 1.2s ease-in-out infinite; }
+.pip-dots span:nth-child(2) { animation-delay: 0.2s; }
+.pip-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pip-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes pip-dot { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .pip-working .pip { animation: none; }
+  .pip-dots { display: none; }
+}
+
+/* One sky panel stands in for everything Pip decides until step 1 is done. */
+.processing-card { background: var(--info-bg); border-color: transparent; }
+.processing-head { display: flex; gap: var(--gap-2); align-items: flex-start; margin-bottom: var(--gap-1); }
+.processing-head h2 { margin: 0 0 0.25rem; }
+.processing-step { margin: 0; font-weight: 800; }
+.processing-card .bar { margin-bottom: var(--gap-1); background: var(--surface); }
+.processing-card .fine-print { margin: 0 0 var(--gap-1); }
+.processing-card .fine-print:last-child { margin-bottom: 0; }
+
 /* The improved answer as it's written: a blinking caret marks where Pip is. */
 .improved-card.is-writing .ai-status { margin: 0 0 var(--gap-2); }
 .streaming-text { white-space: pre-wrap; }
-.streaming-text::after { content: ''; display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; vertical-align: -0.2em; background: var(--accent-ink); }
+.streaming-text::after { content: ''; display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; vertical-align: -0.2em; background: var(--ink); }
 
 /* Reading and listening results */
 .goal-line { margin: var(--gap-2) 0 var(--gap-1); font-weight: 800; }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FeedbackEngineStore } from '../src/services/ai/feedbackEngine';
-import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, answerTokenBudget, buildFeedbackPrompt, buildRewritePrompt, cleanTip, parseFeedback } from '../src/services/ai/feedbackPrompt';
+import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, answerTokenBudget, buildFeedbackPrompt, buildRewritePrompt, cleanTip, parseFeedback, OFF_TASK_FALLBACK } from '../src/services/ai/feedbackPrompt';
 import type { ModelPlan } from '../src/services/device/tier';
 import type { FeedbackModel } from '../src/services/ai/types';
 
@@ -38,6 +38,15 @@ describe('parseFeedback', () => {
     expect(parseFeedback(GOOD_REPLY)?.tips).toEqual(['One.', 'Two.', 'Three.']);
   });
 
+  it('reads the on-task verdict, and treats a missing one as on task', () => {
+    const offTask = JSON.parse(GOOD_REPLY);
+    expect(parseFeedback(JSON.stringify({ ...offTask, on_task: false, on_task_reason: 'You talked about football, but the task asks you to describe the market' })))
+      .toMatchObject({ onTask: false, onTaskReason: 'You talked about football, but the task asks you to describe the market.' });
+    expect(parseFeedback(JSON.stringify({ ...offTask, on_task: false, on_task_reason: '' }))?.onTaskReason).toBe(OFF_TASK_FALLBACK);
+    expect(parseFeedback(JSON.stringify({ ...offTask, on_task: true, on_task_reason: 'ignored' }))).toMatchObject({ onTask: true, onTaskReason: '' });
+    expect(parseFeedback(GOOD_REPLY)?.onTask).toBe(true);
+  });
+
   it('rejects broken JSON and replies missing scores', () => {
     expect(parseFeedback('{"checklist": [')).toBeNull();
     expect(parseFeedback(JSON.stringify({ checklist: [], scores: { content_and_coherence: 8 }, tips: [] }))).toBeNull();
@@ -54,6 +63,14 @@ describe('buildFeedbackPrompt', () => {
     expect(system.includes('speech transcript')).toBe(true);
     expect(user.includes('Gives advice; Gives reasons')).toBe(true);
     expect(user.includes('pace 120 words per minute')).toBe(true);
+  });
+
+  it('asks for an on-task verdict first and says how off-task and offensive answers score', () => {
+    const { system } = buildFeedbackPrompt({ taskTitle: 't', promptText: 'p', checklist: [], criteria: [], goal: 9, answer: 'a' });
+    expect(Object.keys(FEEDBACK_JSON_SCHEMA.properties).slice(0, 2)).toEqual(['on_task', 'on_task_reason']);
+    expect(FEEDBACK_JSON_SCHEMA.required).toContain('on_task');
+    expect(system).toMatch(/on_task is false, give content_and_coherence and task_fulfillment 4/);
+    expect(system).toMatch(/Swearing or offensive words lower vocabulary/);
   });
 });
 

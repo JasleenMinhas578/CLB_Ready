@@ -84,7 +84,7 @@ export function MicCheck({ onReady, onCancel }: MicCheckProps) {
     const text = MIC_PROBLEM_TEXT[problem];
     return (
       <div className="mic-check" role="alert">
-        <h2><Icon name="mic-off" /> {text.title}</h2>
+        <h3><Icon name="mic-off" /> {text.title}</h3>
         <p>{text.help}</p>
         <div className="exam-actions">
           <Button onClick={turnOn}>Try again</Button>
@@ -96,7 +96,7 @@ export function MicCheck({ onReady, onCancel }: MicCheckProps) {
 
   return (
     <div className="mic-check">
-      <h2><Icon name="mic" /> Microphone check</h2>
+      <h3><Icon name="mic" /> Microphone check</h3>
       {!stream ? (
         <p className="busy-status" aria-live="polite">
           <span className="spinner" aria-hidden="true" />

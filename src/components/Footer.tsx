@@ -1,22 +1,19 @@
 import { href } from '@/app/router';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 import { Disclaimer } from './Disclaimer';
 import { Pip } from './Pip';
 
-const PRACTICE_LINKS = [
-  { label: 'Speaking practice', to: '/practice/speaking/module-1' },
-  { label: 'Writing practice', to: '/practice/writing/module-1' },
-  { label: 'Reading practice', to: '/practice/reading/module-1' },
-  { label: 'Listening practice', to: '/practice/listening/module-1' },
-  { label: 'Set your CLB goal', to: '/goal' },
+const PRACTICE_LINKS: { label: string; to: string; icon: IconName }[] = [
+  { label: 'Speaking practice', to: '/practice/speaking/module-1', icon: 'speaking' },
+  { label: 'Writing practice', to: '/practice/writing/module-1', icon: 'writing' },
+  { label: 'Reading practice', to: '/practice/reading/module-1', icon: 'reading' },
+  { label: 'Listening practice', to: '/practice/listening/module-1', icon: 'listening' },
 ];
 
-const ABOUT_LINKS = [
-  { label: 'Settings and privacy', to: '/settings' },
-  { label: 'Model lab', to: '/lab' },
-];
+// Settings and the goal are already in the header, so the footer doesn't repeat them.
+const REPO_URL = 'https://github.com/JasleenMinhas578/CLB_Ready';
 
-/** Site footer: brand, privacy promise, links, and the independence disclaimer. */
+/** Site footer: brand and privacy promise on the left, link groups on the right, the disclaimer and © along the bottom. */
 export function Footer() {
   return (
     <footer className="site-footer">
@@ -36,7 +33,7 @@ export function Footer() {
           <h2>Practise</h2>
           <ul>
             {PRACTICE_LINKS.map((link) => (
-              <li key={link.to}><a href={href(link.to)}>{link.label}</a></li>
+              <li key={link.to}><a href={href(link.to)}><Icon name={link.icon} size="sm" />{link.label}</a></li>
             ))}
           </ul>
         </nav>
@@ -44,10 +41,8 @@ export function Footer() {
         <nav className="footer-col" aria-label="About">
           <h2>About</h2>
           <ul>
-            {ABOUT_LINKS.map((link) => (
-              <li key={link.to}><a href={href(link.to)}>{link.label}</a></li>
-            ))}
-            <li><span>Open source under MIT</span></li>
+            <li><a href={href('/lab')}><Icon name="lab" size="sm" />Model lab</a></li>
+            <li><a href={REPO_URL}><Icon name="code" size="sm" />Open source under MIT</a></li>
           </ul>
         </nav>
       </div>

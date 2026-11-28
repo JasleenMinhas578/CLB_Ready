@@ -88,7 +88,7 @@ export function PassageView({ blocks, questions, numbers, ...rest }: AnswerProps
     <div className="passage">
       {blocks.map((block, index) => (
         <section key={index} className={`passage-block is-${block.kind}`}>
-          {block.title && <h2>{block.title}</h2>}
+          {block.title && <h3>{block.title}</h3>}
           {block.kind === 'table' ? (
             <div className="passage-table-wrap">
               <table className="passage-table">

@@ -1,12 +1,13 @@
 import { use } from 'react';
 import type { SpeakingAttempt } from '@/domain/attempt';
 import { getCriteria } from '@/domain/criteria';
-import { codeEstimates, overallLevel } from '@/domain/scoring/estimate';
+import { codeEstimates } from '@/domain/scoring/estimate';
 import { finalScores } from '@/domain/scoring/finalScores';
 import { codeTips } from '@/domain/scoring/codeTips';
 import { matchAiChecklist } from '@/domain/scoring/autoChecks';
 import { useFeedback } from './useFeedback';
-import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, ResultsHead, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ProcessingPanel, ResultsActions, ResultsBody, ResultsHead, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { resultsState } from './resultsLayout';
 import { MIN_SCORABLE_SPEAKING_WORDS, expectedSpokenWords, isScorable } from '@/domain/scoring/sufficiency';
 import { TranscriptView } from './TranscriptView';
 import { MeasureTiles } from './MeasureTiles';
@@ -39,7 +40,6 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
               progress={progress}
             />
             <TipsCard goal={attempt.goal} tips={codeTips(attempt.metrics, attempt.goal).slice(0, 3)} />
-            {progress?.perf && <PerfCard perf={progress.perf} transcribeMs={attempt.transcribeMs} />}
           </div>
           <div className="results-main">
             <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken fromScratch />
@@ -51,49 +51,53 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             </div>
           </div>
         </div>
+        {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} transcribeMs={attempt.transcribeMs} />}
         <ResultsActions attempt={attempt} retryFirst />
       </section>
     );
   }
 
-  const { scores, ignored } = finalScores(
-    'speaking', codeEstimates(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, expectedSpokenWords(attempt.metrics.answerSeconds),
+  const { scores, level, ignored } = finalScores(
+    'speaking', codeEstimates(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, expectedSpokenWords(attempt.metrics.answerSeconds), ai?.onTask,
   );
-  const overall = overallLevel(scores);
-  const final = outcome !== null;
 
   return (
     <section className="results results-speaking">
       <ResultsHead attempt={attempt} title="Your feedback" />
-      <div className="results-grid">
-        <div className="results-side">
-          <LevelCard
-            attempt={attempt}
-            criteria={getCriteria('speaking')}
-            scores={scores}
-            overall={overall}
-            final={final}
-            status={<AiStatus outcome={outcome} progress={progress} />}
-            notes={outlierNotes(ignored)}
-          />
-          <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
-          <ChecklistCard items={attempt.checklist} results={matchAiChecklist(attempt.checklist, ai?.checklist ?? null)?.map((row) => ({ met: row.met })) ?? null} final={final} />
-          <div className="results-card">
-            <h2>What we measured</h2>
-            <MeasureTiles metrics={attempt.metrics} />
-          </div>
-          {progress?.perf && <PerfCard perf={progress.perf} transcribeMs={attempt.transcribeMs} />}
-        </div>
-        <div className="results-main">
-          <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken original={attempt.transcript} />
-          {sample}
-          <div className="results-card">
-            <h2>What we heard</h2>
-            <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />
-            <p className="fine-print">Speech-to-text can miss filler words like “um”, so the real count may be higher.</p>
-          </div>
-        </div>
-      </div>
+      <ResultsBody
+        state={resultsState(outcome, progress)}
+        cards={{
+          processing: <ProcessingPanel progress={progress} />,
+          level: (
+            <LevelCard
+              attempt={attempt}
+              criteria={getCriteria('speaking')}
+              scores={scores}
+              overall={level}
+              status={<AiStatus outcome={outcome} progress={progress} />}
+              notes={outlierNotes(ignored)}
+            />
+          ),
+          tips: <TipsCard goal={attempt.goal} tips={mergeTips(ai, codeTips(attempt.metrics, attempt.goal))} />,
+          checklist: <ChecklistCard items={attempt.checklist} results={matchAiChecklist(attempt.checklist, ai?.checklist ?? null)?.map((row) => ({ met: row.met })) ?? null} />,
+          answer: <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken original={attempt.transcript} offTask={ai?.onTask === false} />,
+          sample,
+          transcript: (
+            <div className="results-card">
+              <h2>What we heard</h2>
+              <TranscriptView text={attempt.transcript} words={attempt.words} metrics={attempt.metrics} />
+              <p className="fine-print">Speech-to-text can miss filler words like “um”, so the real count may be higher.</p>
+            </div>
+          ),
+          measured: (
+            <div className="results-card">
+              <h2>What we measured</h2>
+              <MeasureTiles metrics={attempt.metrics} />
+            </div>
+          ),
+        }}
+      />
+      {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} transcribeMs={attempt.transcribeMs} />}
       <ResultsActions attempt={attempt} />
     </section>
   );

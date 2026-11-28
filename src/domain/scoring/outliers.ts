@@ -1,8 +1,14 @@
+import { MEANING_CRITERIA } from './estimate';
+
 /**
  * Small models sometimes give one score that makes no sense next to the
- * others (e.g. Content 5 beside three 11s for the same strong email).
+ * others (e.g. Vocabulary 5 beside three 11s for the same strong email).
  * A model score is ignored when it is far from the model's own other
  * scores AND far from what code measured. Code then stands alone for it.
+ *
+ * A content or task score below code's is always kept: code can't judge
+ * meaning, so it is no evidence against the model saying an answer misses
+ * the task (an off-topic answer can have a fine pace and many linking words).
  */
 
 /** How far from the model's other scores counts as "far". */
@@ -32,6 +38,7 @@ export function dropOutlierScores<K extends string>(
 
   for (const id of ids) {
     const score = model[id] as number;
+    if (MEANING_CRITERIA.includes(id) && score < code[id]) continue;
     const peers = ids.filter((other) => other !== id).map((other) => model[other] as number);
     if (peers.length < 2) continue;
     const farFromPeers = Math.abs(score - median(peers)) >= OUTLIER_FROM_PEERS;

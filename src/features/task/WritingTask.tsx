@@ -133,12 +133,12 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
       )}
       <div className="exam-meta">
         {state === 'checking' ? (
-          <span className="busy-status" role="status">
+          <p className="busy-status" role="status">
             <span className="spinner" aria-hidden="true" />
             Checking your writing on this device…
-          </span>
+          </p>
         ) : (
-          <span>Press Next when you finish. Then we check your writing.</span>
+          <p>Press Next when you finish. Then we check your writing.</p>
         )}
         <ModelPlanBadge />
       </div>

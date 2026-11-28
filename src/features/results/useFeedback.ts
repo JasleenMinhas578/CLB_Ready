@@ -59,6 +59,59 @@ export interface FeedbackProgress {
   perf: AiPerf | null;
 }
 
+/** Where an AI step is, for the speed card. */
+export type StepState = 'not-needed' | 'not-started' | 'starting' | 'running' | 'failed' | 'done';
+
+/** Words for each state. Only a step that is really writing says "Writing…". */
+export const STEP_LABELS: Record<StepState, string> = {
+  'not-needed': 'Not needed',
+  'not-started': 'Not started',
+  starting: 'Starting…',
+  running: 'Writing…',
+  failed: 'Did not finish',
+  done: 'Done',
+};
+
+const ANSWER_STEP: Record<AnswerStream['state'], StepState> = { off: 'not-started', waiting: 'starting', writing: 'running', failed: 'failed', done: 'done' };
+
+/** The state of both AI steps, from the job's progress and outcome. */
+export function stepStates(progress: FeedbackProgress, outcome: FeedbackOutcome | null): { scores: StepState; answer: StepState } {
+  const scores: StepState = outcome?.kind === 'ai' ? 'done'
+    : outcome?.kind === 'sample' ? 'not-needed'
+      : outcome?.kind === 'code' ? 'failed'
+        : progress.phase === 'scoring' ? 'running' : 'not-started';
+  return { scores, answer: ANSWER_STEP[progress.answer.state] };
+}
+
+/**
+ * Longest wait for Pip's next words before a step is stopped and shown as failed.
+ * Generous, because the first words can take a while on a slow graphics chip.
+ */
+export const STALL_MS = 120_000;
+export const STALL_MESSAGE = 'Pip stopped responding.';
+
+/**
+ * Runs one AI step, but fails it if no new words arrive for STALL_MS, so the
+ * screen never waits forever on a stuck graphics chip. `stop` interrupts the model.
+ */
+export function withStallTimeout<T>(start: (onText: (soFar: string) => void) => Promise<T>, onText: (soFar: string) => void, stop: () => void): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const arm = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        stop();
+        reject(new Error(STALL_MESSAGE));
+      }, STALL_MS);
+    };
+    arm();
+    start((soFar) => {
+      arm();
+      onText(soFar);
+    }).then(resolve, reject).finally(() => clearTimeout(timer));
+  });
+}
+
 export interface Job {
   promise: Promise<FeedbackOutcome>;
   progress: FeedbackProgress;
@@ -167,7 +220,11 @@ function startJob(attempt: Attempt, getEngine: () => Promise<FeedbackEngineStore
     if (cancelled) return;
     const { system, user, maxTokens } = answerPrompt(attempt, tips);
     try {
-      const run = await engine.writeText(system, user, maxTokens, (soFar) => update({ answer: { state: 'writing', text: soFar } }));
+      const run = await withStallTimeout(
+        (onText) => engine.writeText(system, user, maxTokens, onText),
+        (soFar) => update({ answer: { state: 'writing', text: soFar } }),
+        () => engine.interrupt(),
+      );
       update({ answer: { state: 'done', text: run.text } });
       updatePerf({ answer: stepPerf(run.stats, run.attempts), answerWaitMs: performance.now() - startedAt });
     } catch (error) {
@@ -219,10 +276,15 @@ function startJob(attempt: Attempt, getEngine: () => Promise<FeedbackEngineStore
         spoken: attempt.skill === 'speaking',
         measured: measuredFacts(attempt),
       });
-      const run = await engine.generate(system, user, (soFar) => update({ written: soFar.length }));
+      const run = await withStallTimeout(
+        (onText) => engine.generate(system, user, onText),
+        (soFar) => update({ written: soFar.length }),
+        () => engine.interrupt(),
+      );
       updatePerf({ scoring: stepPerf(run.stats, run.attempts), scoresWaitMs: performance.now() - startedAt });
       update({ answer: { state: 'waiting', text: '' } });
-      void writeAnswer(engine, run.reply.tips);
+      // An answer about something else isn't worth rewriting: write an example for this task instead.
+      void writeAnswer(engine, run.reply.onTask ? run.reply.tips : null);
       return { kind: 'ai', run };
     } catch (error) {
       if (error instanceof ModelUnavailableError) return { kind: 'code', reason: 'light-mode' };

@@ -16,7 +16,7 @@ const MOUTHS: Record<Mood, string> = {
 };
 
 /**
- * Pip, your AI coach: a round little pear-coloured seed with a sprout, because practice
+ * Pip, your AI coach: a round little peach seed with a sprout, because practice
  * helps a level grow. Drawn from the palette tokens, never animated, and used
  * sparingly (home intro, AI status on results, empty and error states).
  */
@@ -33,9 +33,10 @@ export function Pip({ size = 96, mood = 'happy', label, className }: PipProps) {
       aria-label={label}
       aria-hidden={label ? undefined : true}
     >
-      {/* Cut from card stock like the buttons: a deeper pear edge shows below the body. */}
-      <path d="M60 29c24 0 40 18 40 42s-16 40-40 40-40-16-40-40 16-42 40-42z" fill="var(--accent-edge)" />
-      <path d="M60 25c24 0 40 18 40 42s-16 40-40 40-40-16-40-40 16-42 40-42z" fill="var(--accent)" />
+      {/* Cut from card stock like the buttons: a deeper peach edge shows below the body.
+          Peach, not the violet of the buttons, so Pip stands out on lavender. */}
+      <path d="M60 29c24 0 40 18 40 42s-16 40-40 40-40-16-40-40 16-42 40-42z" fill="var(--peach-ink)" opacity="0.45" />
+      <path d="M60 25c24 0 40 18 40 42s-16 40-40 40-40-16-40-40 16-42 40-42z" fill="var(--peach-tint)" />
       <ellipse cx="60" cy="84" rx="24" ry="18" fill="var(--surface)" opacity="0.55" />
       <path d="M60 26c0-6 1-10 3-13" fill="none" stroke="var(--mint-ink)" strokeWidth="3" strokeLinecap="round" />
       <path d="M63 14c4-6 12-7 16-3-3 6-10 8-16 3z" fill="var(--mint-tint)" stroke="var(--mint-ink)" strokeWidth="2" strokeLinejoin="round" />

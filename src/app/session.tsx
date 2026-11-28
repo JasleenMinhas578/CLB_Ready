@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ClbGoal } from '@/domain/goals';
-import type { AnyAttempt } from '@/domain/attempt';
+import { hasAnswer, type AnyAttempt } from '@/domain/attempt';
 import { markDone } from '@/services/progress/progress';
 
 /**
@@ -32,7 +32,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setMicReady,
       lastAttempt,
       setLastAttempt: (attempt: AnyAttempt) => {
-        markDone(attempt.moduleId, attempt.taskTypeId);
+        if (hasAnswer(attempt)) markDone(attempt.moduleId, attempt.taskTypeId);
         setAttempt(attempt);
       },
     }),

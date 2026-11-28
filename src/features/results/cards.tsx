@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { Criterion } from '@/domain/criteria';
 import { MAX_LEVEL } from '@/domain/scoring/estimate';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
@@ -11,10 +11,12 @@ import { LinkButton } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Pip } from '@/components/Pip';
 import { friendlyModelError } from '@/services/ai/errorText';
-import type { AiPerf, AnswerStream, FeedbackOutcome, FeedbackProgress, StepPerf } from './useFeedback';
+import type { FeedbackReply } from '@/services/ai/feedbackPrompt';
+import { STEP_LABELS, stepStates, type AiPerf, type AnswerStream, type FeedbackOutcome, type FeedbackProgress, type StepPerf } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
 import { DiffView } from './DiffView';
 import { diffWords, isMostlyRewritten, summarizeDiff } from '@/domain/diff';
+import { resultsLayout, type ResultsCard, type ResultsState } from './resultsLayout';
 
 /** Shared building blocks for every skill's results screen. */
 
@@ -23,8 +25,8 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   if (outcome?.kind === 'code') {
     const why =
       outcome.reason === 'light-mode'
-        ? 'Pip, your AI coach, is off on this device, so feedback comes from word counts, timing and simple checks.'
-        : `${friendlyModelError(outcome.message)} These results use your measurements only.`;
+        ? 'A level needs Pip, your AI coach. Without Pip we can only measure vocabulary and how clear your answer is.'
+        : `${friendlyModelError(outcome.message)} Without Pip we can only measure vocabulary and how clear your answer is.`;
     return (
       <p className="ai-status is-code">
         <Icon name="info" /> <span>{why} <a href={href('/settings')}>Change this in Settings</a></span>
@@ -35,7 +37,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   const percent = progress?.phase === 'loading-model' && progress.modelProgress != null ? Math.round(progress.modelProgress * 100) : null;
   return (
     <div className="ai-status is-checking">
-      <Pip mood="thinking" size={48} />
+      <PipWorking size={48} />
       <div className="ai-status-body">
         {/* Only the step is announced; the changing percentage stays out of the live region so it isn't read out on every tick. */}
         <p className="ai-status-title" aria-live="polite">
@@ -43,7 +45,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
         </p>
         <p className="ai-status-step">
           {scoring
-            ? 'Step 2 of 2. The scores below are first estimates. They update when Pip is done.'
+            ? 'Step 2 of 2.'
             : 'Step 1 of 2. Pip downloads the first time only. This can take a few minutes.'}
         </p>
         {percent !== null && (
@@ -56,32 +58,106 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   );
 }
 
+/** Pip at work: a gentle bob and three pulsing dots. With reduced motion, Pip stays still and the dots go. */
+function PipWorking({ size }: { size: number }) {
+  return (
+    <span className="pip-working" aria-hidden="true">
+      <Pip mood="thinking" size={size} />
+      <span className="pip-dots"><span /><span /><span /></span>
+    </span>
+  );
+}
+
+/** Stands in for the level, tips, checklist and better answer until Pip has scored the answer. */
+export function ProcessingPanel({ progress }: { progress: FeedbackProgress | null }) {
+  const loading = progress?.phase !== 'scoring';
+  const percent = loading && progress?.modelProgress != null ? Math.round(progress.modelProgress * 100) : null;
+  return (
+    <div className="results-card processing-card">
+      <div className="processing-head">
+        <PipWorking size={64} />
+        <div>
+          <h2>Pip, your AI coach, is on it</h2>
+          {/* Only the step is announced; the percentage stays out of the live region so it isn't read out on every tick. */}
+          <p className="processing-step" aria-live="polite">
+            {loading ? 'Step 1 of 2: checking your answer. Getting Pip ready first.' : 'Step 1 of 2: checking your answer.'}
+          </p>
+        </div>
+      </div>
+      {percent !== null && (
+        <>
+          <p className="fine-print">Downloading Pip: {percent}%. This happens the first time only and can take a few minutes.</p>
+          <div className="bar" role="progressbar" aria-label="Pip download" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
+            <span className="bar-fill" style={{ width: `${percent}%` }} />
+          </div>
+        </>
+      )}
+      <p className="fine-print">Your level, tips and checklist show here when step 1 is done. Then step 2 of 2 writes a better version of your answer.</p>
+    </div>
+  );
+}
+
+// Matches the 1100px breakpoint in screens.css where results get two columns.
+const WIDE = '(min-width: 1100px)';
+const watchWide = (onChange: () => void) => {
+  const query = window.matchMedia(WIDE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+};
+const isWide = () => window.matchMedia(WIDE).matches;
+
+/**
+ * Lays out the results cards for this state. Phones and desktops want different
+ * orders, so the cards are rendered in each one's order rather than moved with CSS,
+ * which keeps reading and tab order the same as what is seen.
+ */
+export function ResultsBody({ state, cards }: { state: ResultsState; cards: Partial<Record<ResultsCard, ReactNode>> }) {
+  const wide = useSyncExternalStore(watchWide, isWide);
+  const layout = resultsLayout(state);
+  const show = (ids: ResultsCard[]) => ids.map((id) => <Fragment key={id}>{cards[id]}</Fragment>);
+  if (!wide) return show(layout.stack);
+  return (
+    <>
+      <div className="results-columns">
+        <div>{show(layout.left)}</div>
+        <div>{show(layout.right)}</div>
+      </div>
+      {show(layout.below)}
+    </>
+  );
+}
+
 interface LevelCardProps {
   attempt: Attempt;
   criteria: Criterion[];
-  scores: Record<string, number>;
-  overall: number;
-  final: boolean;
+  /** A criterion without a score is one only Pip can judge, and Pip couldn't. */
+  scores: Partial<Record<string, number>>;
+  /** Null when Pip couldn't judge the answer: code alone can't give an honest level. */
+  overall: number | null;
   status: ReactNode;
   /** A note per criterion, shown under that criterion's bar, e.g. when its AI score was ignored. */
   notes?: Partial<Record<string, string>>;
 }
 
-export function LevelCard({ attempt, criteria, scores, overall, final, status, notes = {} }: LevelCardProps) {
+export function LevelCard({ attempt, criteria, scores, overall, status, notes = {} }: LevelCardProps) {
   const goal = attempt.goal;
   return (
-    <div className="results-card level-card" aria-busy={!final}>
+    <div className="results-card level-card">
       <div className="level-pair">
         <div className="is-level">
-          <span>{final ? 'Estimated level' : 'First estimate'}</span>
-          <strong>CLB {overall}</strong>
+          <span>{overall === null ? 'Your level' : 'Estimated level'}</span>
+          {overall !== null ? (
+            <strong>CLB {overall}</strong>
+          ) : (
+            <p className="level-pending">Needs Pip</p>
+          )}
         </div>
         <div>
           <span>{attempt.goalChosen ? 'Your goal' : 'Practice goal'}</span>
           <strong>CLB {goal}</strong>
         </div>
       </div>
-      <EstimateNote>{final ? 'Estimates' : 'First estimates from your measurements'} for practice only, not official CELPIP scores.</EstimateNote>
+      {overall !== null && <EstimateNote>Estimates for practice only, not official CELPIP scores.</EstimateNote>}
       {!attempt.goalChosen && (
         <p className="fine-print">
           No goal set, so we used CLB {goal}. <a href={href('/goal')}>Choose your goal</a>.
@@ -90,7 +166,17 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
       {status}
       <ul className="criteria-bars">
         {criteria.map((criterion) => {
-          const score = scores[criterion.id] ?? 0;
+          const score = scores[criterion.id];
+          if (score === undefined) {
+            return (
+              <li key={criterion.id}>
+                <div className="criterion-head">
+                  <span>{criterion.name}</span>
+                  <strong>Not checked without Pip</strong>
+                </div>
+              </li>
+            );
+          }
           const reached = score >= goal;
           return (
             <li key={criterion.id}>
@@ -108,7 +194,7 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
         })}
       </ul>
       {/* Single scores can sit above or below the level, because the level is their average. */}
-      <p className="fine-print">Your level is the average of the {criteria.length} scores above, rounded.</p>
+      {overall !== null && <p className="fine-print">Your level is the average of the {criteria.length} scores above, rounded.</p>}
     </div>
   );
 }
@@ -137,11 +223,13 @@ interface ImprovedCardProps {
   spoken: boolean;
   /** True for a model answer written from scratch (nothing to compare). */
   fromScratch?: boolean;
+  /** Written from scratch because the learner's answer wasn't about the task. */
+  offTask?: boolean;
   /** The learner's own answer, to show what changed. */
   original?: string;
 }
 
-export function ImprovedCard({ goal, text, spoken, fromScratch = false, original }: ImprovedCardProps) {
+export function ImprovedCard({ goal, text, spoken, fromScratch = false, offTask = false, original }: ImprovedCardProps) {
   const compareWith = fromScratch || !original?.trim() ? null : original;
   const canCompare = compareWith !== null;
   // Computed once here for both the opening view and the marked changes.
@@ -166,13 +254,15 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
         )}
       </div>
       <p className="fine-print">
-        {fromScratch
-          ? 'Written by Pip, your AI coach, for this task, as an example to learn from.'
-          : view === 'changes'
-            ? 'Your answer, edited to your goal level. Added words are in green. Words cut or replaced are crossed out in red.'
-            : rewritten
-              ? 'Most of your answer was rewritten, so this shows the clean copy first. Choose Changes to see what changed.'
-              : 'Your ideas, rewritten at your goal level.'}{' '}
+        {offTask
+          ? 'Your answer was not about this task, so Pip, your AI coach, wrote this example instead of rewriting yours.'
+          : fromScratch
+            ? 'Written by Pip, your AI coach, for this task, as an example to learn from.'
+            : view === 'changes'
+              ? 'Your answer, edited to your goal level. Added words are in green. Words cut or replaced are crossed out in red.'
+              : rewritten
+                ? 'Most of your answer was rewritten, so this shows the clean copy first. Choose Changes to see what changed.'
+                : 'Your ideas, rewritten at your goal level.'}{' '}
         {spoken ? 'Read it aloud once to hear how it flows.' : 'Notice how each paragraph covers one point.'}
       </p>
       {diff && view === 'changes' ? (
@@ -188,15 +278,18 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
  * The improved (or model) answer, which arrives after the scores. Shows it
  * word by word while it's written, then the full card with changes marked.
  */
-export function AnswerCard({ answer, goal, spoken, original, fromScratch = false }: {
+export function AnswerCard({ answer, goal, spoken, original, fromScratch: scratch = false, offTask = false }: {
   answer: AnswerStream | undefined;
   goal: number;
   spoken: boolean;
   original?: string;
   fromScratch?: boolean;
+  /** Pip said the answer isn't about the task, so it wrote an example instead of a rewrite. */
+  offTask?: boolean;
 }) {
+  const fromScratch = scratch || offTask;
   if (!answer || answer.state === 'off') return null;
-  if (answer.state === 'done') return <ImprovedCard goal={goal} text={answer.text} spoken={spoken} original={original} fromScratch={fromScratch} />;
+  if (answer.state === 'done') return <ImprovedCard goal={goal} text={answer.text} spoken={spoken} original={original} fromScratch={fromScratch} offTask={offTask} />;
   const heading = fromScratch ? `An example answer at CLB ${goal}` : `Your answer at CLB ${goal}`;
   if (answer.state === 'failed') {
     return (
@@ -210,10 +303,10 @@ export function AnswerCard({ answer, goal, spoken, original, fromScratch = false
     <div className="results-card improved-card is-writing" aria-busy="true">
       <h2>{heading}</h2>
       <div className="ai-status is-checking">
-        <Pip mood="thinking" size={40} />
+        <PipWorking size={48} />
         <p className="ai-status-title" aria-live="polite">
-          {answer.text ? 'Pip, your AI coach, is writing it now…' : 'Pip, your AI coach, is starting to write…'}
-          {!fromScratch && ' Changes will be marked when it’s done.'}
+          {fromScratch ? 'Step 2 of 2: writing an example answer.' : 'Step 2 of 2: writing a better version.'}
+          {!fromScratch && ' Changes are marked when it’s done.'}
         </p>
       </div>
       {answer.text && <blockquote className="transcript streaming-text">{answer.text}</blockquote>}
@@ -227,7 +320,7 @@ export interface ChecklistRow {
   byCode?: boolean;
 }
 
-export function ChecklistCard({ items, results, final }: { items: string[]; results: ChecklistRow[] | null; final: boolean }) {
+export function ChecklistCard({ items, results }: { items: string[]; results: ChecklistRow[] | null }) {
   const anyUnchecked = !results || results.some((row) => row.met === null);
   return (
     <div className="results-card">
@@ -238,7 +331,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           const met = row?.met ?? null;
           return (
             <li key={item} className={met === true ? 'is-met' : met === false ? 'is-missed' : 'is-unchecked'}>
-              <Icon name={met === true ? 'check' : met === false ? 'missed' : final ? 'dash' : 'pending'} />
+              <Icon name={met === true ? 'check' : met === false ? 'missed' : 'dash'} />
               <span className="checklist-text">{item}</span>
               {row?.byCode && <span className="checked-by">checked automatically</span>}
               <span className="sr-only">{met === true ? 'covered' : met === false ? 'not covered' : 'not checked'}</span>
@@ -246,7 +339,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           );
         })}
       </ul>
-      {final && anyUnchecked && <p className="fine-print">Items marked <Icon name="dash" size="sm" label="with a dash" /> were not checked. Only Pip can check them.</p>}
+      {anyUnchecked && <p className="fine-print">Items marked <Icon name="dash" size="sm" label="with a dash" /> were not checked. Only Pip can check them.</p>}
     </div>
   );
 }
@@ -314,8 +407,10 @@ export function ResultsHead({ attempt, title, retryFirst = false }: {
 }
 
 /** Merges AI tips (first) with code tips, without duplicates. */
-export function mergeTips(aiTips: string[] | undefined, codeTips: string[], hasAi: boolean): string[] {
-  return [...(aiTips ?? []), ...codeTips].filter((tip, i, all) => all.indexOf(tip) === i).slice(0, hasAi ? 4 : 3);
+export function mergeTips(reply: FeedbackReply | null, codeTips: string[]): string[] {
+  // An answer that isn't about the task needs that fixed before anything else.
+  const aiTips = reply ? [...(reply.onTask ? [] : [reply.onTaskReason]), ...reply.tips] : [];
+  return [...aiTips, ...codeTips].filter((tip, i, all) => all.indexOf(tip) === i).slice(0, reply ? 4 : 3);
 }
 
 /**
@@ -366,14 +461,15 @@ function stepRows(label: string, step: StepPerf): [string, string][] {
  * How fast the AI ran on this device: useful for testing and for
  * explaining the app's performance. Collapsed by default.
  */
-export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: number }) {
+export function PerfCard({ perf, progress, outcome, transcribeMs }: { perf: AiPerf; progress: FeedbackProgress; outcome: FeedbackOutcome | null; transcribeMs?: number }) {
+  const steps = stepStates(progress, outcome);
   const speed = perf.answer?.tokensPerSecond ?? perf.scoring?.tokensPerSecond;
   const rows: [string, string][] = [
     ['Pip’s model', perf.model ?? 'Unknown'],
     ['Model load', perf.loadMs == null ? 'Already loaded' : seconds(perf.loadMs)],
     ...(transcribeMs != null ? ([['Speech-to-text', seconds(transcribeMs)]] as [string, string][]) : []),
-    ...(perf.scoresWaitMs != null ? ([['Scores on screen after', seconds(perf.scoresWaitMs)]] as [string, string][]) : []),
-    ['Full answer on screen after', perf.answerWaitMs != null ? seconds(perf.answerWaitMs) : 'Still writing…'],
+    ['Scores on screen after', perf.scoresWaitMs != null ? seconds(perf.scoresWaitMs) : STEP_LABELS[steps.scores]],
+    ['Full answer on screen after', perf.answerWaitMs != null ? seconds(perf.answerWaitMs) : STEP_LABELS[steps.answer]],
     ...(speed != null ? ([['Writing speed', `${speed.toFixed(1)} tokens/s`]] as [string, string][]) : []),
     ...(perf.scoring ? stepRows('Scores', perf.scoring) : []),
     ...(perf.answer ? stepRows('Answer', perf.answer) : []),

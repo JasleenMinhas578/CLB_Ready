@@ -52,6 +52,16 @@ export function clearProgress() {
   write({});
 }
 
+/** Progress without the given tasks of one module, so a learner can redo just that module. */
+export function withoutTasks(progress: Progress, moduleId: string, taskIds: string[]): Progress {
+  const drop = new Set(taskIds.map((id) => taskKey(moduleId, id)));
+  return Object.fromEntries(Object.entries(progress).filter(([key]) => !drop.has(key)));
+}
+
+export function clearTasks(moduleId: string, taskIds: string[]) {
+  write(withoutTasks(read(), moduleId, taskIds));
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener);
   // Keep ticks in step when another tab finishes a task.
@@ -77,6 +87,14 @@ export function useProgress(): Progress {
 /** How many of these task ids are finished in a module. */
 export function countDone(progress: Progress, moduleId: string, taskTypeIds: string[]): number {
   return taskTypeIds.filter((id) => progress[taskKey(moduleId, id)]).length;
+}
+
+/** How many tasks are finished in one skill (or in all of them) across every module, out of how many there are. */
+export function skillProgress(progress: Progress, skill?: SkillId): { done: number; total: number } {
+  const skills = skill ? [skill] : SKILLS.map((item) => item.id);
+  const ids = skills.flatMap((id) => getTaskTypesForSkill(id).map((task) => task.id));
+  const done = MODULE_CATALOG.reduce((sum, { id }) => sum + countDone(progress, id, ids), 0);
+  return { done, total: ids.length * MODULE_CATALOG.length };
 }
 
 export interface NextTask {
