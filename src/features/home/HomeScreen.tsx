@@ -71,7 +71,7 @@ export function HomeScreen() {
       <section className="landing-hero">
         <div className="landing-copy">
           <p className="price-sticker">
-            <strong>$0</strong> No account. No card. Nothing to pay.
+            <strong>$0</strong> No account. No card. No fees.
           </p>
           <h1>Free CELPIP practice with an AI coach that runs in your browser.</h1>
           <p className="hero-lede">

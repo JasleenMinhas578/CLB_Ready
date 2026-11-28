@@ -23,7 +23,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
         : `${friendlyModelError(outcome.message)} The feedback below uses your measurements only.`;
     return (
       <p className="ai-status is-code">
-        <Emoji symbol="🍬" /> {why} <a href={href('/settings')}>Settings</a>
+        <Emoji symbol="🍬" /> <span>{why} <a href={href('/settings')}>Settings</a></span>
       </p>
     );
   }
@@ -204,7 +204,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           return (
             <li key={item} className={met === true ? 'is-met' : met === false ? 'is-missed' : ''}>
               <span aria-hidden="true">{met === true ? '✅' : met === false ? '⭕' : final ? '➖' : '⏳'}</span>
-              <span>{item}</span>
+              <span className="checklist-text">{item}</span>
               {row?.byCode && <span className="checked-by">checked automatically</span>}
               <span className="sr-only">{met === true ? 'covered' : met === false ? 'not covered' : 'not checked'}</span>
             </li>

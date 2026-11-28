@@ -36,7 +36,7 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
               </div>
               <div>
                 <span>Estimated level</span>
-                <strong>{estimate.level === null ? 'Below 3' : estimate.level >= 10 ? 'CLB 10+' : `CLB ${estimate.level}`}</strong>
+                <strong>{estimate.level === null ? 'Below CLB 3' : estimate.level >= 10 ? 'CLB 10+' : `CLB ${estimate.level}`}</strong>
               </div>
             </div>
             <p className={`goal-line ${reached ? 'is-reached' : ''}`}>
@@ -87,7 +87,7 @@ function AnswerRow({ question, number, chosen }: { question: ChoiceQuestion; num
       </p>
       {!right && (
         <p className="answer-yours">
-          Your answer: <span>{chosen === null ? 'No answer' : question.options[chosen]}</span>
+          Your answer: <span className={chosen === null ? 'is-blank' : undefined}>{chosen === null ? 'No answer' : question.options[chosen]}</span>
         </p>
       )}
       <p className="answer-correct">
