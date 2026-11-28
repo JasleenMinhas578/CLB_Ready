@@ -4,7 +4,8 @@ import { finalScores } from '@/domain/scoring/finalScores';
 import { codeEstimatesWriting, writingTips } from '@/domain/scoring/writingEstimate';
 import type { WritingMetrics } from '@/domain/measure/writingMetrics';
 import { useFeedback } from './useFeedback';
-import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ResultsActions, ResultsHead, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { outlierNotes, AiStatus, ChecklistCard, AnswerCard, LevelCard, ProcessingPanel, ResultsActions, ResultsBody, ResultsHead, TipsCard, TooShortCard, PerfCard, mergeTips } from './cards';
+import { resultsState } from './resultsLayout';
 import { EssayView } from './EssayView';
 import { mergeChecklist } from '@/domain/scoring/autoChecks';
 import { TileList, type Tile } from './MeasureTiles';
@@ -95,39 +96,42 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
     'writing', codeEstimatesWriting(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, attempt.metrics.wordRange.min, ai?.onTask,
   );
   const checklist = mergeChecklist(attempt.checklist, ai?.checklist ?? null, attempt.text, attempt.metrics);
-  const final = outcome !== null;
 
   return (
     <section className="results results-writing">
       <ResultsHead attempt={attempt} title="Your feedback" />
-      <div className="results-grid">
-        <div className="results-side">
-          <LevelCard
-            attempt={attempt}
-            criteria={getCriteria('writing')}
-            scores={scores}
-            overall={level}
-            final={final}
-            status={<AiStatus outcome={outcome} progress={progress} />}
-            notes={outlierNotes(ignored)}
-          />
-          <TipsCard goal={attempt.goal} tips={mergeTips(ai, writingTips(attempt.metrics, attempt.goal, attempt.options))} />
-          <ChecklistCard items={attempt.checklist} results={checklist} final={final} />
-        </div>
-        <div className="results-main">
-          <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} original={attempt.text} offTask={ai?.onTask === false} />
-          <div className="results-card">
-            <h2>Your writing, checked</h2>
-            <EssayView text={attempt.text} issues={attempt.issues} />
-            <p className="fine-print">The checker finds common mistakes only, so it may miss some.</p>
-          </div>
-        </div>
-      </div>
-      {/* Details below both columns, full width, so neither column is left half empty. */}
-      <div className="results-card">
-        <h2>What we measured</h2>
-        <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />
-      </div>
+      <ResultsBody
+        state={resultsState(outcome, progress)}
+        cards={{
+          processing: <ProcessingPanel progress={progress} />,
+          level: (
+            <LevelCard
+              attempt={attempt}
+              criteria={getCriteria('writing')}
+              scores={scores}
+              overall={level}
+              status={<AiStatus outcome={outcome} progress={progress} />}
+              notes={outlierNotes(ignored)}
+            />
+          ),
+          tips: <TipsCard goal={attempt.goal} tips={mergeTips(ai, writingTips(attempt.metrics, attempt.goal, attempt.options))} />,
+          checklist: <ChecklistCard items={attempt.checklist} results={checklist} />,
+          answer: <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} original={attempt.text} offTask={ai?.onTask === false} />,
+          transcript: (
+            <div className="results-card">
+              <h2>Your writing, checked</h2>
+              <EssayView text={attempt.text} issues={attempt.issues} />
+              <p className="fine-print">The checker finds common mistakes only, so it may miss some.</p>
+            </div>
+          ),
+          measured: (
+            <div className="results-card">
+              <h2>What we measured</h2>
+              <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />
+            </div>
+          ),
+        }}
+      />
       {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} />}
       <ResultsActions attempt={attempt} />
     </section>

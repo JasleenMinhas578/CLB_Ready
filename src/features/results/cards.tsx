@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { Criterion } from '@/domain/criteria';
 import { MAX_LEVEL } from '@/domain/scoring/estimate';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
@@ -16,6 +16,7 @@ import { STEP_LABELS, stepStates, type AiPerf, type AnswerStream, type FeedbackO
 import { plural } from '@/domain/scoring/sufficiency';
 import { DiffView } from './DiffView';
 import { diffWords, isMostlyRewritten, summarizeDiff } from '@/domain/diff';
+import { resultsLayout, type ResultsCard, type ResultsState } from './resultsLayout';
 
 /** Shared building blocks for every skill's results screen. */
 
@@ -36,7 +37,7 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   const percent = progress?.phase === 'loading-model' && progress.modelProgress != null ? Math.round(progress.modelProgress * 100) : null;
   return (
     <div className="ai-status is-checking">
-      <Pip mood="thinking" size={48} />
+      <PipWorking size={48} />
       <div className="ai-status-body">
         {/* Only the step is announced; the changing percentage stays out of the live region so it isn't read out on every tick. */}
         <p className="ai-status-title" aria-live="polite">
@@ -57,30 +58,98 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
   );
 }
 
+/** Pip at work: a gentle bob and three pulsing dots. With reduced motion, Pip stays still and the dots go. */
+function PipWorking({ size }: { size: number }) {
+  return (
+    <span className="pip-working" aria-hidden="true">
+      <Pip mood="thinking" size={size} />
+      <span className="pip-dots"><span /><span /><span /></span>
+    </span>
+  );
+}
+
+/** Stands in for the level, tips, checklist and better answer until Pip has scored the answer. */
+export function ProcessingPanel({ progress }: { progress: FeedbackProgress | null }) {
+  const loading = progress?.phase !== 'scoring';
+  const percent = loading && progress?.modelProgress != null ? Math.round(progress.modelProgress * 100) : null;
+  return (
+    <div className="results-card processing-card">
+      <div className="processing-head">
+        <PipWorking size={64} />
+        <div>
+          <h2>Pip, your AI coach, is on it</h2>
+          {/* Only the step is announced; the percentage stays out of the live region so it isn't read out on every tick. */}
+          <p className="processing-step" aria-live="polite">
+            {loading ? 'Step 1 of 2: checking your answer. Getting Pip ready first.' : 'Step 1 of 2: checking your answer.'}
+          </p>
+        </div>
+      </div>
+      {percent !== null && (
+        <>
+          <p className="fine-print">Downloading Pip: {percent}%. This happens the first time only and can take a few minutes.</p>
+          <div className="bar" role="progressbar" aria-label="Pip download" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
+            <span className="bar-fill" style={{ width: `${percent}%` }} />
+          </div>
+        </>
+      )}
+      <p className="fine-print">Your level, tips and checklist show here when step 1 is done. Then step 2 of 2 writes a better version of your answer.</p>
+    </div>
+  );
+}
+
+// Matches the 1100px breakpoint in screens.css where results get two columns.
+const WIDE = '(min-width: 1100px)';
+const watchWide = (onChange: () => void) => {
+  const query = window.matchMedia(WIDE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+};
+const isWide = () => window.matchMedia(WIDE).matches;
+
+/**
+ * Lays out the results cards for this state. Phones and desktops want different
+ * orders, so the cards are rendered in each one's order rather than moved with CSS,
+ * which keeps reading and tab order the same as what is seen.
+ */
+export function ResultsBody({ state, cards }: { state: ResultsState; cards: Partial<Record<ResultsCard, ReactNode>> }) {
+  const wide = useSyncExternalStore(watchWide, isWide);
+  const layout = resultsLayout(state);
+  const show = (ids: ResultsCard[]) => ids.map((id) => <Fragment key={id}>{cards[id]}</Fragment>);
+  if (!wide) return show(layout.stack);
+  return (
+    <>
+      <div className="results-columns">
+        <div>{show(layout.left)}</div>
+        <div>{show(layout.right)}</div>
+      </div>
+      {show(layout.below)}
+    </>
+  );
+}
+
 interface LevelCardProps {
   attempt: Attempt;
   criteria: Criterion[];
-  /** A criterion without a score is one only Pip can judge, and Pip hasn't (yet). */
+  /** A criterion without a score is one only Pip can judge, and Pip couldn't. */
   scores: Partial<Record<string, number>>;
-  /** Null until Pip has judged the answer: code alone can't give an honest level. */
+  /** Null when Pip couldn't judge the answer: code alone can't give an honest level. */
   overall: number | null;
-  final: boolean;
   status: ReactNode;
   /** A note per criterion, shown under that criterion's bar, e.g. when its AI score was ignored. */
   notes?: Partial<Record<string, string>>;
 }
 
-export function LevelCard({ attempt, criteria, scores, overall, final, status, notes = {} }: LevelCardProps) {
+export function LevelCard({ attempt, criteria, scores, overall, status, notes = {} }: LevelCardProps) {
   const goal = attempt.goal;
   return (
-    <div className="results-card level-card" aria-busy={!final}>
+    <div className="results-card level-card">
       <div className="level-pair">
         <div className="is-level">
           <span>{overall === null ? 'Your level' : 'Estimated level'}</span>
           {overall !== null ? (
             <strong>CLB {overall}</strong>
           ) : (
-            <p className="level-pending">{final ? 'Needs Pip' : 'Pip is checking your answer. Your level appears when Pip is done.'}</p>
+            <p className="level-pending">Needs Pip</p>
           )}
         </div>
         <div>
@@ -103,7 +172,7 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
               <li key={criterion.id}>
                 <div className="criterion-head">
                   <span>{criterion.name}</span>
-                  <strong>{final ? 'Not checked without Pip' : 'Pip checks this'}</strong>
+                  <strong>Not checked without Pip</strong>
                 </div>
               </li>
             );
@@ -234,10 +303,10 @@ export function AnswerCard({ answer, goal, spoken, original, fromScratch: scratc
     <div className="results-card improved-card is-writing" aria-busy="true">
       <h2>{heading}</h2>
       <div className="ai-status is-checking">
-        <Pip mood="thinking" size={40} />
+        <PipWorking size={48} />
         <p className="ai-status-title" aria-live="polite">
-          {answer.text ? 'Pip, your AI coach, is writing it now…' : 'Pip, your AI coach, is starting to write…'}
-          {!fromScratch && ' Changes will be marked when it’s done.'}
+          {fromScratch ? 'Step 2 of 2: writing an example answer.' : 'Step 2 of 2: writing a better version.'}
+          {!fromScratch && ' Changes are marked when it’s done.'}
         </p>
       </div>
       {answer.text && <blockquote className="transcript streaming-text">{answer.text}</blockquote>}
@@ -251,7 +320,7 @@ export interface ChecklistRow {
   byCode?: boolean;
 }
 
-export function ChecklistCard({ items, results, final }: { items: string[]; results: ChecklistRow[] | null; final: boolean }) {
+export function ChecklistCard({ items, results }: { items: string[]; results: ChecklistRow[] | null }) {
   const anyUnchecked = !results || results.some((row) => row.met === null);
   return (
     <div className="results-card">
@@ -262,7 +331,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           const met = row?.met ?? null;
           return (
             <li key={item} className={met === true ? 'is-met' : met === false ? 'is-missed' : 'is-unchecked'}>
-              <Icon name={met === true ? 'check' : met === false ? 'missed' : final ? 'dash' : 'pending'} />
+              <Icon name={met === true ? 'check' : met === false ? 'missed' : 'dash'} />
               <span className="checklist-text">{item}</span>
               {row?.byCode && <span className="checked-by">checked automatically</span>}
               <span className="sr-only">{met === true ? 'covered' : met === false ? 'not covered' : 'not checked'}</span>
@@ -270,7 +339,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           );
         })}
       </ul>
-      {final && anyUnchecked && <p className="fine-print">Items marked <Icon name="dash" size="sm" label="with a dash" /> were not checked. Only Pip can check them.</p>}
+      {anyUnchecked && <p className="fine-print">Items marked <Icon name="dash" size="sm" label="with a dash" /> were not checked. Only Pip can check them.</p>}
     </div>
   );
 }
