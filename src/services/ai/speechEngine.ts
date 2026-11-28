@@ -1,8 +1,6 @@
 import type { ModelPlan } from '@/services/device/tier';
-import { ModelStore, useModelStatus, type ModelStatus } from './modelStore';
+import { ModelStore } from './modelStore';
 import type { SpeechToText, Transcript } from './types';
-
-export type SpeechStatus = ModelStatus;
 
 /**
  * One shared speech model for the whole app.
@@ -34,19 +32,15 @@ let shared: SpeechEngineStore | null = null;
 /** The app-wide store, created on first use so the AI code loads lazily. */
 export async function getSpeechEngine(): Promise<SpeechEngineStore> {
   if (!shared) {
-    const [{ getModelPlan, fallBackOneTier }, { WhisperSpeechToText }] = await Promise.all([
+    const [{ getModelPlan, fallBackSpeechToCpu }, { WhisperSpeechToText }] = await Promise.all([
       import('@/services/device/plan'),
       import('./whisperClient'),
     ]);
     shared ??= new SpeechEngineStore(
       getModelPlan,
       (plan) => new WhisperSpeechToText(plan.whisperModel, plan.whisperDevice),
-      fallBackOneTier,
+      fallBackSpeechToCpu,
     );
   }
   return shared;
-}
-
-export function useSpeechStatus(store: SpeechEngineStore | null): SpeechStatus {
-  return useModelStatus(store);
 }

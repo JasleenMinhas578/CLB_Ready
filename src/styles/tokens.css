@@ -1,40 +1,111 @@
-/* CLB Ready design tokens: a candy shop with grape ink.
-   Bright candy colours are for fills; text always uses grape for contrast. */
+/* Hallmark · shape: app screens with a Settled home hero · genre: playful · theme: Hum (deal 1/3, seed free-celpip-english-test-b600·f88bffc3·2026-11-28·r0), softened to gentle pastels · redesign: full
+ * hero: Settled (/) · nav: edge-aligned, the wordmark and two card-stock pills · footer: a paper sheet, the wordmark over two link columns and the disclaimer · imagery: none, Pip and the product's own cards · signature: the next task as a card-stock ticket with Pip peeking over it
+ * axes: light/rounded-sans/chromatic-yellow · posture: full-palette (pear the action, blue links and focus, mint growth, one pastel per skill) · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H5 E4 S4 R4 V4 · weakest: S and E, the skill tiles could be any course site; each tile takes its skill's own pastel card stock and the home leads with the learner's real next task */
+/* Hallmark · waive 80 · Pip, the coach drawn in tokens, peeks over the next-task card · Pip is the owner's named coach character, kept by the product brief */
+/* Hallmark · dismissed 11 · the raise and press is the card-stock material on controls and tiles that are links or buttons, one signal each, never on static cards */
+/* Hallmark · dismissed F7 · the wells inside results and lab cards share one recipe on purpose: DESIGN.md locks every well to --surface-sunk at --radius-sm, and their tints carry the role */
+/* Hallmark · dismissed 49 · the tier options are multi-line radio cards whose small print wraps by design, not button labels */
+
+/* CLB Ready design tokens. Soft cut-paper for home, practice and results;
+   calm and neutral for exam screens (the --exam-* set).
+   Pastel tints are fills only. Text sits on them in --ink, --ink-soft or the
+   matching *-ink colour; every pair below is at least 4.5:1. */
 :root {
-  /* Base */
-  --milk: #fff6fa;          /* strawberry-milk page background */
-  --milk-deep: #ffe9f3;
-  --white: #ffffff;
-  --grape: #3b1f4a;         /* ink: text, outlines, sticker shadows */
-  --grape-soft: #6b5380;    /* secondary text, ~6:1 on milk */
-  --blush: #ffb3cf;
+  color-scheme: light;
 
-  /* Candy flavours */
-  --bubblegum: #ff6fa8;
-  --bubblegum-deep: #e0407f;
-  --lemon: #ffd84d;
-  --mint: #5fdcc0;
-  --mint-deep: #17806b;
-  --blueberry: #8c9bff;
-  --grape-candy: #bfa8ff;
+  /* Paper: cream pulled toward pear, with a faint grain (see body in base.css) */
+  --bg: oklch(97% 0.014 95);           /* page, #f8f5eb */
+  --surface: oklch(99% 0.006 95);      /* cards and fields, #fdfcf7 */
+  --surface-sunk: oklch(94% 0.02 95);  /* wells, tracks, the footer sheet, #efebdd */
+  --edge: oklch(84% 0.035 90);         /* the card-stock edge under secondary controls */
 
-  /* Type */
+  /* Ink: blue-black */
+  --ink: oklch(25% 0.035 265);         /* text, 14.7:1 on --bg */
+  --ink-soft: oklch(46% 0.03 265);     /* secondary text, 5.5:1 or more on every tint */
+  --border: oklch(60% 0.025 265);      /* control outlines, 3.6:1 on --bg */
+  --border-soft: oklch(88% 0.02 95);   /* decorative card edges and dividers */
+
+  /* Primary action: pear card stock with ink text (11.6:1) */
+  --accent: oklch(89% 0.11 98);
+  --accent-hover: oklch(87% 0.125 97);
+  --accent-edge: oklch(76% 0.12 90);   /* the pressed edge under the pear button */
+  --accent-ink: var(--ink);            /* text on the accent */
+  /* Blue owns links and the focus ring: 6.3:1 on --bg */
+  --link: oklch(47% 0.15 255);
+  --focus: var(--link);
+
+  /* Pastel tints and their text colours (text is 5.5:1 or more on its tint and on --bg) */
+  --rose-tint: oklch(93% 0.04 15);     --rose-ink: oklch(48% 0.15 15);
+  --peach-tint: oklch(93% 0.045 55);   --peach-ink: oklch(48% 0.12 50);
+  --butter-tint: oklch(94% 0.07 95);   --butter-ink: oklch(47% 0.1 85);
+  --mint-tint: oklch(93% 0.05 160);    --mint-ink: oklch(46% 0.1 160);
+  --sky-tint: oklch(93% 0.035 240);    --sky-ink: oklch(47% 0.12 250);
+  --lilac-tint: oklch(92% 0.04 295);   --lilac-ink: oklch(47% 0.14 295);
+
+  /* Meaning. Always pair with an icon or words, never colour alone. */
+  --ok: var(--mint-ink);     --ok-bg: var(--mint-tint);
+  --warn: var(--butter-ink); --warn-bg: var(--butter-tint);
+  --bad: var(--rose-ink);    --bad-bg: var(--rose-tint);
+  --info: var(--sky-ink);    --info-bg: var(--sky-tint);
+
+  /* One tint per skill, used for its tile, badge and results level */
+  --speaking-tint: var(--peach-tint);  --speaking-ink: var(--peach-ink);
+  --writing-tint: var(--butter-tint);  --writing-ink: var(--butter-ink);
+  --reading-tint: var(--sky-tint);     --reading-ink: var(--sky-ink);
+  --listening-tint: var(--lilac-tint); --listening-ink: var(--lilac-ink);
+
+  /* Exam screens: neutral grey, like test day. No tints, no card stock, no motion. */
+  --exam-bg: oklch(95.5% 0.006 295);
+  --exam-surface: oklch(99.6% 0.002 295);
+  --exam-sunk: oklch(97.2% 0.004 295);
+  --exam-line: oklch(84% 0.012 295);         /* panel edges */
+  --exam-line-strong: oklch(63% 0.016 295);  /* field outlines, 3.3:1 on the surface */
+  --exam-ink: oklch(24% 0.014 295);
+  --exam-soft: oklch(44% 0.02 295);          /* 6.6:1 on --exam-bg */
+  --exam-accent: oklch(34% 0.04 295);        /* top bar, selected tab, primary button; light text 11:1 */
+  --exam-rec: oklch(53% 0.18 15);            /* recording dot and answer timer, 5:1 on the surface */
+  /* Light lines on the dark exam bar, and the dim behind the exit dialog */
+  --exam-bar-line: oklch(100% 0 0 / 0.6);    /* Exit outline and a disabled Next's text */
+  --exam-bar-faint: oklch(100% 0 0 / 0.35);  /* a disabled Next's outline */
+  --exam-bar-hover: oklch(100% 0 0 / 0.12);
+  --exam-scrim: oklch(24% 0.014 295 / 0.5);
+
+  /* Type: Fredoka for rounded heads, Nunito for body (open shapes read well for slow readers) */
   --font-display: 'Fredoka', 'Nunito', ui-rounded, system-ui, sans-serif;
   --font-body: 'Nunito', ui-rounded, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --step--1: 0.875rem;
-  --step-0: 1.0625rem;
-  --step-1: 1.3125rem;
-  --step-2: 1.75rem;
-  --step-3: clamp(2rem, 4vw, 2.5rem);
-  --step-4: clamp(2.4rem, 6vw, 3.6rem);
+  --step--1: 0.9375rem;                               /* labels, captions, fine print: 15px */
+  --step-0: 1.0625rem;                                /* body: 17px */
+  --step-1: 1.3125rem;                                /* card and item titles */
+  --step-2: clamp(1.625rem, 1vw + 1.25rem, 2rem);     /* screen sections */
+  --step-3: clamp(2rem, 2vw + 1.25rem, 2.75rem);      /* screen titles and home sections */
+  --step-4: clamp(2.5rem, 4vw + 0.75rem, 4.25rem);    /* the home headline */
+  --tracking-display: -0.02em;
 
-  /* Shape: stickers have thick outlines and a solid offset shadow */
-  --line: 3px solid var(--grape);
-  --sticker: 5px 5px 0 var(--grape);
-  --sticker-small: 3px 3px 0 var(--grape);
-  --radius-card: 28px;
-  --radius-field: 18px;
-  --radius-pill: 999px;
+  /* Shape: round everywhere, one radius per level */
+  --radius-sm: 10px;    /* chips inside cards, wells */
+  --radius-md: 16px;    /* card stock: buttons, tiles, options */
+  --radius-lg: 24px;    /* cards and sheets */
+  --radius-pill: 999px; /* small pills only */
+
+  /* Card stock: a solid edge below, lit from the top left. Hover raises it, a press flattens it. */
+  --stock-edge: 4px;
+  --stock-edge-up: 6px;
+  --stock-edge-down: 1px;
+  --shadow-card: 0 1px 2px oklch(25% 0.035 265 / 0.05), 0 12px 28px -16px oklch(25% 0.035 265 / 0.22);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .2 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+
+  /* Motion: state only. Snap for everything; the spring is the pear button's alone. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+
+  /* Icons */
+  --icon-sm: 1rem;
+  --icon-md: 1.25rem;
+  --icon-lg: 1.75rem;
+  --icon-xl: 2.5rem;
 
   /* Space */
   --gap-1: 0.5rem;
@@ -42,7 +113,8 @@
   --gap-3: 1.5rem;
   --gap-4: 2.5rem;
   --gap-5: 4rem;
-  --page-width: 1440px;
+  --gap-6: 6rem;
+  --page-width: 1360px;
   /* Side gutters grow with the screen: 16px on phones, up to 64px on wide monitors. */
   --gutter: clamp(16px, 4vw, 64px);
   --text-width: 64ch;

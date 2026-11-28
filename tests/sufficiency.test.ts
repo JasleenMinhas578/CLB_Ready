@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isScorable, lengthCeiling, plural } from '../src/domain/scoring/sufficiency';
+import { expectedSpokenWords, isScorable, targetSpokenWords, lengthCeiling, plural } from '../src/domain/scoring/sufficiency';
 import { measureWriting } from '../src/domain/measure/writingMetrics';
 import { codeEstimatesWriting, writingTips } from '../src/domain/scoring/writingEstimate';
 import { blendScores } from '../src/domain/scoring/estimate';
@@ -25,6 +25,12 @@ describe('too short to score', () => {
     expect(lengthCeiling(150, 150)).toBe(12);
   });
 
+  it('expects about 2 spoken words a second', () => {
+    expect(expectedSpokenWords(60)).toBe(120);
+    expect(expectedSpokenWords(90)).toBe(180);
+    expect(targetSpokenWords(60)).toBe(140);
+  });
+
   it('no longer gives a one-word answer high vocabulary', () => {
     const scores = codeEstimatesWriting(measureWriting({ text: 'fdjnd', wordRange: RANGE, grammarIssues: 0, emailTone: 'formal' }));
     expect(Math.max(...Object.values(scores)) <= 5).toBe(true);
@@ -45,7 +51,7 @@ describe('too short to score', () => {
 });
 
 describe('reading AI replies', () => {
-  const reply = '{"checklist":[{"item":"a","met":true}],"scores":{"content":8,"vocabulary":7,"delivery":7,"task":8},"tips":["t"]}';
+  const reply = '{"checklist":[{"item":"a","met":true}],"scores":{"content_and_coherence":8,"vocabulary":7,"listenability_or_readability":7,"task_fulfillment":8},"tips":["t"]}';
 
   it('copes with code fences and text around the JSON', () => {
     expect(parseFeedback('```json\n' + reply + '\n```')).not.toBeNull();

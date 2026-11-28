@@ -1,7 +1,7 @@
 import { GOAL_OPTIONS } from '@/domain/goals';
 import { useSession } from '@/app/session';
-import { navigate } from '@/app/router';
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
+import { backPath, navigate } from '@/app/router';
 
 export function GoalScreen() {
   const { goal, setGoal } = useSession();
@@ -9,9 +9,8 @@ export function GoalScreen() {
   return (
     <section className="narrow">
       <div className="screen-head">
-        <Emoji symbol="🎯" size="xl" motion="float" />
         <h1>What CLB level are you aiming for?</h1>
-        <p>Feedback and improved answers will be written for this level. You can change it any time.</p>
+        <p>Pip writes scores, tips and improved answers for this level. Choose a level to save it and go back to your practice.</p>
       </div>
 
       <div className="goal-grid" role="radiogroup" aria-label="CLB goal">
@@ -26,18 +25,19 @@ export function GoalScreen() {
               className={`goal-option ${selected ? 'is-selected' : ''}`}
               onClick={() => {
                 setGoal(option.level);
-                navigate('/');
+                navigate(backPath());
               }}
             >
               <span className="goal-level">CLB {option.level}</span>
               <span className="goal-label">{option.label}</span>
               <span className="goal-hint">{option.hint}</span>
+              {selected && <span className="goal-current"><Icon name="check" size="sm" /> Your goal</span>}
             </button>
           );
         })}
       </div>
 
-      <p className="fine-print">Your goal is kept only until you close this tab.</p>
+      <p className="fine-print">Your goal is kept until you close this tab. You can change it at any time from the top of the page.</p>
     </section>
   );
 }

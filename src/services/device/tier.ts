@@ -73,6 +73,8 @@ export interface PlanOptions {
   tier?: DeviceTier;
   /** How many tiers to step down after models failed to load. */
   stepsDown?: number;
+  /** Whisper failed on the GPU: run it like the no-webgpu tier (tiny.en on the CPU). */
+  speechOnCpu?: boolean;
 }
 
 export function planModels(signals: DeviceSignals, options: PlanOptions = {}): ModelPlan {
@@ -80,21 +82,24 @@ export function planModels(signals: DeviceSignals, options: PlanOptions = {}): M
   const start = signals.webgpu ? (options.tier ?? chooseTier(signals)) : 'no-webgpu';
   const index = Math.min(TIER_ORDER.indexOf(start) + (options.stepsDown ?? 0), TIER_ORDER.length - 1);
   const tier = TIER_ORDER[index];
-  const whisper = { high: 'small.en', mid: 'base.en', low: 'tiny.en', 'no-webgpu': 'tiny.en' }[tier];
+  // Bigger models are too slow on the CPU for long answers, so the CPU always gets tiny.en.
+  const onCpu = tier === 'no-webgpu' || Boolean(options.speechOnCpu);
+  const whisper = onCpu ? 'tiny.en' : { high: 'small.en', mid: 'base.en', low: 'tiny.en' }[tier];
   const reasons: Record<DeviceTier, string> = {
-    high: 'Strong GPU and plenty of memory: using the larger, smarter models.',
-    mid: 'Good GPU: using balanced models for speed and quality.',
-    low: 'Limited memory: using the smallest models to keep things smooth.',
-    'no-webgpu': 'WebGPU is not available: speech runs on the CPU and feedback uses light mode.',
+    high: 'This uses the largest models. They need a strong graphics chip and plenty of memory.',
+    mid: 'This uses balanced models. They give good feedback at a good speed on most laptops.',
+    low: 'This uses the smallest models, so they run on devices with less memory.',
+    'no-webgpu': 'Speech-to-text runs on the processor. Pip is off on this device, so feedback comes from word counts, timing and simple checks.',
   };
 
   return {
     tier,
     whisperModel: `Xenova/whisper-${whisper}`,
-    whisperDevice: signals.webgpu ? 'webgpu' : 'wasm',
+    // Follow the tier, not the device: stepping down to no-webgpu after a GPU failure must move Whisper to the CPU.
+    whisperDevice: onCpu ? 'wasm' : 'webgpu',
     feedbackModel: feedbackModelFor(tier, signals.shaderF16),
     keepWhisperLoaded: tier === 'high' || tier === 'mid',
     voice: tier === 'high' ? { device: 'webgpu', dtype: 'fp32' } : LIGHT_VOICE,
-    reason: options.stepsDown ? `${reasons[tier]} (Switched down after a model didn’t load.)` : reasons[tier],
+    reason: options.stepsDown ? `${reasons[tier]} A larger model did not load, so CLB Ready switched to smaller ones.` : reasons[tier],
   };
 }

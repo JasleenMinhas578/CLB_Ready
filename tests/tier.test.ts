@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { chooseTier, planModels, type DeviceSignals } from '../src/services/device/tier';
+import { describe, expect, it, vi } from 'vitest';
+import { chooseTier, planModels, type DeviceSignals, type ModelPlan } from '../src/services/device/tier';
+import { SpeechEngineStore } from '../src/services/ai/speechEngine';
+import type { SpeechToText } from '../src/services/ai/types';
 
 const GB = 1024 ** 3;
 const laptop: DeviceSignals = { ramGb: 8, cpuCores: 8, webgpu: true, shaderF16: true, maxBufferBytes: 4 * GB, isMobile: false };
@@ -40,5 +42,50 @@ describe('planModels', () => {
   it('unloads Whisper between answers only on low tiers', () => {
     expect(planModels(laptop).keepWhisperLoaded).toBe(true);
     expect(planModels({ ...laptop, isMobile: true }).keepWhisperLoaded).toBe(false);
+  });
+
+  it('moves Whisper to the CPU after stepping down to the no-WebGPU tier', () => {
+    expect(planModels(laptop, { stepsDown: 3 })).toMatchObject({ tier: 'no-webgpu', whisperDevice: 'wasm' });
+    expect(planModels(laptop, { stepsDown: 2 }).whisperDevice).toBe('webgpu');
+  });
+
+  it('reaches the CPU after one failed WebGPU load on a low-tier device', async () => {
+    let steps = 0;
+    const devices: string[] = [];
+    const store = new SpeechEngineStore(
+      async () => planModels({ ...laptop, isMobile: true }, { stepsDown: steps }),
+      (plan: ModelPlan): SpeechToText => ({
+        async load() {
+          devices.push(plan.whisperDevice);
+          if (plan.whisperDevice === 'webgpu') throw new Error('GPUDevice was lost');
+          return { elapsedMs: 1 };
+        },
+        async transcribe() { return { text: '', words: [], elapsedMs: 1 }; },
+        async unload() {},
+      }),
+      async () => { steps += 1; return true; },
+    );
+    await store.ensureLoaded();
+    expect(devices).toEqual(['webgpu', 'wasm']);
+    expect(store.getStatus().state).toBe('ready');
+  });
+
+  it('runs speech as tiny.en on the CPU after a GPU failure, without touching feedback', () => {
+    const plan = planModels(laptop, { speechOnCpu: true });
+    expect(plan).toMatchObject({ tier: 'high', whisperModel: 'Xenova/whisper-tiny.en', whisperDevice: 'wasm' });
+    expect(plan.feedbackModel).toBe(planModels(laptop).feedbackModel);
+  });
+});
+
+vi.mock('../src/services/device/detectDevice', () => ({ detectDevice: async () => laptop }));
+
+describe('speech CPU fallback in the session plan', () => {
+  it('moves speech to the CPU once, and a tier picked in Settings tries the GPU again', async () => {
+    const { fallBackSpeechToCpu, getModelPlan, setTierChoice } = await import('../src/services/device/plan');
+    expect(await fallBackSpeechToCpu()).toBe(true);
+    expect(await getModelPlan()).toMatchObject({ tier: 'high', whisperDevice: 'wasm', whisperModel: 'Xenova/whisper-tiny.en' });
+    expect(await fallBackSpeechToCpu()).toBe(false);
+    setTierChoice('high');
+    expect(await getModelPlan()).toMatchObject({ whisperDevice: 'webgpu', whisperModel: 'Xenova/whisper-small.en' });
   });
 });

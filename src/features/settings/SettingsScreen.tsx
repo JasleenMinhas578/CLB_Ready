@@ -1,7 +1,8 @@
 import { clearProgress, useProgress } from '@/services/progress/progress';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
+import { Button, LinkButton } from '@/components/Button';
+import { Icon } from '@/components/Icon';
+import { backPath } from '@/app/router';
 import type { DeviceReport } from '@/services/device/detectDevice';
 import {
   getDetectedTier,
@@ -16,17 +17,19 @@ import { planModels, type DeviceTier, type ModelPlan } from '@/services/device/t
 import { getSpeechEngine, type SpeechEngineStore } from '@/services/ai/speechEngine';
 import { getFeedbackEngine, type FeedbackEngineStore } from '@/services/ai/feedbackEngine';
 import { useModelStatus, type ModelStatus } from '@/services/ai/modelStore';
+import { unloadAllModels } from '@/services/unloadModels';
+import { setTimerSounds, useTimerSounds } from '@/services/audio/timerSounds';
 
 const CHOICES: { value: TierChoice; title: string; text: string }[] = [
-  { value: 'auto', title: 'Best for this device', text: 'Picked from your memory, processor and graphics chip.' },
-  { value: 'high', title: 'Smartest', text: 'Largest models. Needs a strong graphics chip and 8 GB of memory or more.' },
+  { value: 'auto', title: 'Best for this device', text: 'Chosen from this device’s memory, processor and graphics chip.' },
+  { value: 'high', title: 'Largest', text: 'Largest models. Needs a strong graphics chip and 8 GB of memory or more.' },
   { value: 'mid', title: 'Balanced', text: 'Good feedback and speed on most laptops.' },
-  { value: 'low', title: 'Lightest AI', text: 'Smallest models for older laptops and phones.' },
-  { value: 'no-webgpu', title: 'Light mode', text: 'No AI coach. Feedback from measurements only. Smallest download.' },
+  { value: 'low', title: 'Lightest', text: 'Smallest models for older laptops and phones.' },
+  { value: 'no-webgpu', title: 'Light mode', text: 'Pip is off on this device, so feedback comes from word counts, timing and simple checks. Smallest download.' },
 ];
 
 function shortModel(id: string | null): string {
-  if (!id) return 'none (light mode)';
+  if (!id) return 'off on this device';
   return id.replace(/^Xenova\//, '').replace(/-q4f(16|32)_1-MLC$/, '');
 }
 
@@ -35,7 +38,7 @@ function statusText(status: ModelStatus): string {
     case 'idle': return 'Not loaded';
     case 'loading': return `Loading${status.progress != null ? ` ${Math.round(status.progress * 100)}%` : ''}`;
     case 'ready': return 'Loaded and ready';
-    case 'error': return 'Didn’t load';
+    case 'error': return 'Did not load';
     case 'unavailable': return 'Not used on this setting';
   }
 }
@@ -83,14 +86,20 @@ export function SettingsScreen() {
   const choose = async (next: TierChoice) => {
     setChoice(next);
     setMessage(null);
-    // Free the old models; the new ones load at the next task.
-    await Promise.all([speech?.unload(), coach?.unload()]);
+    // Free the old models; the new ones load at the next task. The workers stop even if
+    // unloading reports an error, so the new choice still applies.
+    try {
+      await unloadAllModels();
+      setMessage('Saved for this visit. New models load when you open your next task.');
+    } catch {
+      setMessage('Saved for this visit. The old models did not close cleanly. If the next task is slow, reload the page.');
+    }
     setTierChoice(next);
-    setMessage('Saved for this visit. New models load when you open your next task.');
   };
 
   const deleteModels = async () => {
-    await Promise.all([speech?.unload(), coach?.unload()]);
+    // The workers stop even if unloading reports an error, so deleting can go ahead.
+    await unloadAllModels().catch(() => undefined);
     try {
       const names = await caches.keys();
       await Promise.all(names.map((name) => caches.delete(name)));
@@ -105,9 +114,9 @@ export function SettingsScreen() {
   return (
     <section className="narrow">
       <div className="screen-head">
-        <Emoji symbol="🧠" size="xl" />
-        <h1>AI models and privacy</h1>
-        <p>Everything runs on this device. These settings reset when you close the tab.</p>
+        <h1>Settings and privacy</h1>
+        <p>Everything runs on this device. Model choices reset when you close the tab.</p>
+        <LinkButton to={backPath()} variant="secondary"><Icon name="arrow-left" /> Back to practice</LinkButton>
       </div>
 
       <div className="results-card">
@@ -115,8 +124,8 @@ export function SettingsScreen() {
         {plan ? (
           <>
             <ul className="model-rows">
-              <li><span>Speech to text</span><strong>Whisper {shortModel(plan.whisperModel).replace('whisper-', '')}</strong><em>{statusText(speechStatus)}</em></li>
-              <li><span>AI coach</span><strong>{shortModel(plan.feedbackModel)}</strong><em>{statusText(coachStatus)}</em></li>
+              <li><span>Speech-to-text</span><strong>Whisper {shortModel(plan.whisperModel).replace('whisper-', '')}</strong><em>{statusText(speechStatus)}</em></li>
+              <li><span>Pip, your AI coach</span><strong>{shortModel(plan.feedbackModel)}</strong><em>{statusText(coachStatus)}</em></li>
             </ul>
             <p className="fine-print">{plan.reason}</p>
           </>
@@ -142,10 +151,10 @@ export function SettingsScreen() {
                 className={`tier-option ${choice === option.value ? 'is-selected' : ''}`}
                 onClick={() => void choose(option.value)}
               >
-                <strong>{option.title}{option.value === 'auto' && detected ? ` (${detected === 'no-webgpu' ? 'light mode' : detected})` : ''}</strong>
+                <strong>{choice === option.value && <Icon name="check" size="sm" />} {option.title}{option.value === 'auto' && detected ? ` (${CHOICES.find((item) => item.value === detected)?.title ?? detected})` : ''}</strong>
                 <span>{option.text}</span>
-                {preview && <small>Coach: {shortModel(preview.feedbackModel)}</small>}
-                {disabled && <small>Needs WebGPU, which this browser doesn’t offer.</small>}
+                {preview && !disabled && <small>Pip: {shortModel(preview.feedbackModel)}</small>}
+                {disabled && <small>Needs WebGPU. This browser does not have it.</small>}
               </button>
             );
           })}
@@ -162,17 +171,19 @@ export function SettingsScreen() {
             <li><span>WebGPU</span><strong>{report.webgpu ? `Yes${report.gpuVendor ? `, ${report.gpuVendor}` : ''}` : 'No'}</strong></li>
           </ul>
         ) : (
-          <p>Checking…</p>
+          <p>Checking your device…</p>
         )}
         <p className="fine-print">These details stay in your browser. They are never sent anywhere.</p>
       </div>
+
+      <TimerSoundsCard />
 
       <ProgressCard />
 
       <div className="results-card">
         <h2>Downloaded models</h2>
         <p>
-          Models are saved in your browser so they don’t download every time.{' '}
+          Models are saved in your browser, so they do not download every time.{' '}
           {storage != null && storage < 1024 ** 2 ? 'Nothing is downloaded yet.' : `They use about ${formatBytes(storage)}.`}
         </p>
         {confirmDelete ? (
@@ -188,6 +199,21 @@ export function SettingsScreen() {
   );
 }
 
+/** Turns the timer start and end beeps on or off. */
+function TimerSoundsCard() {
+  const on = useTimerSounds();
+  return (
+    <div className="results-card">
+      <h2>Sounds</h2>
+      <label className="setting-toggle">
+        <input type="checkbox" checked={on} onChange={(event) => setTimerSounds(event.target.checked)} aria-describedby="timer-sounds-hint" />
+        Timer sounds
+      </label>
+      <p id="timer-sounds-hint" className="fine-print">A soft beep when each timer starts and ends. Saved on this device.</p>
+    </div>
+  );
+}
+
 /** How many tasks are ticked, with a button to clear them. */
 function ProgressCard() {
   const progress = useProgress();
@@ -197,17 +223,17 @@ function ProgressCard() {
     <div className="results-card">
       <h2>Your progress</h2>
       <p>
-        {done ? `You’ve finished ${done} ${done === 1 ? 'task' : 'tasks'}.` : 'No finished tasks yet.'} Ticks are saved in this
-        browser only. Only which tasks you finished is kept, never your answers or recordings.
+        {done ? `You’ve finished ${done} ${done === 1 ? 'task' : 'tasks'}.` : 'No finished tasks yet.'} This browser keeps a list
+        of the tasks you finished. It never keeps your answers or recordings.
       </p>
       {done > 0 &&
         (confirm ? (
           <div className="row-actions">
-            <Button onClick={() => { clearProgress(); setConfirm(false); }}>Yes, clear my ticks</Button>
+            <Button onClick={() => { clearProgress(); setConfirm(false); }}>Yes, clear my progress</Button>
             <Button variant="secondary" onClick={() => setConfirm(false)}>Keep them</Button>
           </div>
         ) : (
-          <Button variant="secondary" onClick={() => setConfirm(true)}>Clear progress</Button>
+          <Button variant="secondary" onClick={() => setConfirm(true)}>Clear my progress</Button>
         ))}
     </div>
   );

@@ -1,9 +1,7 @@
 import type { ModelPlan } from '@/services/device/tier';
-import { ModelStore, useModelStatus, type ModelStatus } from './modelStore';
+import { ModelStore } from './modelStore';
 import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, cleanAnswerText, parseFeedback, type FeedbackReply } from './feedbackPrompt';
 import type { FeedbackModel, GenerationStats } from './types';
-
-export type FeedbackStatus = ModelStatus;
 
 export interface FeedbackRun {
   reply: FeedbackReply;
@@ -78,12 +76,13 @@ export class FeedbackEngineStore extends ModelStore<FeedbackModel> {
       try {
         for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
           const { text, stats, truncated = false } = await engine.complete(system, user, options);
-          await engine.reset();
           if (this.interrupted) throw new GenerationInterruptedError();
           const value = parse(text);
           if (value !== null) return { value, stats, attempts: attempt, truncated };
           // Local debugging only: shows why a reply failed. Nothing is sent anywhere.
           console.warn(`[CLB Ready] AI reply ${attempt} couldn't be read${truncated ? ' (cut off at the token limit)' : ''}:`, text.slice(0, 400));
+          // A retry starts from a clean chat; after the last try, finally clears it.
+          if (attempt < MAX_ATTEMPTS) await engine.reset();
         }
         throw new Error('The AI reply could not be read.');
       } finally {
@@ -113,8 +112,4 @@ export async function getFeedbackEngine(): Promise<FeedbackEngineStore> {
     );
   }
   return shared;
-}
-
-export function useFeedbackStatus(store: FeedbackEngineStore | null): FeedbackStatus {
-  return useModelStatus(store);
 }

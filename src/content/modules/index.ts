@@ -1,45 +1,41 @@
 import type { PracticeModule, PracticePrompt } from '../types';
 import type { ListeningPart, ReadingPart } from '../objective';
-import type { SkillId } from '@/domain/skills';
-import { getTaskType } from '@/domain/tasks/catalog';
-import { module1 } from './module1';
-import { module2 } from './module2';
-import { module3 } from './module3';
-import { module4 } from './module4';
-import { module5 } from './module5';
 
 /**
- * Module registry. To add a module: create moduleN.ts next to module1.ts
- * and list it here. A module can be filled one skill at a time: a skill's
- * tasks open as soon as the module has prompts for that skill.
+ * Module registry. Each module's content is its own chunk, downloaded only when a
+ * task or result needs it. To add a module: create moduleN.ts next to module1.ts,
+ * list it here and in catalog.ts.
  */
-export const MODULES: readonly PracticeModule[] = [module1, module2, module3, module4, module5];
+const LOADERS: Record<string, () => Promise<PracticeModule>> = {
+  'module-1': () => import('./module1').then((file) => file.module1),
+  'module-2': () => import('./module2').then((file) => file.module2),
+  'module-3': () => import('./module3').then((file) => file.module3),
+  'module-4': () => import('./module4').then((file) => file.module4),
+  'module-5': () => import('./module5').then((file) => file.module5),
+};
 
-/** True when the module has prompts for this skill, so its tab can open. */
-export function moduleHasSkill(practiceModule: PracticeModule, skill: SkillId): boolean {
-  if (skill === 'reading') return !!practiceModule.reading?.length;
-  if (skill === 'listening') return !!practiceModule.listening?.length;
-  return practiceModule.prompts.some((prompt) => getTaskType(prompt.taskTypeId)?.skill === skill);
+const loaded = new Map<string, Promise<PracticeModule | undefined>>();
+
+/**
+ * One promise per module, kept so React's `use()` gets the same promise on every
+ * render. Resolves to undefined for an unknown id. A failed download is forgotten,
+ * so the next visit tries again.
+ */
+export function loadModule(id: string): Promise<PracticeModule | undefined> {
+  let promise = loaded.get(id);
+  if (!promise) {
+    const load = LOADERS[id];
+    promise = load ? load() : Promise.resolve(undefined);
+    promise.catch(() => loaded.delete(id));
+    loaded.set(id, promise);
+  }
+  return promise;
 }
 
-/** Task type ids this module has content for. */
-export function moduleTaskIds(practiceModule: PracticeModule): string[] {
-  return [
-    ...practiceModule.prompts.map((prompt) => prompt.taskTypeId),
-    ...(practiceModule.reading ?? []).map((part) => part.taskTypeId),
-    ...(practiceModule.listening ?? []).map((part) => part.taskTypeId),
-  ];
-}
-
-export function getObjectivePart(moduleId: string, taskTypeId: string): ReadingPart | ListeningPart | undefined {
-  const practiceModule = getModule(moduleId);
+export function getObjectivePart(practiceModule: PracticeModule | undefined, taskTypeId: string): ReadingPart | ListeningPart | undefined {
   return [...(practiceModule?.reading ?? []), ...(practiceModule?.listening ?? [])].find((part) => part.taskTypeId === taskTypeId);
 }
 
-export function getModule(id: string): PracticeModule | undefined {
-  return MODULES.find((module) => module.id === id);
-}
-
-export function getPrompt(moduleId: string, taskTypeId: string): PracticePrompt | undefined {
-  return getModule(moduleId)?.prompts.find((prompt) => prompt.taskTypeId === taskTypeId);
+export function getPrompt(practiceModule: PracticeModule | undefined, taskTypeId: string): PracticePrompt | undefined {
+  return practiceModule?.prompts.find((prompt) => prompt.taskTypeId === taskTypeId);
 }

@@ -1,15 +1,16 @@
 import type { RouteParams } from '@/app/router';
 import { href } from '@/app/router';
 import { useSession } from '@/app/session';
-import { getSkill, type SkillId } from '@/domain/skills';
+import { getSkill } from '@/domain/skills';
+import { DEFAULT_GOAL } from '@/domain/attempt';
+import { formatSeconds } from '@/domain/timer';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
-import { MODULES, getModule, moduleHasSkill, moduleTaskIds } from '@/content/modules';
+import { MODULE_CATALOG, getModuleSummary } from '@/content/modules/catalog';
 import { LinkButton } from '@/components/Button';
-import { Emoji } from '@/components/Emoji';
+import { Icon } from '@/components/Icon';
 import { NotFound } from '@/components/NotFound';
-import { formatSeconds } from '@/components/TimerRing';
-import { countDone, taskKey, useProgress } from '@/services/progress/progress';
+import { countDone, nextTask, taskKey, useProgress } from '@/services/progress/progress';
 
 function timingText(task: TaskType): string {
   if (isSpeakingTask(task)) {
@@ -29,90 +30,90 @@ export function SkillScreen({ params }: { params: RouteParams }) {
   const { goal } = useSession();
   const progress = useProgress();
   const skill = getSkill(params.skillId);
-  const practiceModule = getModule(params.moduleId);
+  const practiceModule = getModuleSummary(params.moduleId);
   if (!skill || !practiceModule) return <NotFound />;
 
-  if (skill.status !== 'available') {
-    return (
-      <section className="empty-state">
-        <Emoji symbol={skill.emoji} size="xl" motion="float" />
-        <h1>{skill.name} practice is coming soon</h1>
-        <p>We're starting with speaking and writing. Check back for {skill.name.toLowerCase()} tasks.</p>
-        <LinkButton to="/">Back to skills</LinkButton>
-      </section>
-    );
-  }
-
-  const available = new Set(moduleTaskIds(practiceModule));
-  const tasks = getTaskTypesForSkill(skill.id).filter((task) => available.has(task.id));
+  // Every module has every task, so the counts beside module names use the same ids.
+  const tasks = getTaskTypesForSkill(skill.id);
+  const taskIds = tasks.map((task) => task.id);
+  const doneAt = (taskId: string) => progress[taskKey(practiceModule.id, taskId)];
+  const next = tasks.find((task) => !doneAt(task.id));
+  const laterModule = next ? null : nextTask(progress, skill.id);
 
   return (
     <section>
-      <div className="screen-head align-left">
-        <h1><Emoji symbol={skill.emoji} size="lg" /> {skill.name} practice</h1>
-        <p>{skill.blurb}</p>
+      <div className={`screen-head skill-head skill-${skill.id}`}>
+        <span className="skill-badge"><Icon name={skill.id} size="lg" /></span>
+        <div>
+          <h1>{skill.name} practice</h1>
+          <p>{skill.blurb}</p>
+        </div>
       </div>
 
       {!goal && (
         <p className="nudge">
-          <Emoji symbol="🎯" /> <a href={href('/goal')}>Set your CLB goal</a> so feedback aims at the right level.
+          <Icon name="goal" /> <span>No goal yet, so feedback aims at CLB {DEFAULT_GOAL}. <a href={href('/goal')}>Choose your CLB goal</a></span>
         </p>
       )}
 
       <nav className="module-tabs" aria-label="Practice modules">
-        {MODULES.map((item) =>
-          moduleHasSkill(item, skill.id) ? (
-            <a
-              key={item.id}
-              href={href(`/practice/${skill.id}/${item.id}`)}
-              className={`module-tab ${item.id === practiceModule.id ? 'is-current' : ''}`}
-              aria-current={item.id === practiceModule.id ? 'page' : undefined}
-            >
-              {item.title}
-              <ModuleCount done={countDone(progress, item.id, skillTaskIds(item.id, skill.id))} total={skillTaskIds(item.id, skill.id).length} />
-            </a>
-          ) : (
-            <span key={item.id} className="module-tab is-soon" aria-disabled="true">
-              {item.title} <small>soon</small>
-            </span>
-          ),
-        )}
+        {MODULE_CATALOG.map((item) => (
+          <a
+            key={item.id}
+            href={href(`/practice/${skill.id}/${item.id}`)}
+            className={`module-tab ${item.id === practiceModule.id ? 'is-current' : ''}`}
+            aria-current={item.id === practiceModule.id ? 'page' : undefined}
+          >
+            {item.title}
+            <ModuleCount done={countDone(progress, item.id, taskIds)} total={taskIds.length} />
+          </a>
+        ))}
       </nav>
 
+      {laterModule && (
+        <div className="module-done">
+          <Icon name="check" />
+          <p>You finished every {skill.name.toLowerCase()} task in {practiceModule.title}.</p>
+          {laterModule.moduleId !== practiceModule.id && (
+            <LinkButton to={`/practice/${skill.id}/${laterModule.moduleId}`}>
+              Go to {getModuleSummary(laterModule.moduleId)?.title} <Icon name="arrow-right" />
+            </LinkButton>
+          )}
+        </div>
+      )}
+
       <ol className="task-list">
-        {tasks.map((task) => (
-          <li key={task.id}>
-            <a className={`task-row ${progress[taskKey(practiceModule.id, task.id)] ? 'is-done' : ''}`} href={href(`/task/${practiceModule.id}/${task.id}`)}>
-              <span className="task-number" aria-hidden="true">{task.order}</span>
-              <span className="task-text">
-                <strong>{task.title}</strong>
-                <span>{task.summary}</span>
-                <span className="task-timing">
-                  {timingText(task)}
-                  {task.needsImage && <span className="tag">Picture</span>}
+        {tasks.map((task) => {
+          const finished = doneAt(task.id);
+          const isNext = task === next;
+          return (
+            <li key={task.id}>
+              <a className={`task-row ${finished ? 'is-done' : ''} ${isNext ? 'is-next' : ''}`} href={href(`/task/${practiceModule.id}/${task.id}`)}>
+                <span className="task-number" aria-hidden="true">{task.order}</span>
+                <span className="task-text">
+                  <strong>{task.title}</strong>
+                  <span>{task.summary}</span>
+                  <span className="task-timing">
+                    {timingText(task)}
+                    {task.needsImage && <span className="tag">Picture</span>}
+                  </span>
                 </span>
-              </span>
-              {progress[taskKey(practiceModule.id, task.id)] ? (
-                <span className="task-done" title={`Finished ${new Date(progress[taskKey(practiceModule.id, task.id)]).toLocaleDateString()}`}>
-                  <span aria-hidden="true">✓</span> Done
-                </span>
-              ) : (
-                <span className="task-go" aria-hidden="true">▸</span>
-              )}
-            </a>
-          </li>
-        ))}
+                {finished ? (
+                  <span className="task-done" title={`Finished ${new Date(finished).toLocaleDateString()}`}>
+                    <Icon name="tick" size="sm" /> Done
+                  </span>
+                ) : isNext ? (
+                  <span className="task-start">Start next <Icon name="arrow-right" size="sm" /></span>
+                ) : (
+                  <span className="task-go"><Icon name="arrow-right" /></span>
+                )}
+              </a>
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
-}
-
-/** Task ids of one skill that a module has content for. */
-function skillTaskIds(moduleId: string, skillId: SkillId): string[] {
-  const practiceModule = getModule(moduleId);
-  if (!practiceModule) return [];
-  const available = new Set(moduleTaskIds(practiceModule));
-  return getTaskTypesForSkill(skillId).map((task) => task.id).filter((id) => available.has(id));
 }
 
 /** "3/8" beside a module name, or a tick when every task is done. */
@@ -120,7 +121,7 @@ function ModuleCount({ done, total }: { done: number; total: number }) {
   if (!done || !total) return null;
   return (
     <small className={`module-count ${done === total ? 'is-complete' : ''}`} aria-label={`${done} of ${total} done`}>
-      {done === total ? '✓' : `${done}/${total}`}
+      {done === total ? <Icon name="tick" size="sm" /> : `${done}/${total}`}
     </small>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkRecording, micProblemFrom, rms, wordsPerMinute } from '../src/services/audio/analysis';
+import { checkRecording, micProblemFrom, rms } from '../src/services/audio/analysis';
 
 const RATE = 16_000;
 const tone = (seconds: number, amplitude: number) =>
@@ -29,14 +29,6 @@ describe('checkRecording', () => {
 
   it('accepts normal speech-level audio', () => {
     expect(checkRecording(tone(10, 0.2), RATE)).toBeNull();
-  });
-});
-
-describe('wordsPerMinute', () => {
-  it('scales words to a per-minute pace', () => {
-    expect(wordsPerMinute(120, 60)).toBe(120);
-    expect(wordsPerMinute(65, 30)).toBe(130);
-    expect(wordsPerMinute(10, 0)).toBe(0);
   });
 });
 

@@ -130,10 +130,6 @@ interface RawScores {
   vocabulary?: unknown;
   listenability_or_readability?: unknown;
   task_fulfillment?: unknown;
-  // Older key names, still accepted.
-  content?: unknown;
-  delivery?: unknown;
-  task?: unknown;
 }
 
 /** Parses and sanity-checks a reply. Returns null if anything required is missing. */
@@ -142,10 +138,10 @@ export function parseFeedback(text: string): FeedbackReply | null {
     const value = extractJson(text) as { checklist?: unknown; scores?: RawScores; tips?: unknown };
     const raw = value.scores ?? {};
     const scores = {
-      content: raw.content_and_coherence ?? raw.content,
+      content: raw.content_and_coherence,
       vocabulary: raw.vocabulary,
-      delivery: raw.listenability_or_readability ?? raw.delivery,
-      task: raw.task_fulfillment ?? raw.task,
+      delivery: raw.listenability_or_readability,
+      task: raw.task_fulfillment,
     };
     const scoresOk = Object.values(scores).every((score) => typeof score === 'number' && Number.isFinite(score));
     if (!Array.isArray(value.checklist) || !scoresOk || !Array.isArray(value.tips)) return null;

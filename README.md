@@ -1,18 +1,17 @@
-# CLB Ready 🍭
+# CLB Ready
 
-**Free CELPIP practice with an AI coach that lives in your browser.**
+**Free CELPIP practice with Pip, an AI coach that runs in your browser.**
 
-Practise all four CELPIP skills under real test timers, then see exactly what to change to reach your
-CLB goal. No account, no card, and your answers never leave your device.
+Practise all four CELPIP skills under real test timers. Then see your estimated CLB level and what to change to
+reach your goal. There is no account and no payment, and your answers never leave your device.
 
 **Try it:** [clbready.vercel.app](https://clbready.vercel.app) · also on
 [GitHub Pages](https://jasleenminhas578.github.io/CLB_Ready/). Chrome or Edge on a laptop works best.
 
 ![CLB Ready home page](docs/screenshots/01-home.png)
 
-> CLB Ready is an independent practice tool. It is not affiliated with, endorsed by or connected to
-> CELPIP, Prometric, the Centre for Canadian Language Benchmarks or the Government of Canada.
-> Scores are estimates for practice only.
+> CLB Ready is an independent practice tool. It is not affiliated with or endorsed by CELPIP or Paragon Testing
+> Enterprises. CELPIP is a trademark of Paragon Testing Enterprises. Scores are estimates for practice only.
 
 ## What's inside
 
@@ -21,7 +20,7 @@ CLB goal. No account, no card, and your answers never leave your device.
   rewritten at your goal level, with every change marked.
 - **40 sample answers at CLB 10+**, sized to the speaking time, with notes on why they work and a button to
   hear them read aloud.
-- **Writing, marked like a teacher would**, in a test-style editor with a live word count, grammar marks,
+- **Writing feedback** in a test-style editor with a live word count, grammar marks,
   scores per criterion and an improved version.
 - **380 reading and listening questions**, each with an explanation that quotes the line that proves it.
   Listening plays once, like test day, then shows the full transcript.
@@ -83,7 +82,8 @@ Every push to `main` runs the tests and publishes the site (GitHub Actions to Gi
 By default, Kokoro makes the listening voices in the learner's browser, a line at a time while the
 recording plays. `npm run audio` can instead pre-record clips as MP3 files in `public/audio/`; the app
 plays a recording when one exists. It needs internet the first time (about 330 MB for the model) and
-ffmpeg (`brew install ffmpeg` on a Mac).
+ffmpeg (`brew install ffmpeg` on a Mac). To skip onnxruntime-node's GPU (CUDA) download, install
+with `ONNXRUNTIME_NODE_INSTALL_CUDA=skip npm install`.
 
 Open `#/lab` (the "Model lab" link in the footer) to measure load time, transcription time, tokens per
 second and memory on your device.

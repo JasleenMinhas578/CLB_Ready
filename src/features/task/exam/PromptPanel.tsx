@@ -53,11 +53,12 @@ export function PromptPanel({ task, prompt, selected = null, onSelect, optionsLo
           </figure>
         ) : (
           <div className="exam-image-placeholder" role="img" aria-label="Picture not added yet">
-            Picture for this task is added in a later step.
+            The picture for this task is not ready yet.
           </div>
         ))}
 
-      {prompt.draft && <p className="exam-note">Draft practice prompt.</p>}
+      {/* A note for whoever is writing content; learners do not need it. */}
+      {import.meta.env.DEV && prompt.draft && <p className="exam-note">Draft practice prompt.</p>}
     </section>
   );
 }

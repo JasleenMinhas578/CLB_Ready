@@ -4,15 +4,12 @@ import { getCriteria } from '@/domain/criteria';
 import { GOAL_OPTIONS } from '@/domain/goals';
 import { getTaskType } from '@/domain/tasks/catalog';
 import { isWritingTask } from '@/domain/tasks/types';
-import { isScorable } from '@/domain/scoring/sufficiency';
-import { getPrompt } from '@/content/modules';
+import { expectedSpokenWords, isScorable, targetSpokenWords } from '@/domain/scoring/sufficiency';
+import { getPrompt, loadModule } from '@/content/modules';
 import { GenerationInterruptedError, getFeedbackEngine, type FeedbackEngineStore, type FeedbackRun } from '@/services/ai/feedbackEngine';
 import { answerTokenBudget, buildFeedbackPrompt, buildModelAnswerPrompt, buildRewritePrompt } from '@/services/ai/feedbackPrompt';
 import { ModelUnavailableError } from '@/services/ai/modelStore';
 import type { GenerationStats } from '@/services/ai/types';
-
-/** A clear, natural speaking pace for model answers. */
-const SPEAKING_WORDS_PER_MINUTE = 140;
 
 /** Timing for one AI step. */
 export interface StepPerf {
@@ -62,7 +59,7 @@ export interface FeedbackProgress {
   perf: AiPerf | null;
 }
 
-interface Job {
+export interface Job {
   promise: Promise<FeedbackOutcome>;
   progress: FeedbackProgress;
   listeners: Set<(progress: FeedbackProgress) => void>;
@@ -118,9 +115,9 @@ function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string
   const spoken = attempt.skill === 'speaking';
   const task = getTaskType(attempt.taskTypeId);
   if (tips) {
-    // Speaking: fill the speaking time (about 140 words a minute). Writing: at least the minimum word count.
+    // Speaking: fill the speaking time. Writing: at least the minimum word count.
     const targetWords = attempt.skill === 'speaking'
-      ? Math.round((attempt.metrics.answerSeconds * SPEAKING_WORDS_PER_MINUTE) / 60)
+      ? targetSpokenWords(attempt.metrics.answerSeconds)
       : task && isWritingTask(task) && attempt.metrics.wordCount < task.wordRange.min ? task.wordRange.min : undefined;
     const prompt = buildRewritePrompt({
       taskTitle: attempt.taskTitle, promptText: attempt.promptText, goal: attempt.goal, goalLabel: goalLabel(attempt.goal),
@@ -130,7 +127,7 @@ function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string
   }
   const targetWords = task && isWritingTask(task)
     ? task.wordRange.max
-    : attempt.skill === 'speaking' ? Math.round(attempt.metrics.answerSeconds * 2) : 180;
+    : attempt.skill === 'speaking' ? expectedSpokenWords(attempt.metrics.answerSeconds) : 180;
   const length = task && isWritingTask(task)
     ? `${task.wordRange.min} to ${task.wordRange.max} words`
     : `about ${targetWords} words, enough to fill the speaking time`;
@@ -140,7 +137,7 @@ function answerPrompt(attempt: Attempt, tips: string[] | null): { system: string
   return { ...prompt, maxTokens: answerTokenBudget(targetWords) };
 }
 
-function startJob(attempt: Attempt): Job {
+function startJob(attempt: Attempt, getEngine: () => Promise<FeedbackEngineStore>): Job {
   let cancelled = false;
   let store: FeedbackEngineStore | null = null;
   const job: Job = {
@@ -159,6 +156,11 @@ function startJob(attempt: Attempt): Job {
   };
   const updatePerf = (next: Partial<AiPerf>) => job.progress.perf && update({ perf: { ...job.progress.perf, ...next } });
   const startedAt = performance.now();
+  /** A failed content download (say, offline) shouldn't stick: forget this job so the next visit tries again. */
+  const forget = (error: unknown): never => {
+    if (jobs.get(attempt.id) === job) jobs.delete(attempt.id);
+    throw error;
+  };
 
   /** Step 2: streams the answer onto the screen. Runs after the scores are shown. */
   const writeAnswer = async (engine: FeedbackEngineStore, tips: string[] | null) => {
@@ -174,13 +176,12 @@ function startJob(attempt: Attempt): Job {
   };
 
   job.promise = (async (): Promise<FeedbackOutcome> => {
-    // Too short to score, and a hand-written sample answer exists: nothing for the AI to do.
-    if (!isScorable(attempt.skill, attempt.metrics.wordCount) && getPrompt(attempt.moduleId, attempt.taskTypeId)?.modelAnswer) {
-      update({ phase: 'done' });
-      return { kind: 'sample' };
-    }
     try {
-      store = await getFeedbackEngine();
+      // Too short to score, and a hand-written sample answer exists: nothing for the AI to do.
+      if (!isScorable(attempt.skill, attempt.metrics.wordCount) && getPrompt(await loadModule(attempt.moduleId).catch(forget), attempt.taskTypeId)?.modelAnswer) {
+        return { kind: 'sample' };
+      }
+      store = await getEngine();
       const engine = store;
       const unsubscribe = engine.subscribe(() => {
         const status = engine.getStatus();
@@ -193,6 +194,9 @@ function startJob(attempt: Attempt): Job {
       } finally {
         unsubscribe();
       }
+      // interrupt() can't stop a model that is still downloading, so a job cancelled
+      // during the load stops here instead of queueing ahead of the newer answer.
+      if (cancelled) throw new GenerationInterruptedError();
       update({
         perf: { model: engine.getStatus().model, loadMs: alreadyLoaded ? null : performance.now() - loadStartedAt, scoring: null, answer: null, scoresWaitMs: null, answerWaitMs: null },
       });
@@ -230,6 +234,22 @@ function startJob(attempt: Attempt): Job {
   return job;
 }
 
+/**
+ * The running job for this answer, or a new one. Older answers' jobs are stopped and forgotten.
+ * Tests pass `getEngine` to use a store with a fake model.
+ */
+export function feedbackJobFor(attempt: Attempt, getEngine = getFeedbackEngine): Job {
+  let job = jobs.get(attempt.id);
+  if (!job) {
+    // Keep only the latest answer's feedback in memory, and stop work on older ones.
+    jobs.forEach((old) => old.cancel());
+    jobs.clear();
+    job = startJob(attempt, getEngine);
+    jobs.set(attempt.id, job);
+  }
+  return job;
+}
+
 export function useFeedback(attempt: Attempt | null) {
   const [outcome, setOutcome] = useState<FeedbackOutcome | null>(null);
   const [progress, setProgress] = useState<FeedbackProgress | null>(null);
@@ -237,23 +257,15 @@ export function useFeedback(attempt: Attempt | null) {
   useEffect(() => {
     if (!attempt) return;
     let active = true;
-    let job = jobs.get(attempt.id);
-    if (!job) {
-      // Keep only the latest answer's feedback in memory, and stop work on older ones.
-      jobs.forEach((old) => old.cancel());
-      jobs.clear();
-      job = startJob(attempt);
-      jobs.set(attempt.id, job);
-    }
+    const job = feedbackJobFor(attempt);
     const listener = (next: FeedbackProgress) => active && setProgress(next);
     job.listeners.add(listener);
     setProgress(job.progress);
     setOutcome(null);
     void job.promise.then((result) => active && setOutcome(result));
-    const current = job;
     return () => {
       active = false;
-      current.listeners.delete(listener);
+      job.listeners.delete(listener);
     };
   }, [attempt]);
 

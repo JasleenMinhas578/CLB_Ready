@@ -1,6 +1,6 @@
 const BARS = 12;
 
-/** Candy-bar microphone meter. Shows learners they're being heard. */
+/** Microphone meter: bars light up with loudness, so learners see they are heard. */
 export function LevelMeter({ level, label = 'Microphone level' }: { level: number; label?: string }) {
   const lit = Math.round(level * BARS);
   return (

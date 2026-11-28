@@ -1,5 +1,5 @@
-import { Fragment, useMemo } from 'react';
-import { diffWords, summarizeDiff, type DiffPart } from '@/domain/diff';
+import { Fragment } from 'react';
+import type { DiffPart, DiffSummary } from '@/domain/diff';
 import { plural } from '@/domain/scoring/sufficiency';
 
 function Part({ part }: { part: DiffPart }) {
@@ -27,9 +27,7 @@ function Part({ part }: { part: DiffPart }) {
  * Read-only view of the improved answer with the learner's words that were
  * cut struck through, and new words highlighted. Replacements show both.
  */
-export function DiffView({ before, after }: { before: string; after: string }) {
-  const parts = useMemo(() => diffWords(before, after), [before, after]);
-  const summary = useMemo(() => summarizeDiff(parts), [parts]);
+export function DiffView({ parts, summary }: { parts: DiffPart[]; summary: DiffSummary }) {
 
   return (
     <>
