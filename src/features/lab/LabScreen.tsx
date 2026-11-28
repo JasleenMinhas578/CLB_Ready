@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { detectDevice, type DeviceReport } from '@/services/device/detectDevice';
-import { planModels, type ModelPlan } from '@/services/device/tier';
+import type { DeviceReport } from '@/services/device/detectDevice';
+import type { ModelPlan } from '@/services/device/tier';
+import { getDeviceReport, getModelPlan } from '@/services/device/plan';
+import { unloadAllModels } from '@/services/unloadModels';
 import { WhisperSpeechToText } from '@/services/ai/whisperClient';
 import { WebLlmFeedbackModel, estimatedGpuMb } from '@/services/ai/webllmClient';
 import { FEEDBACK_JSON_SCHEMA, SCORING_MAX_TOKENS, buildFeedbackPrompt, parseFeedback } from '@/services/ai/feedbackPrompt';
@@ -94,11 +96,14 @@ export default function LabScreen() {
   const [validJson, setValidJson] = useState<boolean | null>(null);
 
   useEffect(() => {
-    void detectDevice().then((report) => {
-      setDevice(report);
-      setPlan(planModels(report));
-    });
+    // The lab loads its own copies to time them, so free the app's shared ones
+    // rather than hold two of each in memory.
+    void unloadAllModels();
+    void getDeviceReport().then(setDevice);
+    // Same plan as the tasks, so the lab measures the tier chosen in Settings.
+    void getModelPlan().then(setPlan);
     return () => {
+      stopRef.current?.(); // Turns the mic off if the learner leaves mid-recording.
       void whisper.current?.unload();
       void llm.current?.unload();
     };
@@ -117,6 +122,9 @@ export default function LabScreen() {
       setWhisperState('ready');
       void memory.refresh();
     } catch (err) {
+      // Free whatever was partly loaded.
+      void whisper.current?.unload().catch(() => undefined);
+      whisper.current = null;
       fail(err);
       setWhisperState('idle');
     }
@@ -153,6 +161,8 @@ export default function LabScreen() {
       setLlmState('ready');
       void memory.refresh();
     } catch (err) {
+      void llm.current?.unload().catch(() => undefined);
+      llm.current = null;
       fail(err);
       setLlmState('idle');
     }
