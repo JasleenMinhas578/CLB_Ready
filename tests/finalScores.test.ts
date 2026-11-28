@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { finalScores, OFF_TASK_CEILING } from '../src/domain/scoring/finalScores';
-import { codeEstimates, overallLevel } from '../src/domain/scoring/estimate';
+import { codeEstimates } from '../src/domain/scoring/estimate';
 import { measureSpeaking, type MetricWord } from '../src/domain/measure/speakingMetrics';
 import { expectedSpokenWords } from '../src/domain/scoring/sufficiency';
 
@@ -19,9 +19,13 @@ describe('finalScores', () => {
     expect(result.ignored).toEqual([]);
   });
 
-  it('leaves content and task unscored when there is no model reply', () => {
-    expect(finalScores('speaking', { ...code, listenability: 7 }, null, 200, 120)).toEqual({ scores: { vocabulary: 8, listenability: 7 }, ignored: [] });
-    expect(finalScores('writing', { ...code, readability: 9 }, null, 200, 150).scores).toEqual({ vocabulary: 8, readability: 9 });
+  it('leaves content and task unscored and gives no level when there is no model reply (Pip checking, off or failed)', () => {
+    expect(finalScores('speaking', { ...code, listenability: 7 }, null, 200, 120)).toEqual({ scores: { vocabulary: 8, listenability: 7 }, level: null, ignored: [] });
+    expect(finalScores('writing', { ...code, readability: 9 }, null, 200, 150)).toMatchObject({ scores: { vocabulary: 8, readability: 9 }, level: null });
+  });
+
+  it('gives the level once the model has replied', () => {
+    expect(finalScores('writing', { ...code, readability: 8 }, { content: 9, vocabulary: 9, delivery: 9, task: 9 }, 200, 150).level).toBe(9);
   });
 });
 
@@ -45,8 +49,9 @@ describe('an answer about something else', () => {
   const run = (model: Parameters<typeof finalScores>[2], onTask?: boolean) =>
     finalScores('speaking', codeEstimates(metrics), model, metrics.wordCount, expectedSpokenWords(60), onTask);
 
-  it('gets no content or task score from code alone', () => {
-    const { scores } = run(null);
+  it('gets no level and no content or task score from code alone', () => {
+    const { scores, level } = run(null);
+    expect(level).toBeNull();
     expect(scores.content).toBeUndefined();
     expect(scores.task).toBeUndefined();
   });
@@ -59,14 +64,13 @@ describe('an answer about something else', () => {
   });
 
   it('scores low everywhere when the model says it is off task', () => {
-    const { scores } = run({ content: 2, vocabulary: 9, delivery: 9, task: 2 }, false);
+    const { scores, level } = run({ content: 2, vocabulary: 9, delivery: 9, task: 2 }, false);
     expect(scores).toMatchObject({ content: 4, task: 4 });
     expect(Math.max(...Object.values(scores) as number[])).toBeLessThanOrEqual(OFF_TASK_CEILING);
-    expect(overallLevel(scores)).toBeLessThanOrEqual(5);
+    expect(level).toBeLessThanOrEqual(5);
   });
 
   it('is scored normally when the model says it is on task', () => {
-    const { scores } = run({ content: 9, vocabulary: 9, delivery: 9, task: 9 }, true);
-    expect(overallLevel(scores)).toBeGreaterThanOrEqual(8);
+    expect(run({ content: 9, vocabulary: 9, delivery: 9, task: 9 }, true).level).toBeGreaterThanOrEqual(8);
   });
 });
