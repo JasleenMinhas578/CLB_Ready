@@ -9,7 +9,7 @@ import { MODULE_CATALOG, getModuleSummary } from '@/content/modules/catalog';
 import { LinkButton } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { NotFound } from '@/components/NotFound';
-import { countDone, taskKey, useProgress } from '@/services/progress/progress';
+import { countDone, nextTask, taskKey, useProgress } from '@/services/progress/progress';
 
 function timingText(task: TaskType): string {
   if (isSpeakingTask(task)) {
@@ -32,30 +32,26 @@ export function SkillScreen({ params }: { params: RouteParams }) {
   const practiceModule = getModuleSummary(params.moduleId);
   if (!skill || !practiceModule) return <NotFound />;
 
-  if (skill.status !== 'available') {
-    return (
-      <section className="empty-state">
-        <h1>{skill.name} practice is coming soon</h1>
-        <p>This skill isn’t ready yet. Please check again soon.</p>
-        <LinkButton to="/">Back to skills</LinkButton>
-      </section>
-    );
-  }
-
   // Every module has every task, so the counts beside module names use the same ids.
   const tasks = getTaskTypesForSkill(skill.id);
   const taskIds = tasks.map((task) => task.id);
+  const doneAt = (taskId: string) => progress[taskKey(practiceModule.id, taskId)];
+  const next = tasks.find((task) => !doneAt(task.id));
+  const laterModule = next ? null : nextTask(progress, skill.id);
 
   return (
     <section>
-      <div className="screen-head align-left">
-        <h1><Icon name={skill.id} size="lg" /> {skill.name} practice</h1>
-        <p>{skill.blurb}</p>
+      <div className={`screen-head skill-head skill-${skill.id}`}>
+        <span className="skill-badge"><Icon name={skill.id} size="lg" /></span>
+        <div>
+          <h1>{skill.name} practice</h1>
+          <p>{skill.blurb}</p>
+        </div>
       </div>
 
       {!goal && (
         <p className="nudge">
-          <Icon name="goal" /> <a href={href('/goal')}>Set your CLB goal</a> so feedback aims at the right level.
+          <Icon name="goal" /> <span>No goal yet, so feedback aims at CLB 7. <a href={href('/goal')}>Choose your CLB goal</a></span>
         </p>
       )}
 
@@ -73,29 +69,47 @@ export function SkillScreen({ params }: { params: RouteParams }) {
         ))}
       </nav>
 
+      {laterModule && (
+        <div className="module-done">
+          <Icon name="check" />
+          <p>You finished every {skill.name.toLowerCase()} task in {practiceModule.title}.</p>
+          {laterModule.moduleId !== practiceModule.id && (
+            <LinkButton to={`/practice/${skill.id}/${laterModule.moduleId}`}>
+              Go to {getModuleSummary(laterModule.moduleId)?.title} <Icon name="arrow-right" />
+            </LinkButton>
+          )}
+        </div>
+      )}
+
       <ol className="task-list">
-        {tasks.map((task) => (
-          <li key={task.id}>
-            <a className={`task-row ${progress[taskKey(practiceModule.id, task.id)] ? 'is-done' : ''}`} href={href(`/task/${practiceModule.id}/${task.id}`)}>
-              <span className="task-number" aria-hidden="true">{task.order}</span>
-              <span className="task-text">
-                <strong>{task.title}</strong>
-                <span>{task.summary}</span>
-                <span className="task-timing">
-                  {timingText(task)}
-                  {task.needsImage && <span className="tag">Picture</span>}
+        {tasks.map((task) => {
+          const finished = doneAt(task.id);
+          const isNext = task === next;
+          return (
+            <li key={task.id}>
+              <a className={`task-row ${finished ? 'is-done' : ''} ${isNext ? 'is-next' : ''}`} href={href(`/task/${practiceModule.id}/${task.id}`)}>
+                <span className="task-number" aria-hidden="true">{task.order}</span>
+                <span className="task-text">
+                  <strong>{task.title}</strong>
+                  <span>{task.summary}</span>
+                  <span className="task-timing">
+                    {timingText(task)}
+                    {task.needsImage && <span className="tag">Picture</span>}
+                  </span>
                 </span>
-              </span>
-              {progress[taskKey(practiceModule.id, task.id)] ? (
-                <span className="task-done" title={`Finished ${new Date(progress[taskKey(practiceModule.id, task.id)]).toLocaleDateString()}`}>
-                  <Icon name="tick" size="sm" /> Done
-                </span>
-              ) : (
-                <span className="task-go"><Icon name="arrow-right" /></span>
-              )}
-            </a>
-          </li>
-        ))}
+                {finished ? (
+                  <span className="task-done" title={`Finished ${new Date(finished).toLocaleDateString()}`}>
+                    <Icon name="tick" size="sm" /> Done
+                  </span>
+                ) : isNext ? (
+                  <span className="task-start">Start next <Icon name="arrow-right" size="sm" /></span>
+                ) : (
+                  <span className="task-go"><Icon name="arrow-right" /></span>
+                )}
+              </a>
+            </li>
+          );
+        })}
       </ol>
     </section>
   );

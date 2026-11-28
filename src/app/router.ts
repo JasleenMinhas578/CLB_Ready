@@ -35,11 +35,22 @@ function currentPath(): string {
   return hash.startsWith('/') ? hash : '/';
 }
 
+// The screen shown before this one, so a detour (choosing a goal, settings) can send the learner back.
+let shown = '/';
+let previous: string | null = null;
+
+/** Where a detour screen sends the learner back to: the screen before it, or home. Never back into a running task. */
+export function backPath(): string {
+  return previous && previous !== shown && !previous.startsWith('/task/') ? previous : '/';
+}
+
 export function useHashPath(): string {
-  const [path, setPath] = useState(currentPath);
+  const [path, setPath] = useState(() => (shown = currentPath()));
   useEffect(() => {
     const onChange = () => {
-      setPath(currentPath());
+      previous = shown;
+      shown = currentPath();
+      setPath(shown);
       window.scrollTo({ top: 0 });
     };
     window.addEventListener('hashchange', onChange);
