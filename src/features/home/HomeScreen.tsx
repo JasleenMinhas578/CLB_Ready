@@ -76,15 +76,15 @@ export function HomeScreen() {
           <div>
             <dt>Your answers stay here</dt>
             <dd>
-              Recordings and writing are never uploaded. Only the list of tasks you finished is saved, in this browser. You can
+              Your recordings and writing are never uploaded. This browser saves only a list of the tasks you finished. You can
               clear it in Settings.
             </dd>
           </div>
           <div>
             <dt>Best on a laptop</dt>
             <dd>
-              Use Chrome or Edge on a laptop or desktop. The first task downloads the AI models once; after that they load from
-              your browser. Phones work with smaller models.
+              Use Chrome or Edge on a laptop or desktop. Your first task downloads the AI models once. After that, they load from
+              your browser. Phones use smaller models.
             </dd>
           </div>
         </dl>

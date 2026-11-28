@@ -86,10 +86,10 @@ export function planModels(signals: DeviceSignals, options: PlanOptions = {}): M
   const onCpu = tier === 'no-webgpu' || Boolean(options.speechOnCpu);
   const whisper = onCpu ? 'tiny.en' : { high: 'small.en', mid: 'base.en', low: 'tiny.en' }[tier];
   const reasons: Record<DeviceTier, string> = {
-    high: 'Strong graphics chip and plenty of memory, so this uses the largest models.',
-    mid: 'Good graphics chip, so this uses balanced models for speed and quality.',
-    low: 'Limited memory, so this uses the smallest models to keep things fast.',
-    'no-webgpu': 'Light mode: speech-to-text runs on the processor, and feedback uses your measurements only.',
+    high: 'This uses the largest models. They need a strong graphics chip and plenty of memory.',
+    mid: 'This uses balanced models. They give good feedback at a good speed on most laptops.',
+    low: 'This uses the smallest models, so they run on devices with less memory.',
+    'no-webgpu': 'Light mode is on. Speech-to-text runs on the processor, and feedback uses your measurements only.',
   };
 
   return {
@@ -100,6 +100,6 @@ export function planModels(signals: DeviceSignals, options: PlanOptions = {}): M
     feedbackModel: feedbackModelFor(tier, signals.shaderF16),
     keepWhisperLoaded: tier === 'high' || tier === 'mid',
     voice: tier === 'high' ? { device: 'webgpu', dtype: 'fp32' } : LIGHT_VOICE,
-    reason: options.stepsDown ? `${reasons[tier]} (Switched down after a model didn’t load.)` : reasons[tier],
+    reason: options.stepsDown ? `${reasons[tier]} A larger model did not load, so CLB Ready switched to smaller ones.` : reasons[tier],
   };
 }

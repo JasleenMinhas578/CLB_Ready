@@ -1,9 +1,9 @@
-# CLB Ready 🍭
+# CLB Ready
 
-**Free CELPIP practice with an AI coach that lives in your browser.**
+**Free CELPIP practice with Pip, an AI coach that runs in your browser.**
 
-Practise all four CELPIP skills under real test timers, then see exactly what to change to reach your
-CLB goal. No account, no card, and your answers never leave your device.
+Practise all four CELPIP skills under real test timers. Then see your estimated CLB level and what to change to
+reach your goal. There is no account and no payment, and your answers never leave your device.
 
 **Try it:** [clbready.vercel.app](https://clbready.vercel.app) · also on
 [GitHub Pages](https://jasleenminhas578.github.io/CLB_Ready/). Chrome or Edge on a laptop works best.
@@ -20,7 +20,7 @@ CLB goal. No account, no card, and your answers never leave your device.
   rewritten at your goal level, with every change marked.
 - **40 sample answers at CLB 10+**, sized to the speaking time, with notes on why they work and a button to
   hear them read aloud.
-- **Writing, marked like a teacher would**, in a test-style editor with a live word count, grammar marks,
+- **Writing feedback** in a test-style editor with a live word count, grammar marks,
   scores per criterion and an improved version.
 - **380 reading and listening questions**, each with an explanation that quotes the line that proves it.
   Listening plays once, like test day, then shows the full transcript.

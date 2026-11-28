@@ -29,7 +29,7 @@ import { PhaseTimer } from './exam/PhaseTimer';
 
 const PROBLEM_TEXT: Record<Exclude<RecordingProblem, null>, { title: string; help: string }> = {
   'too-short': { title: 'That answer was very short', help: 'Try again and keep speaking until the timer ends.' },
-  'too-quiet': { title: 'We couldn’t hear you', help: 'Move closer to the microphone or speak a little louder, then try again.' },
+  'too-quiet': { title: 'We could not hear you', help: 'Move closer to the microphone or speak a little louder, then try again.' },
 };
 
 interface SpeakingTaskProps {
@@ -148,8 +148,8 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
     } catch (error) {
       if (!mounted.current) return;
       setProblem({
-        title: 'We couldn’t turn your answer into text',
-        help: friendlyModelError(error, 'Please try again. If it happens again, reload the page.'),
+        title: 'We could not turn your answer into text',
+        help: friendlyModelError(error, 'Try again. If it happens again, reload the page.'),
       });
       setState('problem');
     }
@@ -203,9 +203,9 @@ export function SpeakingTask({ task, prompt, moduleId }: SpeakingTaskProps) {
       <div className="exam-message" aria-live="polite">
         <h2>
           <span className="spinner" aria-hidden="true" />
-          Saving your response…
+          Saving your answer…
         </h2>
-        <p>Your answer is being turned into text on this device. This usually takes a few seconds. Your results open by themselves.</p>
+        <p>This device is turning your answer into text. This usually takes a few seconds. Your results then open by themselves.</p>
         {/* "Ready" would read as nothing happening; loading progress and errors still help. */}
         {speechStatus.state !== 'ready' && <SpeechModelBadge status={speechStatus} />}
       </div>

@@ -24,10 +24,10 @@ export class ErrorBoundary extends Component<Props, { failed: boolean }> {
       <section className="empty-state" role="alert">
         <Pip mood="oops" size={72} />
         <div>
-          <h1>This page didn’t load</h1>
+          <h1>This page did not load</h1>
           <p>
-            Part of the page didn’t download, often because the internet connection dropped. Reloading usually fixes it. Your
-            saved progress is not affected.
+            Part of the page did not download. This often happens when the internet connection drops. Reload the page to try
+            again. Your saved progress is safe.
           </p>
           <div className="row-actions">
             <Button onClick={() => window.location.reload()}>Reload the page</Button>

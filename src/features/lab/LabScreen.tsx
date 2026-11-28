@@ -12,6 +12,7 @@ import { getCriteria } from '@/domain/criteria';
 import { getPrompt, loadModule } from '@/content/modules';
 import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
+import { friendlyModelError } from '@/services/ai/errorText';
 
 /**
  * Model lab: loads both models and measures them on this device.
@@ -109,7 +110,9 @@ export default function LabScreen() {
     };
   }, []);
 
-  const fail = (err: unknown) => setError(err instanceof Error ? err.message : String(err));
+  // The plain sentence first, then the raw message, which is what someone measuring models needs.
+  const fail = (err: unknown) =>
+    setError(`${friendlyModelError(err, 'Something went wrong. Try again.')} Details: ${err instanceof Error ? err.message : String(err)}`);
 
   const loadWhisper = async () => {
     if (!plan) return;
@@ -246,7 +249,7 @@ export default function LabScreen() {
       </div>
 
       <div className="lab-card">
-        <h2>1. Speech to text</h2>
+        <h2>1. Speech-to-text</h2>
         <div className="row-actions">
           <Button onClick={loadWhisper} disabled={!plan || whisperState !== 'idle'}>
             {whisperState === 'loading' ? 'Loading…' : whisperState === 'idle' ? 'Load speech model' : 'Speech model ready'}
@@ -255,7 +258,7 @@ export default function LabScreen() {
             <Button variant="secondary" onClick={() => stopRef.current?.()}>Stop recording</Button>
           ) : (
             <Button variant="secondary" onClick={recordAndTranscribe} disabled={whisperState !== 'ready'}>
-              {whisperState === 'working' ? 'Transcribing…' : `Record up to ${LAB_RECORD_SECONDS}s`}
+              {whisperState === 'working' ? 'Converting speech to text…' : `Record up to ${LAB_RECORD_SECONDS}s`}
             </Button>
           )}
         </div>
@@ -272,7 +275,7 @@ export default function LabScreen() {
       <div className="lab-card">
         <h2>2. Feedback model</h2>
         {plan && !plan.feedbackModel ? (
-          <p>This device has no WebGPU, so the app will use light mode (code-only feedback).</p>
+          <p>This device has no WebGPU, so CLB Ready uses light mode. Feedback comes from measurements only.</p>
         ) : (
           <>
             <div className="row-actions">
@@ -305,11 +308,11 @@ export default function LabScreen() {
           <Stat label="Downloaded models" value={mb(memory.storage)} />
         </div>
         <p className="fine-print">
-          Browsers don't report GPU memory directly. For real numbers, open Chrome's task manager (Shift + Esc)
-          and watch the GPU process while a model loads.
+          Browsers do not report GPU memory directly. To see it, open the Chrome task manager (Shift + Esc). Then watch
+          the GPU process while a model loads.
         </p>
         <div className="row-actions">
-          <Button variant="quiet" onClick={() => void memory.refresh()}>Refresh</Button>
+          <Button variant="quiet" onClick={() => void memory.refresh()}>Refresh numbers</Button>
           <Button variant="quiet" onClick={() => void clearModels()}>Delete downloaded models</Button>
         </div>
       </div>

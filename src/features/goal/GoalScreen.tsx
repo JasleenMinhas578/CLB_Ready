@@ -10,7 +10,7 @@ export function GoalScreen() {
     <section className="narrow">
       <div className="screen-head">
         <h1>What CLB level are you aiming for?</h1>
-        <p>Scores, tips and improved answers are written for this level. Pick one to go back to your practice.</p>
+        <p>Pip writes scores, tips and improved answers for this level. Choose a level to save it and go back to your practice.</p>
       </div>
 
       <div className="goal-grid" role="radiogroup" aria-label="CLB goal">
@@ -37,7 +37,7 @@ export function GoalScreen() {
         })}
       </div>
 
-      <p className="fine-print">Your goal is kept until you close this tab. You can change it any time from the top of the page.</p>
+      <p className="fine-print">Your goal is kept until you close this tab. You can change it at any time from the top of the page.</p>
     </section>
   );
 }

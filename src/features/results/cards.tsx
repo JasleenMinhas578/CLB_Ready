@@ -43,8 +43,8 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
         </p>
         <p className="ai-status-step">
           {scoring
-            ? 'Step 2 of 2. The scores below are first estimates and will update when Pip is done.'
-            : 'Step 1 of 2. The first time, Pip downloads once, which can take a few minutes.'}
+            ? 'Step 2 of 2. The scores below are first estimates. They update when Pip is done.'
+            : 'Step 1 of 2. Pip downloads the first time only. This can take a few minutes.'}
         </p>
         {percent !== null && (
           <div className="bar" role="progressbar" aria-label="Pip download" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
@@ -169,7 +169,7 @@ export function ImprovedCard({ goal, text, spoken, fromScratch = false, original
         {fromScratch
           ? 'Written by Pip, your AI coach, for this task, as an example to learn from.'
           : view === 'changes'
-            ? 'Your answer, edited to your goal level. Green is new; red was cut or replaced.'
+            ? 'Your answer, edited to your goal level. Added words are in green. Words cut or replaced are crossed out in red.'
             : rewritten
               ? 'Most of your answer was rewritten, so this shows the clean copy first. Choose Changes to see what changed.'
               : 'Your ideas, rewritten at your goal level.'}{' '}
@@ -202,7 +202,7 @@ export function AnswerCard({ answer, goal, spoken, original, fromScratch = false
     return (
       <div className="results-card improved-card">
         <h2>{heading}</h2>
-        <p className="fine-print">Pip, your AI coach, couldn’t write this answer this time. Your scores and tips above are complete. Try the task again for a new one.</p>
+        <p className="fine-print">Pip, your AI coach, could not write this answer this time. Your scores and tips above are complete. Try the task again to get a new answer.</p>
       </div>
     );
   }
@@ -246,7 +246,7 @@ export function ChecklistCard({ items, results, final }: { items: string[]; resu
           );
         })}
       </ul>
-      {final && anyUnchecked && <p className="fine-print">Items marked <Icon name="dash" size="sm" label="with a dash" /> were not checked. Only the AI coach can check them.</p>}
+      {final && anyUnchecked && <p className="fine-print">Items marked <Icon name="dash" size="sm" label="with a dash" /> were not checked. Only Pip can check them.</p>}
     </div>
   );
 }
@@ -336,8 +336,8 @@ export function TooShortCard({ attempt, need, unit, outcome, progress }: {
     <div className="results-card too-short-card">
       <h2>Too short to score</h2>
       <p>
-        Your answer has {plural(attempt.metrics.wordCount, unit)}. We need {need} to estimate a level, so there’s no score this
-        time. Try the task again and keep going until you reach the target.
+        Your answer has {plural(attempt.metrics.wordCount, unit)}. We need {need} to estimate a level, so there is no score this
+        time. Try the task again and give a longer answer.
       </p>
       {!attempt.goalChosen && (
         <p className="fine-print">
@@ -372,9 +372,9 @@ function stepRows(label: string, step: StepPerf): [string, string][] {
 export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: number }) {
   const speed = perf.answer?.tokensPerSecond ?? perf.scoring?.tokensPerSecond;
   const rows: [string, string][] = [
-    ['AI coach', perf.model ?? 'Unknown'],
+    ['Pip’s model', perf.model ?? 'Unknown'],
     ['Model load', perf.loadMs == null ? 'Already loaded' : seconds(perf.loadMs)],
-    ...(transcribeMs != null ? ([['Speech to text', seconds(transcribeMs)]] as [string, string][]) : []),
+    ...(transcribeMs != null ? ([['Speech-to-text', seconds(transcribeMs)]] as [string, string][]) : []),
     ...(perf.scoresWaitMs != null ? ([['Scores on screen after', seconds(perf.scoresWaitMs)]] as [string, string][]) : []),
     ['Full answer on screen after', perf.answerWaitMs != null ? seconds(perf.answerWaitMs) : 'Still writing…'],
     ...(speed != null ? ([['Writing speed', `${speed.toFixed(1)} tokens/s`]] as [string, string][]) : []),
@@ -392,7 +392,7 @@ export function PerfCard({ perf, transcribeMs }: { perf: AiPerf; transcribeMs?: 
           </div>
         ))}
       </dl>
-      <p className="fine-print">Measured in your browser. Scores come first; the answer is written while you read them. A token is about three quarters of a word.</p>
+      <p className="fine-print">Measured in your browser. Scores come first. The answer is written while you read them. A token is about three quarters of a word.</p>
     </details>
   );
 }
@@ -402,7 +402,7 @@ export function outlierNotes(ignored: { id: string; modelScore: number }[]): Rec
   return Object.fromEntries(
     ignored.map(({ id, modelScore }) => [
       id,
-      `The AI coach gave this a ${modelScore}, which didn’t fit your other results, so this score uses your measurements instead.`,
+      `Pip gave this a ${modelScore}. That did not fit your other results, so this score uses your measurements instead.`,
     ]),
   );
 }

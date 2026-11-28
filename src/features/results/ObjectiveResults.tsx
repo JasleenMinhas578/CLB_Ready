@@ -48,10 +48,10 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
             {!attempt.goalChosen && (
               <p className="fine-print">No goal set, so we used CLB {attempt.goal}. <a href={href('/goal')}>Choose your goal</a>.</p>
             )}
-            {blanks > 0 && <p className="fine-print">{blanks} left blank. On test day a guess can’t lose marks, so always answer.</p>}
+            {blanks > 0 && <p className="fine-print">{blanks} left blank. On test day, a wrong guess does not lose marks, so always answer.</p>}
             <p className="fine-print">
-              This level uses CELPIP’s rough score chart for the full {attempt.skill} test, scaled to this part. One part has only{' '}
-              {questions.length} questions, so the level is only a rough guide.
+              This level uses a CELPIP score chart for the full {attempt.skill} test, scaled to this part. One part has only{' '}
+              {questions.length} questions, so treat the level as a rough guide.
             </p>
           </div>
         </div>
@@ -67,7 +67,7 @@ export function ObjectiveResults({ attempt }: { attempt: ObjectiveAttempt }) {
           {'clips' in part && (
             <div className="results-card">
               <h2>What you heard</h2>
-              <p className="fine-print">Read the recording while you check your answers. Look for the words that tell you each answer.</p>
+              <p className="fine-print">Read what was said while you check your answers. Look for the words that give each answer.</p>
               {part.clips.map((clip, index) => <Transcript key={clip.id} clip={clip} index={index} count={part.clips.length} />)}
             </div>
           )}
