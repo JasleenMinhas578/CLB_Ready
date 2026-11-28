@@ -2,6 +2,7 @@ import type { RouteParams } from '@/app/router';
 import { href } from '@/app/router';
 import { useSession } from '@/app/session';
 import { getSkill } from '@/domain/skills';
+import { DEFAULT_GOAL } from '@/domain/attempt';
 import { formatSeconds } from '@/domain/timer';
 import { getTaskTypesForSkill } from '@/domain/tasks/catalog';
 import { isListeningTask, isReadingTask, isSpeakingTask, type TaskType } from '@/domain/tasks/types';
@@ -51,7 +52,7 @@ export function SkillScreen({ params }: { params: RouteParams }) {
 
       {!goal && (
         <p className="nudge">
-          <Icon name="goal" /> <span>No goal yet, so feedback aims at CLB 7. <a href={href('/goal')}>Choose your CLB goal</a></span>
+          <Icon name="goal" /> <span>No goal yet, so feedback aims at CLB {DEFAULT_GOAL}. <a href={href('/goal')}>Choose your CLB goal</a></span>
         </p>
       )}
 

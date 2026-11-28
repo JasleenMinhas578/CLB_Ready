@@ -275,7 +275,7 @@ export default function LabScreen() {
       <div className="lab-card">
         <h2>2. Feedback model</h2>
         {plan && !plan.feedbackModel ? (
-          <p>This device has no WebGPU, so CLB Ready uses light mode. Feedback comes from measurements only.</p>
+          <p>This device has no WebGPU. Pip is off on this device, so feedback comes from word counts, timing and simple checks.</p>
         ) : (
           <>
             <div className="row-actions">

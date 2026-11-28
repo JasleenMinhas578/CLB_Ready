@@ -12,7 +12,7 @@ export function ExamLayout({ children }: { children: ReactNode }) {
       <main id="main" tabIndex={-1} className="exam-main">
         {children}
       </main>
-      <p className="exam-footnote">{DISCLAIMER} Your answers stay on this device.</p>
+      <p className="exam-footnote">{DISCLAIMER}</p>
     </div>
   );
 }

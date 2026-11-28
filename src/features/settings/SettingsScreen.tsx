@@ -25,7 +25,7 @@ const CHOICES: { value: TierChoice; title: string; text: string }[] = [
   { value: 'high', title: 'Largest', text: 'Largest models. Needs a strong graphics chip and 8 GB of memory or more.' },
   { value: 'mid', title: 'Balanced', text: 'Good feedback and speed on most laptops.' },
   { value: 'low', title: 'Lightest', text: 'Smallest models for older laptops and phones.' },
-  { value: 'no-webgpu', title: 'Light mode', text: 'Pip is off. Feedback uses your measurements only. Smallest download.' },
+  { value: 'no-webgpu', title: 'Light mode', text: 'Pip is off on this device, so feedback comes from word counts, timing and simple checks. Smallest download.' },
 ];
 
 function shortModel(id: string | null): string {
@@ -114,7 +114,7 @@ export function SettingsScreen() {
   return (
     <section className="narrow">
       <div className="screen-head">
-        <h1>AI models and privacy</h1>
+        <h1>Settings and privacy</h1>
         <p>Everything runs on this device. Model choices reset when you close the tab.</p>
         <LinkButton to={backPath()} variant="secondary"><Icon name="arrow-left" /> Back to practice</LinkButton>
       </div>
@@ -153,7 +153,7 @@ export function SettingsScreen() {
               >
                 <strong>{choice === option.value && <Icon name="check" size="sm" />} {option.title}{option.value === 'auto' && detected ? ` (${CHOICES.find((item) => item.value === detected)?.title ?? detected})` : ''}</strong>
                 <span>{option.text}</span>
-                {preview && <small>Pip: {shortModel(preview.feedbackModel)}</small>}
+                {preview && !disabled && <small>Pip: {shortModel(preview.feedbackModel)}</small>}
                 {disabled && <small>Needs WebGPU. This browser does not have it.</small>}
               </button>
             );
