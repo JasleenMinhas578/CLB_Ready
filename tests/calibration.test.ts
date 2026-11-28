@@ -5,7 +5,7 @@ import { measureWriting } from '../src/domain/measure/writingMetrics';
 import { codeEstimatesWriting } from '../src/domain/scoring/writingEstimate';
 import { blendScores, overallLevel, DEFAULT_WRITING_WEIGHTS } from '../src/domain/scoring/estimate';
 import { dropOutlierScores } from '../src/domain/scoring/outliers';
-import { mentionsDate, mergeChecklist } from '../src/domain/scoring/autoChecks';
+import { matchAiChecklist, mentionsDate, mergeChecklist } from '../src/domain/scoring/autoChecks';
 import { parseFeedback } from '../src/services/ai/feedbackPrompt';
 import { lengthCeiling } from '../src/domain/scoring/sufficiency';
 
@@ -79,6 +79,18 @@ describe('checklist items checked by code', () => {
     const text = EMAIL_SAMPLES[2].text;
     const rows = mergeChecklist(items, [{ met: true }, { met: true }, { met: true }, { met: true }], text, measureEmail(text));
     expect(rows[3]).toEqual({ met: false, byCode: true });
+  });
+
+  it('ignores an AI checklist that is shorter than the items, instead of shifting answers onto the wrong item', () => {
+    const text = EMAIL_SAMPLES[0].text;
+    // Two rows for four items: there's no telling which items they belong to.
+    const rows = mergeChecklist(items, [{ met: false }, { met: true }], text, measureEmail(text));
+    expect(rows[1]).toEqual({ met: null, byCode: false });
+    expect(rows[2]).toEqual({ met: null, byCode: false });
+    // Code checks still apply.
+    expect(rows[0]).toEqual({ met: true, byCode: true });
+    expect(matchAiChecklist(items, [{ met: true }])).toBeNull();
+    expect(matchAiChecklist(['a'], [{ met: true }])).toEqual([{ met: true }]);
   });
 
   it('checks the survey choice', () => {
