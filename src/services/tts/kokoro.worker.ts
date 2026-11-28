@@ -2,6 +2,7 @@ import { env } from '@huggingface/transformers';
 import { KokoroTTS } from 'kokoro-js';
 import type { KokoroRequest, KokoroResponse } from './kokoro.protocol';
 import { useLocalOnnxRuntime } from '@/services/ai/onnxRuntime';
+import { averageProgress, type ProgressEvent } from '@/services/ai/downloadProgress';
 import { KOKORO_MODEL, KOKORO_SHA } from '@/services/modelPins';
 
 /**
@@ -32,12 +33,6 @@ const worker = self as unknown as {
 let tts: KokoroTTS | null = null;
 const fileProgress = new Map<string, number>();
 
-interface ProgressEvent {
-  status: string;
-  file?: string;
-  progress?: number;
-}
-
 async function handle(request: KokoroRequest) {
   switch (request.type) {
     case 'load': {
@@ -47,10 +42,8 @@ async function handle(request: KokoroRequest) {
         dtype: request.dtype,
         device: request.device,
         progress_callback: (event: ProgressEvent) => {
-          if (event.status !== 'progress' || !event.file) return;
-          fileProgress.set(event.file, (event.progress ?? 0) / 100);
-          const values = [...fileProgress.values()];
-          worker.postMessage({ id: request.id, type: 'progress', fraction: values.reduce((a, b) => a + b, 0) / values.length, text: `Downloading ${event.file}` });
+          const fraction = averageProgress(fileProgress, event);
+          if (fraction !== null) worker.postMessage({ id: request.id, type: 'progress', fraction, text: `Downloading ${event.file}` });
         },
       });
       worker.postMessage({ id: request.id, type: 'loaded' });
