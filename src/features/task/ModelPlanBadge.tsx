@@ -22,7 +22,7 @@ export function ModelPlanBadge() {
 
   return (
     <p className="plan-badge">
-      {text} <a href={href('/settings')}>Change</a>
+      {text} <a href={href('/settings')}>Change models</a>
     </p>
   );
 }

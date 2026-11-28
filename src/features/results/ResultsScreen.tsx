@@ -15,7 +15,7 @@ export function ResultsScreen() {
         <Pip size={72} />
         <div>
           <h1>No answer to review yet</h1>
-          <p>Finish a task or part and your feedback will appear here. Results are kept only until you close this tab.</p>
+          <p>Finish a task or part to see your feedback here. Results are kept only until you close this tab.</p>
           <LinkButton to="/">Choose a task</LinkButton>
         </div>
       </section>

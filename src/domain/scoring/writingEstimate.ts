@@ -78,7 +78,7 @@ export function writingTips(m: WritingMetrics, goal: number, options?: [string, 
   if (m.grammarIssues >= 3) tips.push(`We marked ${plural(m.grammarIssues, 'possible mistake')}. Save 2 minutes at the end to reread and fix them.`);
   if (m.vagueWords.length >= 2) {
     const examples = m.vagueWords.slice(0, 3).map((word) => `"${word}"`).join(', ');
-    tips.push(`Replace general words like ${examples} with more exact words. CLB ${goal} writing says exactly what it means.`);
+    tips.push(`Replace general words like ${examples} with more precise words. CLB ${goal} writing uses precise words.`);
   }
   if (m.repeatedWords.length > 0) {
     const { word, count } = m.repeatedWords[0];

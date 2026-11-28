@@ -46,7 +46,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             {sample}
             <div className="results-card">
               <h2>What we heard</h2>
-              <blockquote className="transcript">{attempt.transcript.trim() || '(We didn’t hear any words)'}</blockquote>
+              <blockquote className="transcript">{attempt.transcript.trim() || '(We did not hear any words)'}</blockquote>
               <p className="fine-print">If you said more than this, check your microphone and try again.</p>
             </div>
           </div>

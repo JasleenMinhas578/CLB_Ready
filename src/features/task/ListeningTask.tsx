@@ -84,13 +84,13 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
             <p className="busy-status" aria-live="polite">
               <span className="spinner" aria-hidden="true" />
               {player.voiceLoading !== null
-                ? `Downloading the AI voice${player.voiceLoading ? ` (${Math.round(player.voiceLoading * 100)}%)` : ''}. This happens once, then it’s saved in your browser.`
+                ? `Downloading the AI voice${player.voiceLoading ? ` (${Math.round(player.voiceLoading * 100)}%)` : ''}. This happens only once. The voice is then saved in your browser.`
                 : 'Getting the voices ready…'}
             </p>
           )}
           {player.state === 'ready' && (
             <div className="exam-message">
-              <p>The recording plays once. You can’t pause or replay it, so take notes if that helps.</p>
+              <p>The recording plays once. You cannot pause or replay it. Take notes if that helps.</p>
               <button type="button" className="exam-play" onClick={() => { unlockBeeps(); player.play(); }}><Icon name="play" /> Play recording</button>
             </div>
           )}
@@ -108,7 +108,7 @@ export function ListeningTask({ task, part, moduleId }: { task: ListeningTaskTyp
                 ? 'These voices are made by AI in your browser. Nothing is sent anywhere.'
                 : player.source === 'recorded'
                   ? 'These voices were made by AI.'
-                  : 'The AI voice couldn’t run on this device, so your browser’s own voice is reading the recording.'}
+                  : 'The AI voice could not run on this device. Your browser’s own voice is reading the recording instead.'}
             </p>
           )}
         </div>

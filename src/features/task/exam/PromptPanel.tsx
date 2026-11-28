@@ -53,7 +53,7 @@ export function PromptPanel({ task, prompt, selected = null, onSelect, optionsLo
           </figure>
         ) : (
           <div className="exam-image-placeholder" role="img" aria-label="Picture not added yet">
-            The picture for this task isn’t ready yet.
+            The picture for this task is not ready yet.
           </div>
         ))}
 

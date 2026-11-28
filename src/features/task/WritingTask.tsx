@@ -113,7 +113,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
         position={`Writing Task ${task.order} of ${total}`}
         title={task.title}
         exitTo={`/practice/writing/${moduleId}`}
-        exitWarning={unsaved ? 'Your writing is kept in this tab and comes back if you open this task again, but the timer starts over.' : undefined}
+        exitWarning={unsaved ? 'Your writing is kept in this tab. It comes back when you open this task again, but the timer starts over.' : undefined}
         status={<TimeRemaining seconds={secondsLeft} totalSeconds={task.timing.minutes * 60} warnBelow={300} />}
         action={
           <button type="button" className="exam-next" onClick={() => void finish()} disabled={!text.trim() || state === 'checking'} aria-busy={state === 'checking'}>
@@ -129,7 +129,7 @@ export function WritingTask({ task, prompt, moduleId, grammar = ruleChecker }: W
       </div>
 
       {timeUp && !text.trim() && (
-        <p className="exam-alert" role="alert"><WarnIcon /> Time is up and nothing was written. Exit to try again.</p>
+        <p className="exam-alert" role="alert"><WarnIcon /> Time is up, and you did not write anything. Press Exit to try again.</p>
       )}
       <div className="exam-meta">
         {state === 'checking' ? (

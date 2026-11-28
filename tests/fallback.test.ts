@@ -67,6 +67,6 @@ describe('friendlyModelError', () => {
     expect(friendlyModelError(quota).includes('free space')).toBe(true);
     expect(friendlyModelError(new Error('GPUDevice was lost')).includes('graphics chip')).toBe(true);
     expect(friendlyModelError(new Error('Failed to fetch')).includes('internet')).toBe(true);
-    expect(friendlyModelError(undefined)).toBe('The AI coach couldn’t finish this time.');
+    expect(friendlyModelError(undefined)).toBe('Pip could not finish this time. Try again.');
   });
 });

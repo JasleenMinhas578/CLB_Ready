@@ -26,8 +26,8 @@ export function SampleAnswerCard({ text, taskTypeId, seconds }: { text: string; 
         )}
       </div>
       <p className="fine-print">
-        Written for this task: {words} words, about right for {seconds} seconds of speaking. Read it aloud and notice
-        how it’s organized.
+        Written for this task: {words} words, about right for {seconds} seconds of speaking. Read it aloud. Notice
+        how it is organized.
       </p>
       {voice.state === 'loading' && (
         <p className="ai-status" aria-live="polite">
@@ -37,7 +37,7 @@ export function SampleAnswerCard({ text, taskTypeId, seconds }: { text: string; 
             : 'Getting the voice ready…'}
         </p>
       )}
-      {voice.failed && <p className="fine-print">The voice couldn’t play on this device. You can still read the answer below.</p>}
+      {voice.failed && <p className="fine-print">The voice could not play on this device. You can still read the answer below.</p>}
       <blockquote className="transcript sample-text">{text}</blockquote>
       {notes.length > 0 && (
         <>

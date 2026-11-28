@@ -30,7 +30,7 @@ export function codeTips(metrics: SpeakingMetrics, goal: number): string[] {
   }
   if (metrics.vagueWords.length >= 2) {
     const examples = metrics.vagueWords.slice(0, 3).map((word) => `"${word}"`).join(', ');
-    tips.push(`Replace general words like ${examples} with more exact words. CLB ${goal} answers say exactly what they mean.`);
+    tips.push(`Replace general words like ${examples} with more precise words. CLB ${goal} answers use precise words.`);
   }
   if (metrics.repeatedWords.length > 0) {
     const { word, count } = metrics.repeatedWords[0];

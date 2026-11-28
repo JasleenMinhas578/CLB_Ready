@@ -53,14 +53,14 @@ export const MIC_PROBLEM_TEXT: Record<MicProblem, { title: string; help: string 
   },
   busy: {
     title: 'Your microphone is busy',
-    help: 'Close other apps that may be using it, such as video calls, then try again.',
+    help: 'Close other apps that may be using it, such as video calls. Then try again.',
   },
   unsupported: {
-    title: 'This browser can’t record here',
+    title: 'This browser cannot record here',
     help: 'Open CLB Ready in Chrome or Edge, using a secure (https) address.',
   },
   unknown: {
-    title: 'The microphone didn’t start',
+    title: 'The microphone did not start',
     help: 'Check your microphone settings, then try again.',
   },
 };
