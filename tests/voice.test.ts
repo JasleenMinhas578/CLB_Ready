@@ -3,10 +3,27 @@ import { VoiceEngineStore } from '../src/services/tts/voiceEngine';
 import { planModels } from '../src/services/device/tier';
 import type { ModelPlan } from '../src/services/device/tier';
 import type { TextToSpeech } from '../src/services/tts/types';
+import { aiVoiceFailed } from '../src/features/task/objective/useClipPlayer';
 
 const plan: ModelPlan = { tier: 'mid', whisperModel: 'w', whisperDevice: 'webgpu', feedbackModel: 'm', keepWhisperLoaded: true, reason: '' };
 
 describe('in-browser voices', () => {
+  it('goes straight to the browser voice once Kokoro has failed to load', async () => {
+    let loads = 0;
+    const broken: TextToSpeech = {
+      async load() { loads += 1; throw new Error('out of memory'); },
+      async speak() { throw new Error('not loaded'); },
+      async unload() {},
+    };
+    const store = new VoiceEngineStore(async () => plan, () => broken);
+    expect(aiVoiceFailed(store.getStatus())).toBe(false); // First clip: try Kokoro.
+    await expect(store.ensureLoaded()).rejects.toThrow('out of memory');
+    expect(aiVoiceFailed(store.getStatus())).toBe(true); // Next clips: skip it.
+    await store.unload(); // A tier change in Settings allows another try.
+    expect(aiVoiceFailed(store.getStatus())).toBe(false);
+    expect(loads).toBe(1);
+  });
+
   it('makes lines one at a time, in the order they were asked for', async () => {
     const log: string[] = [];
     let running = 0;
