@@ -76,7 +76,6 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
               progress={progress}
             />
             <TipsCard goal={attempt.goal} tips={writingTips(attempt.metrics, attempt.goal, attempt.options).slice(0, 3)} />
-            {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} />}
           </div>
           <div className="results-main">
             <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} fromScratch />
@@ -86,6 +85,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             </div>
           </div>
         </div>
+        {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} />}
         <ResultsActions attempt={attempt} retryFirst />
       </section>
     );
@@ -113,11 +113,6 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
           />
           <TipsCard goal={attempt.goal} tips={mergeTips(ai, writingTips(attempt.metrics, attempt.goal, attempt.options))} />
           <ChecklistCard items={attempt.checklist} results={checklist} final={final} />
-          <div className="results-card">
-            <h2>What we measured</h2>
-            <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />
-          </div>
-          {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} />}
         </div>
         <div className="results-main">
           <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken={false} original={attempt.text} offTask={ai?.onTask === false} />
@@ -128,6 +123,12 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
           </div>
         </div>
       </div>
+      {/* Details below both columns, full width, so neither column is left half empty. */}
+      <div className="results-card">
+        <h2>What we measured</h2>
+        <TileList tiles={writingTiles(attempt.metrics, attempt.options)} />
+      </div>
+      {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} />}
       <ResultsActions attempt={attempt} />
     </section>
   );

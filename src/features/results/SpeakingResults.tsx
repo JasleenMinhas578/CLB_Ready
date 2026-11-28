@@ -39,7 +39,6 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
               progress={progress}
             />
             <TipsCard goal={attempt.goal} tips={codeTips(attempt.metrics, attempt.goal).slice(0, 3)} />
-            {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} transcribeMs={attempt.transcribeMs} />}
           </div>
           <div className="results-main">
             <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken fromScratch />
@@ -51,6 +50,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             </div>
           </div>
         </div>
+        {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} transcribeMs={attempt.transcribeMs} />}
         <ResultsActions attempt={attempt} retryFirst />
       </section>
     );
@@ -77,11 +77,6 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
           />
           <TipsCard goal={attempt.goal} tips={mergeTips(ai, codeTips(attempt.metrics, attempt.goal))} />
           <ChecklistCard items={attempt.checklist} results={matchAiChecklist(attempt.checklist, ai?.checklist ?? null)?.map((row) => ({ met: row.met })) ?? null} final={final} />
-          <div className="results-card">
-            <h2>What we measured</h2>
-            <MeasureTiles metrics={attempt.metrics} />
-          </div>
-          {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} transcribeMs={attempt.transcribeMs} />}
         </div>
         <div className="results-main">
           <AnswerCard answer={progress?.answer} goal={attempt.goal} spoken original={attempt.transcript} offTask={ai?.onTask === false} />
@@ -93,6 +88,12 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
           </div>
         </div>
       </div>
+      {/* Details below both columns, full width, so neither column is left half empty. */}
+      <div className="results-card">
+        <h2>What we measured</h2>
+        <MeasureTiles metrics={attempt.metrics} />
+      </div>
+      {progress?.perf && <PerfCard perf={progress.perf} progress={progress} outcome={outcome} transcribeMs={attempt.transcribeMs} />}
       <ResultsActions attempt={attempt} />
     </section>
   );
