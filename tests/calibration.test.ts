@@ -29,21 +29,31 @@ describe('calibration set (code-only scoring)', () => {
 });
 
 describe('ignoring an AI score that does not fit', () => {
-  // The real result: a strong email got Content 4 beside three 11-12s.
   const code = codeEstimatesWriting(measureEmail(EMAIL_SAMPLES[0].text));
 
   it('drops the outlier and keeps the rest', () => {
-    const { scores, ignored } = dropOutlierScores({ content: 4, vocabulary: 12, readability: 11, task: 12 }, code);
-    expect(ignored).toEqual([{ id: 'content', modelScore: 4 }]);
-    expect(scores.content).toBeUndefined();
-    expect(scores.vocabulary).toBe(12);
+    const { scores, ignored } = dropOutlierScores({ content: 12, vocabulary: 4, readability: 11, task: 12 }, code);
+    expect(ignored).toEqual([{ id: 'vocabulary', modelScore: 4 }]);
+    expect(scores.vocabulary).toBeUndefined();
+    expect(scores.content).toBe(12);
   });
 
-  it('then scores content from measurements, not 5', () => {
-    const { scores } = dropOutlierScores({ content: 4, vocabulary: 12, readability: 11, task: 12 }, code);
+  it('then scores vocabulary from measurements, not 4', () => {
+    const { scores } = dropOutlierScores({ content: 12, vocabulary: 4, readability: 11, task: 12 }, code);
     const blended = blendScores(code, scores, DEFAULT_WRITING_WEIGHTS, lengthCeiling(175, 150));
-    expect(blended.content).toBe(code.content);
-    expect(blended.content >= 7).toBe(true);
+    expect(blended.vocabulary).toBe(code.vocabulary);
+    expect(blended.vocabulary >= 7).toBe(true);
+  });
+
+  it('keeps a content or task score below code, because code cannot judge meaning', () => {
+    const { scores, ignored } = dropOutlierScores({ content: 4, vocabulary: 12, readability: 11, task: 4 }, code);
+    expect(ignored).toEqual([]);
+    expect(scores).toMatchObject({ content: 4, task: 4 });
+  });
+
+  it('still drops a content score far above code and the other scores', () => {
+    const lowCode = { content: 5, vocabulary: 5, readability: 5, task: 5 };
+    expect(dropOutlierScores({ content: 12, vocabulary: 5, readability: 5, task: 5 }, lowCode).ignored).toEqual([{ id: 'content', modelScore: 12 }]);
   });
 
   it('keeps a low score when code agrees with it', () => {

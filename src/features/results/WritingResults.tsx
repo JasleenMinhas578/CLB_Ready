@@ -93,7 +93,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
   }
 
   const { scores, ignored } = finalScores(
-    'writing', codeEstimatesWriting(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, attempt.metrics.wordRange.min,
+    'writing', codeEstimatesWriting(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, attempt.metrics.wordRange.min, ai?.onTask,
   );
   const checklist = mergeChecklist(attempt.checklist, ai?.checklist ?? null, attempt.text, attempt.metrics);
   const overall = overallLevel(scores);
@@ -113,7 +113,7 @@ export function WritingResults({ attempt }: { attempt: WritingAttempt }) {
             status={<AiStatus outcome={outcome} progress={progress} />}
             notes={outlierNotes(ignored)}
           />
-          <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, writingTips(attempt.metrics, attempt.goal, attempt.options), !!ai)} />
+          <TipsCard goal={attempt.goal} tips={mergeTips(ai, writingTips(attempt.metrics, attempt.goal, attempt.options))} />
           <ChecklistCard items={attempt.checklist} results={checklist} final={final} />
           <div className="results-card">
             <h2>What we measured</h2>

@@ -57,7 +57,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
   }
 
   const { scores, ignored } = finalScores(
-    'speaking', codeEstimates(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, expectedSpokenWords(attempt.metrics.answerSeconds),
+    'speaking', codeEstimates(attempt.metrics), ai?.scores ?? null, attempt.metrics.wordCount, expectedSpokenWords(attempt.metrics.answerSeconds), ai?.onTask,
   );
   const overall = overallLevel(scores);
   const final = outcome !== null;
@@ -76,7 +76,7 @@ export function SpeakingResults({ attempt }: { attempt: SpeakingAttempt }) {
             status={<AiStatus outcome={outcome} progress={progress} />}
             notes={outlierNotes(ignored)}
           />
-          <TipsCard goal={attempt.goal} tips={mergeTips(ai?.tips, codeTips(attempt.metrics, attempt.goal), !!ai)} />
+          <TipsCard goal={attempt.goal} tips={mergeTips(ai, codeTips(attempt.metrics, attempt.goal))} />
           <ChecklistCard items={attempt.checklist} results={matchAiChecklist(attempt.checklist, ai?.checklist ?? null)?.map((row) => ({ met: row.met })) ?? null} final={final} />
           <div className="results-card">
             <h2>What we measured</h2>
