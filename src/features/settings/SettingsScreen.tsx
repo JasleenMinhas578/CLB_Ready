@@ -16,6 +16,7 @@ import { planModels, type DeviceTier, type ModelPlan } from '@/services/device/t
 import { getSpeechEngine, type SpeechEngineStore } from '@/services/ai/speechEngine';
 import { getFeedbackEngine, type FeedbackEngineStore } from '@/services/ai/feedbackEngine';
 import { useModelStatus, type ModelStatus } from '@/services/ai/modelStore';
+import { unloadAllModels } from '@/services/unloadModels';
 
 const CHOICES: { value: TierChoice; title: string; text: string }[] = [
   { value: 'auto', title: 'Best for this device', text: 'Picked from your memory, processor and graphics chip.' },
@@ -84,13 +85,13 @@ export function SettingsScreen() {
     setChoice(next);
     setMessage(null);
     // Free the old models; the new ones load at the next task.
-    await Promise.all([speech?.unload(), coach?.unload()]);
+    await unloadAllModels();
     setTierChoice(next);
     setMessage('Saved for this visit. New models load when you open your next task.');
   };
 
   const deleteModels = async () => {
-    await Promise.all([speech?.unload(), coach?.unload()]);
+    await unloadAllModels();
     try {
       const names = await caches.keys();
       await Promise.all(names.map((name) => caches.delete(name)));

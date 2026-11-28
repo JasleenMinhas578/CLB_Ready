@@ -6,6 +6,8 @@ import { VoiceEngineStore } from '../src/services/tts/voiceEngine';
 import { LIGHT_VOICE, planModels, type DeviceSignals } from '../src/services/device/tier';
 import { WorkerRpc } from '../src/services/workerRpc';
 import { fallBackSpeechToCpu, getModelPlan, setTierChoice } from '../src/services/device/plan';
+import { getVoiceEngine } from '../src/services/tts/voiceEngine';
+import { unloadAllModels } from '../src/services/unloadModels';
 
 const GB = 1024 ** 3;
 const laptop: DeviceSignals = { ramGb: 8, cpuCores: 8, webgpu: true, shaderF16: true, maxBufferBytes: 4 * GB, isMobile: false };
@@ -115,5 +117,16 @@ describe('unloading a worker', () => {
     await expect(waiting).rejects.toThrow('unloaded');
     expect(FakeWorker.created[0].terminated).toBe(true);
     expect(rpc.running).toBe(false);
+  });
+});
+
+describe('freeing every model', () => {
+  it('also unloads the listening voice', async () => {
+    const voice = await getVoiceEngine();
+    await voice.ensureLoaded();
+    expect(voice.getStatus().state).toBe('ready');
+    await unloadAllModels();
+    expect(voice.getStatus().state).toBe('idle');
+    expect(FakeWorker.created[0].terminated).toBe(true);
   });
 });
