@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { loadModule } from '../src/content/modules';
-import { feedbackJobFor, type FeedbackDeps, type Job } from '../src/features/results/useFeedback';
+import { feedbackJobFor, type Job } from '../src/features/results/useFeedback';
 import { FeedbackEngineStore } from '../src/services/ai/feedbackEngine';
 import { measureWriting } from '../src/domain/measure/writingMetrics';
 import type { SpeakingAttempt, WritingAttempt } from '../src/domain/attempt';
@@ -67,8 +67,8 @@ function setup(options: { replies?: string[]; load?: Promise<void>; generating?:
     async unload() {},
   };
   const store = new FeedbackEngineStore(async () => plan(options.light ? null : 'm'), () => (options.light ? null : model));
-  const deps: FeedbackDeps = { getEngine: vi.fn(async () => store) };
-  return { deps, log, prompts };
+  const getEngine = vi.fn(async () => store);
+  return { getEngine, log, prompts };
 }
 
 /** Lets queued promises and timers run until the check passes. */
@@ -81,14 +81,14 @@ const answerDone = (job: Job) => () => job.progress.answer.state === 'done';
 
 describe('feedback job cache', () => {
   it('shares one job per answer, and stops the old one when a new answer arrives', async () => {
-    const { deps } = setup();
+    const { getEngine } = setup();
     const first = writing(LONG_TEXT);
-    const job = feedbackJobFor(first, deps);
-    expect(feedbackJobFor(first, deps)).toBe(job);
-    expect(deps.getEngine).toHaveBeenCalledTimes(1);
+    const job = feedbackJobFor(first, getEngine);
+    expect(feedbackJobFor(first, getEngine)).toBe(job);
+    expect(getEngine).toHaveBeenCalledTimes(1);
 
     const cancel = vi.spyOn(job, 'cancel');
-    const next = feedbackJobFor(writing(LONG_TEXT), deps);
+    const next = feedbackJobFor(writing(LONG_TEXT), getEngine);
     expect(next).not.toBe(job);
     expect(cancel).toHaveBeenCalledTimes(1);
   });
@@ -96,8 +96,8 @@ describe('feedback job cache', () => {
 
 describe('feedback job paths', () => {
   it('scores the answer, then writes the improved answer using the tips', async () => {
-    const { deps, prompts } = setup();
-    const job = feedbackJobFor(writing(LONG_TEXT), deps);
+    const { getEngine, prompts } = setup();
+    const job = feedbackJobFor(writing(LONG_TEXT), getEngine);
     const outcome = await job.promise;
     expect(outcome.kind).toBe('ai');
     await until(answerDone(job));
@@ -109,8 +109,8 @@ describe('feedback job paths', () => {
   });
 
   it('writes a model answer from scratch when a too-short answer has no hand-written sample', async () => {
-    const { deps, prompts } = setup({ replies: [ANSWER_REPLY] });
-    const job = feedbackJobFor(writing('Dear Sir, refund please.'), deps);
+    const { getEngine, prompts } = setup({ replies: [ANSWER_REPLY] });
+    const job = feedbackJobFor(writing('Dear Sir, refund please.'), getEngine);
     expect(await job.promise).toEqual({ kind: 'sample' });
     await until(answerDone(job));
     expect(prompts).toHaveLength(1);
@@ -119,7 +119,7 @@ describe('feedback job paths', () => {
   });
 
   it('shows the hand-written sample for a too-short answer without loading the model', async () => {
-    const { deps } = setup();
+    const { getEngine } = setup();
     nextId += 1;
     const attempt = {
       skill: 'speaking', id: `job-test-${nextId}`, moduleId: 'module-1', taskTypeId: 'speaking-1',
@@ -127,15 +127,15 @@ describe('feedback job paths', () => {
       transcript: 'Join a club.', words: [], recordedSeconds: 5, transcribeMs: 1,
       metrics: { wordCount: 3, answerSeconds: 90 },
     } as unknown as SpeakingAttempt;
-    const job = feedbackJobFor(attempt, deps);
+    const job = feedbackJobFor(attempt, getEngine);
     expect(await job.promise).toEqual({ kind: 'sample' });
-    expect(deps.getEngine).not.toHaveBeenCalled();
+    expect(getEngine).not.toHaveBeenCalled();
     expect(job.progress.phase).toBe('done');
     expect(job.progress.answer.state).toBe('off');
   });
 
   it('settles a job whose module content fails to download, and tries again next time', async () => {
-    const { deps } = setup();
+    const { getEngine } = setup();
     nextId += 1;
     const attempt = {
       skill: 'speaking', id: `job-test-${nextId}`, moduleId: 'module-1', taskTypeId: 'speaking-1',
@@ -144,17 +144,17 @@ describe('feedback job paths', () => {
       metrics: { wordCount: 3, answerSeconds: 90 },
     } as unknown as SpeakingAttempt;
     vi.mocked(loadModule).mockRejectedValueOnce(new Error('offline'));
-    const job = feedbackJobFor(attempt, deps);
+    const job = feedbackJobFor(attempt, getEngine);
     expect(await job.promise).toEqual({ kind: 'code', reason: 'error', message: 'offline' });
     expect(job.progress.phase).toBe('done');
-    const retry = feedbackJobFor(attempt, deps);
+    const retry = feedbackJobFor(attempt, getEngine);
     expect(retry).not.toBe(job);
     expect(await retry.promise).toEqual({ kind: 'sample' });
   });
 
   it('falls back to code-only feedback in light mode', async () => {
-    const { deps } = setup({ light: true });
-    const job = feedbackJobFor(writing(LONG_TEXT), deps);
+    const { getEngine } = setup({ light: true });
+    const job = feedbackJobFor(writing(LONG_TEXT), getEngine);
     expect(await job.promise).toEqual({ kind: 'code', reason: 'light-mode' });
     expect(job.progress.phase).toBe('done');
   });
@@ -163,10 +163,10 @@ describe('feedback job paths', () => {
 describe('cancelling a feedback job', () => {
   it('drops a job cancelled while the model downloads, so the next answer goes first', async () => {
     const loading = gate();
-    const { deps, prompts } = setup({ load: loading.opened, replies: [SCORES_REPLY, ANSWER_REPLY, SCORES_REPLY, ANSWER_REPLY] });
-    const old = feedbackJobFor(writing(LONG_TEXT), deps);
-    await until(() => (deps.getEngine as ReturnType<typeof vi.fn>).mock.calls.length === 1);
-    const next = feedbackJobFor(writing(LONG_TEXT.replaceAll('kettle', 'toaster')), deps);
+    const { getEngine, prompts } = setup({ load: loading.opened, replies: [SCORES_REPLY, ANSWER_REPLY, SCORES_REPLY, ANSWER_REPLY] });
+    const old = feedbackJobFor(writing(LONG_TEXT), getEngine);
+    await until(() => getEngine.mock.calls.length === 1);
+    const next = feedbackJobFor(writing(LONG_TEXT.replaceAll('kettle', 'toaster')), getEngine);
     loading.open();
     expect(await old.promise).toMatchObject({ kind: 'code', reason: 'error' });
     expect((await next.promise).kind).toBe('ai');
@@ -176,8 +176,8 @@ describe('cancelling a feedback job', () => {
 
   it('stops scoring mid-reply and never starts step 2', async () => {
     const generating = gate();
-    const { deps, log } = setup({ generating: generating.opened });
-    const job = feedbackJobFor(writing(LONG_TEXT), deps);
+    const { getEngine, log } = setup({ generating: generating.opened });
+    const job = feedbackJobFor(writing(LONG_TEXT), getEngine);
     await until(() => log.includes('generate'));
     job.cancel();
     expect(log).toContain('interrupt');

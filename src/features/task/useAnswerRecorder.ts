@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { startRecording, type Recording, type RecordingSession } from '@/services/audio/recorder';
 import { micProblemFrom, type MicProblem } from '@/services/audio/analysis';
-
-/** Asks the browser to confirm before closing or reloading mid-answer. */
-function warnBeforeLeaving(event: BeforeUnloadEvent) {
-  event.preventDefault();
-}
+import { warnBeforeLeaving } from './exam/unsavedWork';
 
 /**
  * Opens the mic, but turns it straight off again if the screen closed while the
