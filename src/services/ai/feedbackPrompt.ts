@@ -6,8 +6,8 @@ import type { Criterion } from '@/domain/criteria';
  * 2. The improved answer as plain text, streamed onto the screen while they read.
  */
 
-/** Room for the checklist, three short tips and four scores. */
-export const SCORING_MAX_TOKENS = 450;
+/** Room for the on-task verdict, the checklist, three short tips and four scores. */
+export const SCORING_MAX_TOKENS = 500;
 
 /** Room for a rewrite of about `words` words, with some slack. A token is about 0.75 words. */
 export function answerTokenBudget(words: number): number {
@@ -20,9 +20,11 @@ export function answerTokenBudget(words: number): number {
  */
 export const FEEDBACK_JSON_SCHEMA = {
   type: 'object',
-  // Order matters: the model writes the checklist and tips before it scores,
-  // so the scores follow from what it has already noticed.
+  // Order matters: the model first decides whether the answer is about the task,
+  // then writes the checklist and tips, then scores, so the scores follow from what it noticed.
   properties: {
+    on_task: { type: 'boolean' },
+    on_task_reason: { type: 'string' },
     checklist: {
       type: 'array',
       items: {
@@ -44,7 +46,7 @@ export const FEEDBACK_JSON_SCHEMA = {
       required: ['content_and_coherence', 'vocabulary', 'listenability_or_readability', 'task_fulfillment'],
     },
   },
-  required: ['checklist', 'tips', 'scores'],
+  required: ['on_task', 'on_task_reason', 'checklist', 'tips', 'scores'],
 } as const;
 
 /** Fixed reference points so the model's numbers mean the same thing each time. */
@@ -59,6 +61,10 @@ export const LEVEL_ANCHORS = [
 ];
 
 export interface FeedbackReply {
+  /** The model's verdict on whether the answer responds to this task. Code can't judge meaning, so it obeys this. */
+  onTask: boolean;
+  /** One sentence to the learner on why the answer is off task. Empty when on task. */
+  onTaskReason: string;
   checklist: { item: string; met: boolean }[];
   scores: { content: number; vocabulary: number; delivery: number; task: number };
   tips: string[];
@@ -89,6 +95,9 @@ export function buildFeedbackPrompt(request: FeedbackRequest): { system: string;
     'Rate each dimension from 4 to 12 using these official factors. Be honest; most learners score 6 to 9.',
     criteria,
     `Level guide: ${LEVEL_ANCHORS.join('; ')}.`,
+    'First decide on_task: does the answer respond to this prompt and checklist? An unrelated, off-topic or copied answer (a story, song or film clip, another task) is not on task.',
+    'If on_task is false, give content_and_coherence and task_fulfillment 4, and write on_task_reason as one sentence to the learner saying what the task asks for instead. If on_task is true, leave on_task_reason empty.',
+    'Swearing or offensive words lower vocabulary, because they are the wrong register for the test. Give a tip to replace them.',
     'Rate each dimension on its own. Content and coherence is about ideas, details and organization, not length.',
     `Here "listenability_or_readability" means ${request.spoken ? 'listenability' : 'readability'}.`,
     request.spoken
@@ -132,10 +141,13 @@ interface RawScores {
   task_fulfillment?: unknown;
 }
 
+/** Shown when the model says an answer is off task but gives no reason. */
+export const OFF_TASK_FALLBACK = 'Your answer does not seem to be about this task. Read the task again and answer exactly what it asks.';
+
 /** Parses and sanity-checks a reply. Returns null if anything required is missing. */
 export function parseFeedback(text: string): FeedbackReply | null {
   try {
-    const value = extractJson(text) as { checklist?: unknown; scores?: RawScores; tips?: unknown };
+    const value = extractJson(text) as { on_task?: unknown; on_task_reason?: unknown; checklist?: unknown; scores?: RawScores; tips?: unknown };
     const raw = value.scores ?? {};
     const scores = {
       content: raw.content_and_coherence,
@@ -145,7 +157,11 @@ export function parseFeedback(text: string): FeedbackReply | null {
     };
     const scoresOk = Object.values(scores).every((score) => typeof score === 'number' && Number.isFinite(score));
     if (!Array.isArray(value.checklist) || !scoresOk || !Array.isArray(value.tips)) return null;
+    // Only an explicit "false" counts: a missing verdict must not sink a learner's scores.
+    const onTask = value.on_task !== false;
     return {
+      onTask,
+      onTaskReason: onTask ? '' : (typeof value.on_task_reason === 'string' && cleanTip(value.on_task_reason)) || OFF_TASK_FALLBACK,
       checklist: value.checklist as FeedbackReply['checklist'],
       scores: scores as FeedbackReply['scores'],
       tips: (value.tips as unknown[])

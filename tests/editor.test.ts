@@ -49,6 +49,12 @@ describe('promptForModel', () => {
     expect(text.includes('- Choose Option A or Option B')).toBe(true);
     expect(text.includes('The learner selected option B.')).toBe(true);
   });
+
+  it('describes the picture, so the AI coach can tell whether an answer is about it', () => {
+    const scene = module1.prompts.find((prompt) => prompt.taskTypeId === 'speaking-3');
+    if (!scene?.scene) throw new Error('missing scene prompt');
+    expect(promptForModel(scene)).toContain(`The picture shows: ${scene.scene.description}`);
+  });
 });
 
 describe('targetText', () => {

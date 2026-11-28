@@ -15,6 +15,13 @@ export type Scores<K extends string = SpeakingCriterionId> = Record<K, number>;
 export const MIN_LEVEL = 4;
 export const MAX_LEVEL = 12;
 
+/**
+ * Criteria about meaning: does the answer say sensible things about this task?
+ * Code can count linking words and seconds but can't judge meaning, so only the
+ * AI model scores these on screen. Code's numbers for them are only blended in.
+ */
+export const MEANING_CRITERIA: readonly string[] = ['content', 'task'];
+
 /** Share of each final score that comes from the AI model (the rest from code). */
 export type ScoringWeights<K extends string = SpeakingCriterionId> = Record<K, number>;
 export const DEFAULT_SPEAKING_WEIGHTS: ScoringWeights = {
@@ -107,8 +114,8 @@ export function blendScores<K extends string = SpeakingCriterionId>(
   return result;
 }
 
-/** Overall estimate: CELPIP reports one level per skill, so use the rounded mean. */
-export function overallLevel<K extends string>(scores: Scores<K>): number {
-  const values = Object.values(scores) as number[];
+/** Overall estimate: CELPIP reports one level per skill, so use the rounded mean of the scores we have. */
+export function overallLevel<K extends string>(scores: Partial<Scores<K>>): number {
+  const values = (Object.values(scores) as (number | undefined)[]).filter((value): value is number => typeof value === 'number');
   return clampLevel(values.reduce((sum, value) => sum + value, 0) / values.length);
 }

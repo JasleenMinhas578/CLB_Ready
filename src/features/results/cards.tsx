@@ -11,6 +11,7 @@ import { LinkButton } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Pip } from '@/components/Pip';
 import { friendlyModelError } from '@/services/ai/errorText';
+import type { FeedbackReply } from '@/services/ai/feedbackPrompt';
 import type { AiPerf, AnswerStream, FeedbackOutcome, FeedbackProgress, StepPerf } from './useFeedback';
 import { plural } from '@/domain/scoring/sufficiency';
 import { DiffView } from './DiffView';
@@ -59,7 +60,8 @@ export function AiStatus({ outcome, progress }: { outcome: FeedbackOutcome | nul
 interface LevelCardProps {
   attempt: Attempt;
   criteria: Criterion[];
-  scores: Record<string, number>;
+  /** A criterion without a score is one only Pip can judge, and Pip hasn't (yet). */
+  scores: Partial<Record<string, number>>;
   overall: number;
   final: boolean;
   status: ReactNode;
@@ -69,11 +71,19 @@ interface LevelCardProps {
 
 export function LevelCard({ attempt, criteria, scores, overall, final, status, notes = {} }: LevelCardProps) {
   const goal = attempt.goal;
+  const scored = criteria.filter((criterion) => scores[criterion.id] !== undefined);
+  const partial = scored.length < criteria.length;
+  const measuredNames = scored.map((criterion) => criterion.name.toLowerCase()).join(' and ');
+  const note = !partial
+    ? 'Estimates for practice only, not official CELPIP scores.'
+    : final
+      ? `Partial estimate from ${measuredNames} only: content and task fulfillment can't be checked without Pip. For practice only, not an official CELPIP score.`
+      : `Partial estimate from ${measuredNames} only, until Pip checks content and task fulfillment. For practice only, not an official CELPIP score.`;
   return (
     <div className="results-card level-card" aria-busy={!final}>
       <div className="level-pair">
         <div className="is-level">
-          <span>{final ? 'Estimated level' : 'First estimate'}</span>
+          <span>{partial ? 'Partial estimate' : 'Estimated level'}</span>
           <strong>CLB {overall}</strong>
         </div>
         <div>
@@ -81,7 +91,7 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
           <strong>CLB {goal}</strong>
         </div>
       </div>
-      <EstimateNote>{final ? 'Estimates' : 'First estimates from your measurements'} for practice only, not official CELPIP scores.</EstimateNote>
+      <EstimateNote>{note}</EstimateNote>
       {!attempt.goalChosen && (
         <p className="fine-print">
           No goal set, so we used CLB {goal}. <a href={href('/goal')}>Choose your goal</a>.
@@ -90,7 +100,17 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
       {status}
       <ul className="criteria-bars">
         {criteria.map((criterion) => {
-          const score = scores[criterion.id] ?? 0;
+          const score = scores[criterion.id];
+          if (score === undefined) {
+            return (
+              <li key={criterion.id}>
+                <div className="criterion-head">
+                  <span>{criterion.name}</span>
+                  <strong>{final ? 'Not checked without Pip' : 'Pip checks this'}</strong>
+                </div>
+              </li>
+            );
+          }
           const reached = score >= goal;
           return (
             <li key={criterion.id}>
@@ -108,7 +128,7 @@ export function LevelCard({ attempt, criteria, scores, overall, final, status, n
         })}
       </ul>
       {/* Single scores can sit above or below the level, because the level is their average. */}
-      <p className="fine-print">Your level is the average of the {criteria.length} scores above, rounded.</p>
+      <p className="fine-print">Your level is the average of the {scored.length} scores above, rounded.</p>
     </div>
   );
 }
@@ -314,8 +334,10 @@ export function ResultsHead({ attempt, title, retryFirst = false }: {
 }
 
 /** Merges AI tips (first) with code tips, without duplicates. */
-export function mergeTips(aiTips: string[] | undefined, codeTips: string[], hasAi: boolean): string[] {
-  return [...(aiTips ?? []), ...codeTips].filter((tip, i, all) => all.indexOf(tip) === i).slice(0, hasAi ? 4 : 3);
+export function mergeTips(reply: FeedbackReply | null, codeTips: string[]): string[] {
+  // An answer that isn't about the task needs that fixed before anything else.
+  const aiTips = reply ? [...(reply.onTask ? [] : [reply.onTaskReason]), ...reply.tips] : [];
+  return [...aiTips, ...codeTips].filter((tip, i, all) => all.indexOf(tip) === i).slice(0, reply ? 4 : 3);
 }
 
 /**
