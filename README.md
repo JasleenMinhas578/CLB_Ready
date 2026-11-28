@@ -10,9 +10,8 @@ CLB goal. No account, no card, and your answers never leave your device.
 
 ![CLB Ready home page](docs/screenshots/01-home.png)
 
-> CLB Ready is an independent practice tool. It is not affiliated with, endorsed by or connected to
-> CELPIP, Prometric, the Centre for Canadian Language Benchmarks or the Government of Canada.
-> Scores are estimates for practice only.
+> CLB Ready is an independent practice tool. It is not affiliated with or endorsed by CELPIP or Paragon Testing
+> Enterprises. CELPIP is a trademark of Paragon Testing Enterprises. Scores are estimates for practice only.
 
 ## What's inside
 

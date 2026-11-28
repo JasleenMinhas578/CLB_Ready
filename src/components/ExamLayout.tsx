@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { DISCLAIMER } from './Disclaimer';
 
 /**
  * Test-day frame for task screens: no site header, candy decoration or
@@ -11,9 +12,7 @@ export function ExamLayout({ children }: { children: ReactNode }) {
       <main id="main" tabIndex={-1} className="exam-main">
         {children}
       </main>
-      <p className="exam-footnote">
-        CLB Ready practice test. Independent tool, not affiliated with CELPIP. Your answers stay on this device.
-      </p>
+      <p className="exam-footnote">{DISCLAIMER} Your answers stay on this device.</p>
     </div>
   );
 }
