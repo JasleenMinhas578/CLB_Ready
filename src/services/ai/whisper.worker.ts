@@ -1,6 +1,7 @@
 import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
 import type { WhisperRequest, WhisperResponse } from './whisper.protocol';
 import { useLocalOnnxRuntime } from './onnxRuntime';
+import { averageProgress, type ProgressEvent } from './downloadProgress';
 import { WHISPER_SHAS } from '@/services/modelPins';
 
 useLocalOnnxRuntime();
@@ -26,12 +27,6 @@ function post(message: WhisperResponse) {
   worker.postMessage(message);
 }
 
-interface ProgressEvent {
-  status: string;
-  file?: string;
-  progress?: number;
-}
-
 async function load(id: number, model: string, device: 'webgpu' | 'wasm') {
   fileProgress.clear();
   const revision = WHISPER_SHAS[model];
@@ -42,12 +37,8 @@ async function load(id: number, model: string, device: 'webgpu' | 'wasm') {
     // fp32 is safest on WebGPU; 8-bit keeps the CPU fallback small and quick.
     dtype: device === 'webgpu' ? 'fp32' : 'q8',
     progress_callback: (event: ProgressEvent) => {
-      if (event.status === 'progress' && event.file) {
-        fileProgress.set(event.file, (event.progress ?? 0) / 100);
-        const values = [...fileProgress.values()];
-        const fraction = values.reduce((sum, value) => sum + value, 0) / values.length;
-        post({ id, type: 'progress', fraction, text: `Downloading ${event.file}` });
-      }
+      const fraction = averageProgress(fileProgress, event);
+      if (fraction !== null) post({ id, type: 'progress', fraction, text: `Downloading ${event.file}` });
     },
   });
   post({ id, type: 'loaded' });
