@@ -4,8 +4,12 @@ import type { LoadProgress } from '@/services/ai/types';
 type WithoutId<T> = T extends unknown ? Omit<T, 'id'> : never;
 
 type Message = { id: number; type: string };
-/** The reply shapes every worker protocol shares. */
-type Shared = Message & { fraction: number | null; text: string; message: string };
+/**
+ * Every reply, typed loosely enough to cover each protocol's 'progress'
+ * ({ fraction, text }) and 'error' ({ message }) replies, so the fields this
+ * class reads can't be given another type.
+ */
+type Reply = Message & { fraction?: number | null; text?: string; message?: string };
 
 type Pending<Res> = {
   resolve: (response: Res) => void;
@@ -14,7 +18,7 @@ type Pending<Res> = {
 };
 
 /** Turns a worker's id-tagged messages into promises. The worker starts on first use. */
-export class WorkerRpc<Req extends Message, Res extends Message> {
+export class WorkerRpc<Req extends Message, Res extends Reply> {
   private worker: Worker | null = null;
   private nextId = 1;
   private pending = new Map<number, Pending<Res>>();
@@ -54,13 +58,12 @@ export class WorkerRpc<Req extends Message, Res extends Message> {
   private handle(response: Res) {
     const entry = this.pending.get(response.id);
     if (!entry) return;
-    const shared = response as unknown as Shared;
-    if (shared.type === 'progress') {
-      entry.onProgress?.({ fraction: shared.fraction, text: shared.text });
+    if (response.type === 'progress') {
+      entry.onProgress?.({ fraction: response.fraction ?? null, text: response.text ?? '' });
       return;
     }
     this.pending.delete(response.id);
-    if (shared.type === 'error') entry.reject(new Error(shared.message));
+    if (response.type === 'error') entry.reject(new Error(response.message));
     else entry.resolve(response);
   }
 
