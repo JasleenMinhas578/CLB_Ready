@@ -63,3 +63,14 @@ export function newAttemptId(): string {
   counter += 1;
   return `attempt-${Date.now()}-${counter}`;
 }
+
+/**
+ * True when the learner actually answered: picked at least one option, wrote
+ * something, or said words we heard. Only these attempts tick a task as done,
+ * so a timer that runs out on a blank answer doesn't count as finished.
+ */
+export function hasAnswer(attempt: AnyAttempt): boolean {
+  if (attempt.skill === 'speaking') return attempt.transcript.trim() !== '';
+  if (attempt.skill === 'writing') return attempt.text.trim() !== '';
+  return Object.values(attempt.answers).some((choice) => choice !== null);
+}
