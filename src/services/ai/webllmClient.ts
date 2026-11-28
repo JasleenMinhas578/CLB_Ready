@@ -64,7 +64,7 @@ export class WebLlmFeedbackModel implements FeedbackModel {
 
   // Both do nothing before load, so they never start a worker just to stop or clear it.
   interrupt() {
-    if (this.rpc.running) void this.rpc.send({ type: 'interrupt' });
+    if (this.rpc.running) this.rpc.send({ type: 'interrupt' }).catch(() => undefined);
   }
 
   async reset() {

@@ -166,6 +166,11 @@ function startJob(attempt: Attempt, deps: FeedbackDeps): Job {
   };
   const updatePerf = (next: Partial<AiPerf>) => job.progress.perf && update({ perf: { ...job.progress.perf, ...next } });
   const startedAt = performance.now();
+  /** A failed content download (say, offline) shouldn't stick: forget this job so the next visit tries again. */
+  const forget = (error: unknown): never => {
+    if (jobs.get(attempt.id) === job) jobs.delete(attempt.id);
+    throw error;
+  };
 
   /** Step 2: streams the answer onto the screen. Runs after the scores are shown. */
   const writeAnswer = async (engine: FeedbackEngineStore, tips: string[] | null) => {
@@ -181,12 +186,11 @@ function startJob(attempt: Attempt, deps: FeedbackDeps): Job {
   };
 
   job.promise = (async (): Promise<FeedbackOutcome> => {
-    // Too short to score, and a hand-written sample answer exists: nothing for the AI to do.
-    if (!isScorable(attempt.skill, attempt.metrics.wordCount) && getPrompt(await loadModule(attempt.moduleId), attempt.taskTypeId)?.modelAnswer) {
-      update({ phase: 'done' });
-      return { kind: 'sample' };
-    }
     try {
+      // Too short to score, and a hand-written sample answer exists: nothing for the AI to do.
+      if (!isScorable(attempt.skill, attempt.metrics.wordCount) && getPrompt(await loadModule(attempt.moduleId).catch(forget), attempt.taskTypeId)?.modelAnswer) {
+        return { kind: 'sample' };
+      }
       store = await deps.getEngine();
       const engine = store;
       const unsubscribe = engine.subscribe(() => {

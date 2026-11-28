@@ -71,11 +71,14 @@ export class WorkerRpc<Req extends Message, Res extends Message> {
     return this.worker !== null;
   }
 
-  /** Asks the worker to free its model, then stops it. Does nothing if it never started. */
+  /**
+   * Asks the worker to free its model, then stops it. Does nothing if it never started.
+   * Requests still waiting (say, scoring when the learner changes tier) are rejected,
+   * so their screens show an error instead of waiting forever.
+   */
   async unload() {
     if (!this.worker) return;
     await this.send({ type: 'unload' } as WithoutId<Req>);
-    this.worker?.terminate();
-    this.worker = null;
+    this.fail(new Error('The model was unloaded before it finished.'));
   }
 }
